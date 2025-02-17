@@ -1,4 +1,5 @@
-import Link from "next/link";
+"use client";
+
 import {
   MessageSquarePlus,
   Bot,
@@ -7,8 +8,21 @@ import {
   Github,
   MessageCircle,
 } from "lucide-react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const { authenticated, login } = usePrivy();
+  const router = useRouter();
+
+  const handleStartChatting = () => {
+    if (!authenticated) {
+      login();
+    } else {
+      router.push("/chat");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Hero Section */}
@@ -23,13 +37,13 @@ export default function Home() {
           </p>
 
           <div className="flex gap-4 mt-8">
-            <Link
-              href="/chat"
+            <button
+              onClick={handleStartChatting}
               className="px-8 py-3 gradient-bg rounded-md font-medium hover:opacity-90 transition-opacity text-primary-foreground flex items-center gap-2"
             >
               <MessageSquarePlus className="h-5 w-5" />
-              Start Chatting
-            </Link>
+              {authenticated ? "Start Chatting" : "Login to Chat"}
+            </button>
             <button className="px-8 py-3 border border-muted hover:border-primary/50 rounded-lg font-medium transition-colors flex items-center gap-2">
               <ExternalLink className="h-5 w-5" />
               Learn More
