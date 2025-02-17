@@ -1,0 +1,49 @@
+{
+  "name": "@repo/de-agent",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "check-types": "tsc --noEmit",
+    "prebuild": "npm run clean"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@ai-sdk/openai": "^1.0.11",
+    "@langchain/core": "^0.3.26",
+    "@langchain/groq": "^0.1.2",
+    "@langchain/langgraph": "^0.2.36",
+    "@langchain/openai": "^0.3.16",
+    "@privy-io/server-auth": "^1.18.0",
+    "ai": "^4.0.22",
+    "axios": "^1.7.9",
+    "chai": "^5.1.2",
+    "decimal.js": "^10.4.3",
+    "dotenv": "^16.4.7",
+    "ethers": "^6.11.1",
+    "form-data": "^4.0.1",
+    "langchain": "^0.3.8",
+    "openai": "^4.77.0",
+    "typedoc": "^0.27.6",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/chai": "^5.0.1",
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "^8.18.2",
+    "@typescript-eslint/parser": "^8.18.2",
+    "eslint": "^8.56.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

@@ -4,18 +4,47 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 0 0% 100%;
+    --background: 20 24% 5%;
+    --foreground: 30 20% 95%;
+    --card: 20 24% 8%;
+    --card-foreground: 30 20% 95%;
+    --popover: 20 24% 8%;
+    --popover-foreground: 30 20% 95%;
+    --primary: 24 95% 50%;
+    --primary-foreground: 30 20% 95%;
+    --secondary: 15 24% 12%;
+    --secondary-foreground: 30 20% 95%;
+    --muted: 20 24% 10%;
+    --muted-foreground: 30 10% 70%;
+    --accent: 24 95% 50%;
+    --accent-foreground: 30 20% 95%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 30 20% 95%;
+    --border: 20 24% 15%;
+    --input: 20 24% 10%;
+    --ring: 24 95% 50%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --radius: 0.5rem;
   }
 }
 
 @layer base {
+  * {
+    @apply border-border;
+  }
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.gradient-text {
+  @apply bg-gradient-to-r from-primary via-[#D35F0C] to-[#8B4513] bg-clip-text text-transparent;
+}
+
+.gradient-bg {
+  @apply bg-gradient-to-r from-primary via-[#D35F0C] to-[#8B4513];
 }
