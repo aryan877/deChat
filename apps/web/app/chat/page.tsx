@@ -301,9 +301,9 @@ const ChatContent = () => {
       <div className="flex-1 flex flex-col min-w-0 relative">
         <div
           ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto px-3 md:px-6 pt-16 md:pt-6 pb-6"
+          className="flex-1 overflow-y-auto px-4 md:px-6 pt-16 md:pt-6 pb-6"
         >
-          <div className="max-w-2xl mx-auto space-y-4">
+          <div className="max-w-3xl mx-auto space-y-4">
             {messages.length === 0 ? (
               <div className="text-center py-8">
                 <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-2 md:mb-3">
@@ -322,7 +322,7 @@ const ChatContent = () => {
                   }`}
                 >
                   <div
-                    className={`max-w-[85%] rounded-lg p-3 ${
+                    className={`max-w-[85%] rounded-lg px-4 py-3 ${
                       message.role === "user"
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted"
@@ -352,17 +352,14 @@ const ChatContent = () => {
           </div>
         )}
 
-        <div className="border-t border-border sticky bottom-0 bg-background">
-          <div className="max-w-2xl mx-auto px-3 md:px-6 py-3">
-            <form
-              onSubmit={handleFormSubmit}
-              className="relative flex items-center"
-            >
+        <div className="sticky bottom-0 bg-background px-4 md:px-6">
+          <div className="max-w-3xl mx-auto">
+            <form onSubmit={handleFormSubmit} className="relative py-3">
               <Textarea
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                className="w-full bg-muted rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none text-sm text-foreground placeholder-muted-foreground pr-11 px-3 py-2"
+                className="w-full bg-muted rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none text-sm text-foreground placeholder-muted-foreground pr-12 py-2"
                 placeholder="Type your message..."
                 rows={1}
                 disabled={isChatLoading}
@@ -374,7 +371,7 @@ const ChatContent = () => {
               <Button
                 type="submit"
                 disabled={isChatLoading || !input.trim()}
-                className="absolute right-3 p-1.5 bg-primary hover:bg-primary/90 rounded-md transition-colors h-8 w-8"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-primary hover:bg-primary/90 rounded-md transition-colors h-8 w-8"
               >
                 <SendIcon />
               </Button>
