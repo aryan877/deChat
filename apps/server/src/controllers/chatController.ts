@@ -235,14 +235,21 @@ export const saveAllMessages = async (
   const userId = getUserId(req);
   const { messages, threadId } = req.body;
 
-  const chatThread = await ChatThread.findOne({
+  // First try to find existing thread
+  let chatThread = await ChatThread.findOne({
     threadId,
     userId,
     isActive: true,
   });
 
+  // If thread doesn't exist, create a new one
   if (!chatThread) {
-    throw new NotFoundError("Thread not found");
+    chatThread = new ChatThread({
+      threadId,
+      userId,
+      isActive: true,
+      messages: [],
+    });
   }
 
   // Replace all messages in the thread

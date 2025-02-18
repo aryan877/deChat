@@ -21,6 +21,7 @@ import {
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { chatClient } from "@/app/clients/chat";
 import { GetThreadsResponse } from "@/app/types/api/chat";
+import { localStorageUtils } from "@/utils/localStorage";
 
 const SendIcon = () => (
   <svg
@@ -134,8 +135,9 @@ export default function ChatPage() {
       if (chatId) {
         // Only save if these aren't the initial messages or if we have new messages
         if (
-          !hasInitialMessagesSaved ||
-          messages.length !== initialMessages.length
+          !hasInitialMessagesSaved &&
+          messages.length !== initialMessages.length &&
+          messages.length > 0
         ) {
           saveAllMessagesMutation({
             messages,
@@ -186,10 +188,58 @@ export default function ChatPage() {
     }
   }, [handleScroll]);
 
+  // Modify the effect to handle pending messages
+  useEffect(() => {
+    const handlePendingMessage = async () => {
+      const pendingMessage = localStorageUtils.getPendingMessage();
+      if (pendingMessage && chatId) {
+        try {
+          // Clear the pending message first
+          localStorageUtils.clearPendingMessage();
+          // Set the input value
+          handleInputChange({
+            target: { value: pendingMessage },
+          } as React.ChangeEvent<HTMLTextAreaElement>);
+          // Submit the message
+          const fakeEvent = {
+            preventDefault: () => {},
+          } as FormEvent<HTMLFormElement>;
+          await handleSubmit(fakeEvent);
+        } catch (error) {
+          console.error("Error handling pending message:", error);
+        }
+      }
+    };
+
+    handlePendingMessage();
+  }, [chatId, handleInputChange, handleSubmit]);
+
+  // Modify the form submit handler
+  const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!chatId && input.trim()) {
+      try {
+        // Save message to local storage
+        localStorageUtils.savePendingMessage(input);
+        // Create new thread and navigate
+        const response = await createThreadMutation();
+        router.push(`/chat?chatId=${response.threadId}`);
+      } catch (error) {
+        console.error("Error creating thread:", error);
+        // Clear pending message if there was an error
+        localStorageUtils.clearPendingMessage();
+      }
+      return;
+    }
+
+    handleSubmit(e);
+  };
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e as unknown as FormEvent<HTMLFormElement>);
+      handleFormSubmit(e as unknown as FormEvent<HTMLFormElement>);
     }
   }
 
@@ -305,7 +355,7 @@ export default function ChatPage() {
         <div className="border-t border-border sticky bottom-0 bg-background">
           <div className="max-w-2xl mx-auto px-3 md:px-6 py-3">
             <form
-              onSubmit={handleSubmit}
+              onSubmit={handleFormSubmit}
               className="relative flex items-center"
             >
               <Textarea
