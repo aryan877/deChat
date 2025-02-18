@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { useEffect, useRef, useState, FormEvent, useCallback } from "react";
-import React from "react";
+import React, { Suspense } from "react";
 import Sidebar from "@/components/chat/Sidebar";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -64,7 +64,7 @@ const ScrollDownIcon = () => (
   </svg>
 );
 
-export default function ChatPage() {
+const ChatContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const chatId = searchParams.get("chatId");
@@ -383,5 +383,13 @@ export default function ChatPage() {
         </div>
       </div>
     </div>
+  );
+};
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChatContent />
+    </Suspense>
   );
 }
