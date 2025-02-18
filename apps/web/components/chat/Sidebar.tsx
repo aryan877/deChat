@@ -139,8 +139,8 @@ export default function Sidebar({
               onClick={handleNewChatClick}
               disabled={isLoading}
               className={cn(
-                "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 h-9",
-                isCollapsed ? "w-8 md:w-full p-0" : "flex-1"
+                "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
+                isCollapsed ? "w-8 h-8 p-0" : "flex-1 h-8"
               )}
               variant="default"
               size={isCollapsed ? "icon" : "default"}
@@ -159,8 +159,8 @@ export default function Sidebar({
           ) : (
             <WalletSetupButton
               className={cn(
-                "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 h-9",
-                isCollapsed ? "w-8 md:w-full p-0" : "flex-1"
+                "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
+                isCollapsed ? "w-8 h-8 p-0" : "flex-1 h-8"
               )}
               variant="default"
               showIconOnly={isCollapsed && !isMobileOpen}
