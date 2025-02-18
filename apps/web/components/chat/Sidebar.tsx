@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Loader2,
   MessageSquarePlus,
@@ -21,6 +23,7 @@ import {
 import { WalletSetupButton } from "./WalletSetupButton";
 import { WalletInfo } from "./WalletInfo";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 export interface SidebarProps {
   threads: ThreadPreview[];
@@ -41,7 +44,6 @@ export default function Sidebar({
   threads,
   selectedThread,
   onSelectThread,
-  onCreateThread,
   isLoading,
   onDeleteClick,
   onLogoutClick,
@@ -57,6 +59,8 @@ export default function Sidebar({
   );
   const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const router = useRouter();
 
   // Close mobile sidebar when screen size changes to desktop
   useEffect(() => {
@@ -83,7 +87,7 @@ export default function Sidebar({
 
   const handleNewChatClick = () => {
     if (user?.wallet?.delegated) {
-      onCreateThread();
+      router.push("/chat");
     }
   };
 
