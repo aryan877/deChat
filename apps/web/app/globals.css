@@ -48,3 +48,15 @@
 .gradient-bg {
   @apply bg-gradient-to-r from-primary via-[#D35F0C] to-[#8B4513];
 }
+
+.prose-container > :first-child {
+  margin-top: 0 !important;
+}
+
+.prose-container > :last-child {
+  margin-bottom: 0 !important;
+}
+
+.prose-container {
+  line-height: 1.5;
+}

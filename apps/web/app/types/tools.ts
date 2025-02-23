@@ -6,7 +6,7 @@
  */
 
 import { ACTION_NAMES } from "@repo/de-agent";
-
+import type { AskForConfirmationInput } from "@repo/de-agent";
 /**
  * Possible status values for a tool execution result
  * - success: The tool executed successfully
@@ -44,20 +44,11 @@ export interface ToolResultBase<T = unknown> {
   };
 }
 
-/**
- * Specific result type for the Sonic Swap tool
- */
-// export type SonicSwapToolResult = ToolResultBase<SonicSwapResponse>;
+export interface ConfirmationData {
+  confirmed: boolean;
+}
 
-/**
- * Specific result type for the Sonic Liquidity tool
- */
-// export type SonicLiquidityToolResult = ToolResultBase<SonicLiquidityResponse>;
-
-/**
- * Specific result type for the Sonic Stake tool
- */
-// export type SonicStakeToolResult = ToolResultBase<SonicStakeResponse>;
+export type ConfirmationToolResult = ToolResultBase<ConfirmationData>;
 
 /**
  * Registry that maps tool names to their corresponding result types
@@ -65,10 +56,8 @@ export interface ToolResultBase<T = unknown> {
  */
 export interface ToolResultTypes {
   // [ACTION_NAMES.SONIC_SWAP]: SonicSwapToolResult;
-  // [ACTION_NAMES.SONIC_ADD_LIQUIDITY]: SonicLiquidityToolResult;
-  // [ACTION_NAMES.SONIC_REMOVE_LIQUIDITY]: SonicLiquidityToolResult;
-  // [ACTION_NAMES.SONIC_STAKE]: SonicStakeToolResult;
   // TODO: Add additional Sonic/Ethereum tool result types as needed
+  [ACTION_NAMES.ASK_FOR_CONFIRMATION]: ConfirmationToolResult;
 }
 
 /**
@@ -111,10 +100,8 @@ export function isToolResult(value: unknown): value is ToolResultBase {
  */
 export interface ToolInputTypes {
   // [ACTION_NAMES.SONIC_SWAP]: SonicSwapInput;
-  // [ACTION_NAMES.SONIC_ADD_LIQUIDITY]: SonicLiquidityInput;
-  // [ACTION_NAMES.SONIC_REMOVE_LIQUIDITY]: SonicLiquidityInput;
-  // [ACTION_NAMES.SONIC_STAKE]: SonicStakeInput;
   // TODO: Add additional Sonic/Ethereum tool input types as needed
+  [ACTION_NAMES.ASK_FOR_CONFIRMATION]: AskForConfirmationInput;
 }
 
 /**

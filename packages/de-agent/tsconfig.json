@@ -4,6 +4,9 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "baseUrl": ".",
+    "paths": {
+      "src/*": ["./src/*"]
+    },
     "noImplicitAny": false,
     "strict": true,
     "strictNullChecks": true,

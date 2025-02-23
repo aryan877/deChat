@@ -22,6 +22,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { chatClient } from "@/app/clients/chat";
 import { GetThreadsResponse } from "@/app/types/api/chat";
 import { localStorageUtils } from "@/utils/localStorage";
+import { Circle } from "lucide-react";
+import ChatMessage from "@/components/chat/ChatMessage";
 
 const SendIcon = () => (
   <svg
@@ -76,6 +78,8 @@ const ChatContent = () => {
   const { logout } = usePrivy();
   const { data: initialMessages = [] } = useThreadMessages(chatId);
   const [hasInitialMessagesSaved, setHasInitialMessagesSaved] = useState(false);
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+  const [hasActiveToolCall, setHasActiveToolCall] = useState(false);
 
   const {
     data,
@@ -114,6 +118,8 @@ const ChatContent = () => {
     handleInputChange,
     handleSubmit,
     isLoading: isChatLoading,
+    reload,
+    addToolResult,
   } = useChat({
     api: "/api/chat/message",
     id: chatId || undefined,
@@ -128,7 +134,18 @@ const ChatContent = () => {
       "x-cluster": useClusterStore.getState().selectedCluster,
     },
     initialMessages,
+    onResponse: () => {
+      setIsWaitingForResponse(false);
+    },
   });
+
+  // Check for active tool calls
+  useEffect(() => {
+    const hasActiveTool = messages.some((message) =>
+      message?.toolInvocations?.some((t) => t.state === "call")
+    );
+    setHasActiveToolCall(hasActiveTool);
+  }, [messages]);
 
   useEffect(() => {
     if (!isChatLoading && messages.length > 0) {
@@ -155,11 +172,6 @@ const ChatContent = () => {
     initialMessages.length,
     hasInitialMessagesSaved,
   ]);
-
-  // Auto scroll to bottom on new messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
 
   // Add scroll handler to check if we're at bottom
   const handleScroll = useCallback(() => {
@@ -214,26 +226,36 @@ const ChatContent = () => {
     handlePendingMessage();
   }, [chatId, handleInputChange, handleSubmit]);
 
-  // Modify the form submit handler
+  // Modified form submit handler
   const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!chatId && input.trim()) {
       try {
-        // Save message to local storage
         localStorageUtils.savePendingMessage(input);
-        // Create new thread and navigate
         const response = await createThreadMutation();
         router.push(`/chat?chatId=${response.threadId}`);
       } catch (error) {
         console.error("Error creating thread:", error);
-        // Clear pending message if there was an error
         localStorageUtils.clearPendingMessage();
       }
       return;
     }
 
+    setIsWaitingForResponse(true);
     handleSubmit(e);
+  };
+
+  // Handle reload with error handling
+  const handleReload = async () => {
+    try {
+      setIsWaitingForResponse(true);
+      await reload();
+    } catch (error) {
+      console.error("Error reloading chat:", error);
+    } finally {
+      setIsWaitingForResponse(false);
+    }
   };
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -315,24 +337,12 @@ const ChatContent = () => {
               </div>
             ) : (
               messages.map((message) => (
-                <div
+                <ChatMessage
                   key={message.id}
-                  className={`flex ${
-                    message.role === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div
-                    className={`max-w-[85%] rounded-lg px-4 py-3 ${
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}
-                  >
-                    <div className="text-sm break-words whitespace-pre-wrap">
-                      {message.content}
-                    </div>
-                  </div>
-                </div>
+                  message={message}
+                  isLoading={isChatLoading}
+                  addToolResult={addToolResult}
+                />
               ))
             )}
             <div ref={messagesEndRef} />
@@ -340,12 +350,12 @@ const ChatContent = () => {
         </div>
 
         {showScrollDown && messages.length > 0 && (
-          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-10">
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-10 max-w-3xl mx-auto w-full flex justify-center">
             <Button
               size="icon"
               variant="secondary"
               onClick={scrollToBottom}
-              className="h-8 w-8 rounded-full shadow-md hover:shadow-lg transition-all"
+              className="h-8 w-8 rounded-md shadow-md hover:shadow-lg transition-all"
             >
               <ScrollDownIcon />
             </Button>
@@ -359,22 +369,37 @@ const ChatContent = () => {
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                className="w-full bg-muted rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none text-sm text-foreground placeholder-muted-foreground pr-12 py-2"
-                placeholder="Type your message..."
+                className="w-full bg-muted rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none text-sm text-foreground placeholder-muted-foreground pr-24 py-2"
+                placeholder={
+                  hasActiveToolCall
+                    ? "Please complete/cancel action or wait for response..."
+                    : "Type your message..."
+                }
                 rows={1}
-                disabled={isChatLoading}
+                disabled={isChatLoading || hasActiveToolCall}
                 style={{
                   minHeight: "40px",
                   maxHeight: "160px",
                 }}
               />
-              <Button
-                type="submit"
-                disabled={isChatLoading || !input.trim()}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-primary hover:bg-primary/90 rounded-md transition-colors h-8 w-8"
-              >
-                <SendIcon />
-              </Button>
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-2">
+                {isChatLoading && (
+                  <Button
+                    type="button"
+                    onClick={handleReload}
+                    className="p-1.5 h-8 w-8 bg-destructive/10 hover:bg-destructive/20 rounded-md transition-colors"
+                  >
+                    <Circle className="h-4 w-4 fill-destructive text-destructive" />
+                  </Button>
+                )}
+                <Button
+                  type="submit"
+                  disabled={isChatLoading || hasActiveToolCall || !input.trim()}
+                  className="p-1.5 h-8 w-8 bg-primary hover:bg-primary/90 rounded-md transition-colors"
+                >
+                  <SendIcon />
+                </Button>
+              </div>
             </form>
           </div>
         </div>

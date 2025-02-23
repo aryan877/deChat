@@ -32,27 +32,24 @@ const icons = {
 };
 
 const variantStyles = {
-  success:
-    "bg-green-500/10 dark:bg-green-500/10 border-green-500/20 backdrop-blur-sm",
-  error:
-    "bg-destructive/10 dark:bg-destructive/10 border-destructive/20 backdrop-blur-sm",
-  warning:
-    "bg-yellow-500/10 dark:bg-yellow-500/10 border-yellow-500/20 backdrop-blur-sm",
-  info: "bg-blue-500/10 dark:bg-blue-500/10 border-blue-500/20 backdrop-blur-sm",
+  success: "bg-primary text-primary-foreground",
+  error: "bg-muted text-muted-foreground",
+  warning: "bg-primary text-primary-foreground",
+  info: "bg-muted text-muted-foreground",
 };
 
 const iconStyles = {
-  success: "text-green-600 dark:text-green-400",
-  error: "text-destructive dark:text-destructive",
-  warning: "text-yellow-600 dark:text-yellow-400",
-  info: "text-blue-600 dark:text-blue-400",
+  success: "text-primary-foreground",
+  error: "text-muted-foreground",
+  warning: "text-primary-foreground",
+  info: "text-muted-foreground",
 };
 
 const textStyles = {
-  success: "text-green-800 dark:text-green-200",
-  error: "text-red-800 dark:text-destructive-foreground",
-  warning: "text-yellow-800 dark:text-yellow-200",
-  info: "text-blue-800 dark:text-blue-200",
+  success: "text-primary-foreground",
+  error: "text-muted-foreground",
+  warning: "text-primary-foreground",
+  info: "text-muted-foreground",
 };
 
 const formatDetails = (details: unknown): string => {
@@ -110,7 +107,7 @@ export const Notification = ({
     >
       <Card
         className={cn(
-          "flex items-start gap-3 p-4 shadow-lg border relative overflow-hidden",
+          "flex items-start gap-3 p-3 shadow-lg relative overflow-hidden rounded-lg",
           "animate-in fade-in-0 zoom-in-95",
           variantStyles[type]
         )}
@@ -118,10 +115,7 @@ export const Notification = ({
         {/* Progress bar for auto-close */}
         {autoClose && (
           <div
-            className={cn(
-              "absolute bottom-0 left-0 h-0.5 bg-current opacity-25",
-              iconStyles[type]
-            )}
+            className="absolute bottom-0 left-0 h-0.5 bg-foreground/25 rounded-full"
             style={{
               width: "100%",
               animation: `shrink ${duration}ms linear forwards`,
@@ -139,11 +133,11 @@ export const Notification = ({
           {formattedDetails && (
             <pre
               className={cn(
-                "mt-2 text-xs text-muted-foreground break-words whitespace-pre-wrap font-mono",
-                "bg-background/40 dark:bg-background/20 backdrop-blur-sm",
-                "p-3 rounded-md max-h-[200px] overflow-y-auto",
-                "border border-border/30 dark:border-border/20",
-                "scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
+                "mt-2 text-xs break-words whitespace-pre-wrap font-mono",
+                "bg-foreground/5",
+                "p-2 rounded-md max-h-[200px] overflow-y-auto",
+                "text-foreground/90",
+                "scrollbar-thin scrollbar-thumb-foreground/20 scrollbar-track-transparent"
               )}
             >
               {formattedDetails}
@@ -156,10 +150,9 @@ export const Notification = ({
           size="icon"
           className={cn(
             "flex-shrink-0 h-8 w-8 rounded-full",
-            "hover:bg-background/20 dark:hover:bg-background/20",
-            "hover:text-foreground dark:hover:text-foreground",
-            "transition-colors group",
-            iconStyles[type]
+            "hover:bg-foreground/10",
+            "text-foreground/90 hover:text-foreground",
+            "transition-colors group"
           )}
         >
           <X className="h-4 w-4 transition-transform group-hover:scale-110" />

@@ -16,19 +16,13 @@ export const NotificationContainer = () => {
         "pointer-events-none"
       )}
     >
-      {notifications.map((notification, index) => (
+      {notifications.map((notification) => (
         <div
           key={notification.id}
           className={cn(
             "pointer-events-auto w-full",
-            "transform transition-all duration-300 ease-out",
-            "hover:translate-x-0 hover:scale-[1.02]",
-            index === 0 ? "translate-x-0" : "translate-x-2"
+            "transform transition-all duration-300 ease-out"
           )}
-          style={{
-            // Add slight rotation for a more dynamic look
-            transform: `rotate(${Math.min(index * 0.5, 1)}deg)`,
-          }}
         >
           <Notification
             type={notification.type}

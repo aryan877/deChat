@@ -14,3 +14,5 @@ export const DEX_CONSTANTS = {} as const;
  * Minimum gas price for complex transactions
  */
 export const MINIMUM_GAS_PRICE = "0.1"; // in Gwei
+
+export const DEBRIDGE_API = "https://dln.debridge.finance/v1.0";

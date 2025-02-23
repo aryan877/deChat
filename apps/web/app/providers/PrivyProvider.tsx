@@ -1,7 +1,7 @@
 "use client";
 
 import { PrivyProvider as Privy } from "@privy-io/react-auth";
-import { sonicTestnet } from "viem/chains";
+import { sonicTestnet, sonic } from "viem/chains";
 import { ReactNode } from "react";
 
 const PRIVY_APP_ID =
@@ -27,7 +27,7 @@ export function PrivyProvider({ children }: { children: ReactNode }) {
           showWalletUIs: true,
         },
         defaultChain: sonicTestnet,
-        supportedChains: [sonicTestnet],
+        supportedChains: [sonicTestnet, sonic],
       }}
     >
       {children}
