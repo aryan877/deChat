@@ -1,6 +1,13 @@
 import { cn } from "@/lib/utils";
 import { ACTION_NAMES } from "@repo/de-agent";
-import { AlertCircle } from "lucide-react";
+import {
+  AlertCircle,
+  Wallet,
+  ArrowUpRight,
+  FileSearch,
+  Coins,
+  BarChart,
+} from "lucide-react";
 import React from "react";
 
 interface ToolNamesProps {
@@ -19,6 +26,26 @@ const TOOL_DISPLAY_CONFIG: Record<
   [ACTION_NAMES.ASK_FOR_CONFIRMATION]: {
     icon: <AlertCircle className="w-3 h-3" />,
     label: "Confirmation",
+  },
+  [ACTION_NAMES.SONIC_GET_ACCOUNT_INFO]: {
+    icon: <Wallet className="w-3 h-3" />,
+    label: "Account Info",
+  },
+  [ACTION_NAMES.SONIC_GET_BLOCK_REWARD]: {
+    icon: <BarChart className="w-3 h-3" />,
+    label: "Block Reward",
+  },
+  [ACTION_NAMES.SONIC_GET_TOKEN_SUPPLY]: {
+    icon: <Coins className="w-3 h-3" />,
+    label: "Token Supply",
+  },
+  [ACTION_NAMES.SONIC_GET_TRANSACTION_STATUS]: {
+    icon: <FileSearch className="w-3 h-3" />,
+    label: "Transaction Status",
+  },
+  [ACTION_NAMES.SONIC_TRANSFER]: {
+    icon: <ArrowUpRight className="w-3 h-3" />,
+    label: "Transfer",
   },
 };
 

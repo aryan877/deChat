@@ -4,7 +4,7 @@ import {
   deBridgeOrderResponse,
 } from "../../types/index.js";
 
-const REFERRAL_CODE = "21064"; // Using the default from original implementation
+const REFERRAL_CODE = "21064";
 
 /**
  * Create a bridge order for cross-chain token transfer

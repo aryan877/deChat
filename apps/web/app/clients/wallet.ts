@@ -25,7 +25,7 @@ async function getBalance(
     `/api/wallet/balance?address=${address}`,
     {
       headers: {
-        "x-solana-cluster": cluster,
+        "x-cluster": cluster,
       },
     }
   );

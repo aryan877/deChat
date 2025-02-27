@@ -138,6 +138,9 @@ export function WalletInfo({
             <SelectItem value="sonicBlaze" className="text-sm">
               Sonic Blaze
             </SelectItem>
+            <SelectItem value="sonicMainnet" className="text-sm">
+              Sonic Mainnet
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -25,7 +25,6 @@ import { ToolNames } from "../ToolNames";
 interface ChatMessageProps {
   message: Message;
   isLoading?: boolean;
-  isWaitingForResponse?: boolean;
   addToolResult: (result: { toolCallId: string; result: unknown }) => void;
 }
 
@@ -139,7 +138,7 @@ export default function ChatMessage({
           <div className="flex-1 min-w-0">
             <p
               className={cn(
-                "text-[0.9375rem] leading-normal m-0",
+                "text-[0.9375rem] leading-normal m-0 break-words",
                 isError ? "text-destructive" : "text-destructive/90"
               )}
             >
@@ -147,7 +146,7 @@ export default function ChatMessage({
                 (isError ? "Operation failed" : "Operation cancelled")}
             </p>
             {isError && errorMessage && (
-              <p className="text-[0.875rem] mt-1 text-destructive/80 leading-normal m-0">
+              <p className="text-[0.875rem] mt-1 text-destructive/80 leading-normal m-0 break-words">
                 {errorMessage}
               </p>
             )}
@@ -183,7 +182,7 @@ export default function ChatMessage({
         return (
           <div
             key={toolCallId}
-            className="text-destructive text-sm p-2 bg-destructive/10 rounded"
+            className="text-destructive text-sm p-2 bg-destructive/10 rounded break-words"
           >
             Failed to render tool invocation:{" "}
             {error instanceof Error ? error.message : "Unknown error"}
@@ -210,7 +209,7 @@ export default function ChatMessage({
           )}
         >
           {/* Avatar */}
-          <div className="flex-none mr-4">
+          <div className="flex-none mr-4 sticky top-0">
             {message.role === "assistant" ? (
               <Avatar className="w-8 h-8 ring-1 ring-primary/30 bg-primary/20 flex items-center justify-center transition-all duration-200 hover:ring-primary/40 hover:bg-primary/30">
                 <span className="text-sm font-medium text-primary">De</span>
@@ -222,10 +221,10 @@ export default function ChatMessage({
             )}
           </div>
           {/* Content */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 pt-[1px] overflow-hidden">
             {/* Show tool results first */}
             {message.toolInvocations && message.toolInvocations.length > 0 && (
-              <div className="mb-4">
+              <div className="mb-4 break-words">
                 {message.toolInvocations.map((toolInvocation) =>
                   renderToolInvocation(toolInvocation)
                 )}
@@ -234,21 +233,30 @@ export default function ChatMessage({
 
             {/* Message content */}
             {message.content?.trim() && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-start gap-2">
                 <div
-                  className={cn("flex-1 min-w-0", isLoading && "opacity-60")}
+                  className={cn(
+                    "flex-1 min-w-0 overflow-hidden",
+                    isLoading && "opacity-60"
+                  )}
                 >
-                  <div className="prose-container text-foreground/90">
+                  <div className="prose prose-sm max-w-none break-words text-foreground/90">
                     <ReactMarkdown
                       components={{
-                        code({ className, children, ...props }) {
-                          const isInline = (props as { inline?: boolean })
-                            .inline;
+                        code({
+                          className,
+                          children,
+                          inline,
+                          ...props
+                        }: React.ComponentPropsWithoutRef<"code"> & {
+                          inline?: boolean;
+                        }) {
+                          const isInline = inline;
                           const match = /language-(\w+)/.exec(className || "");
                           return !isInline && match ? (
                             <div
                               key={nanoid()}
-                              className="relative group/code mt-3 mb-3 first:mt-0"
+                              className="relative group/code mt-3 mb-3 first:mt-0 overflow-hidden"
                             >
                               <div className="absolute -top-4 left-0 right-0 h-6 bg-muted/50 backdrop-blur supports-[backdrop-filter]:bg-muted/30 rounded-t-lg flex items-center px-4">
                                 <span className="text-xs font-medium text-foreground/70">
@@ -264,7 +272,12 @@ export default function ChatMessage({
                                     padding: "1rem",
                                     margin: 0,
                                     fontSize: "14px",
+                                    overflowX: "auto",
+                                    wordBreak: "break-word",
+                                    whiteSpace: "pre-wrap",
                                   }}
+                                  wrapLines={true}
+                                  wrapLongLines={true}
                                 >
                                   {String(children).replace(/\n$/, "")}
                                 </SyntaxHighlighter>
@@ -272,7 +285,6 @@ export default function ChatMessage({
                             </div>
                           ) : (
                             <code
-                              key={nanoid()}
                               {...props}
                               className={cn(
                                 "px-1.5 py-0.5 rounded-md text-[14px] font-normal break-all align-middle",
@@ -289,7 +301,7 @@ export default function ChatMessage({
                           return (
                             <p
                               key={nanoid()}
-                              className="text-[15px] leading-normal m-0"
+                              className="text-[15px] leading-normal m-0 break-words"
                             >
                               {children}
                             </p>
@@ -297,21 +309,21 @@ export default function ChatMessage({
                         },
                         h1({ children }) {
                           return (
-                            <h1 className="text-2xl font-semibold mt-4 mb-2 first:mt-0">
+                            <h1 className="text-2xl font-semibold mt-4 mb-2 first:mt-0 break-words">
                               {children}
                             </h1>
                           );
                         },
                         h2({ children }) {
                           return (
-                            <h2 className="text-xl font-semibold mt-4 mb-2 first:mt-0">
+                            <h2 className="text-xl font-semibold mt-4 mb-2 first:mt-0 break-words">
                               {children}
                             </h2>
                           );
                         },
                         h3({ children }) {
                           return (
-                            <h3 className="text-lg font-semibold mt-3 mb-2 first:mt-0">
+                            <h3 className="text-lg font-semibold mt-3 mb-2 first:mt-0 break-words">
                               {children}
                             </h3>
                           );
@@ -320,7 +332,7 @@ export default function ChatMessage({
                           return (
                             <ul
                               key={nanoid()}
-                              className="mt-2 mb-2 space-y-1 text-[15px] list-disc pl-6 marker:text-muted-foreground"
+                              className="mt-2 mb-2 space-y-1 text-[15px] list-disc pl-6 marker:text-muted-foreground break-words"
                             >
                               {children}
                             </ul>
@@ -330,7 +342,7 @@ export default function ChatMessage({
                           return (
                             <ol
                               key={nanoid()}
-                              className="mt-2 mb-2 space-y-1 text-[15px] list-decimal pl-6 marker:text-muted-foreground"
+                              className="mt-2 mb-2 space-y-1 text-[15px] list-decimal pl-6 marker:text-muted-foreground break-words"
                             >
                               {children}
                             </ol>
@@ -338,7 +350,10 @@ export default function ChatMessage({
                         },
                         li({ children }) {
                           return (
-                            <li key={nanoid()} className="leading-normal">
+                            <li
+                              key={nanoid()}
+                              className="leading-normal break-words"
+                            >
                               {children}
                             </li>
                           );
@@ -347,7 +362,7 @@ export default function ChatMessage({
                           return (
                             <blockquote
                               key={nanoid()}
-                              className="mt-2 mb-2 pl-4 border-l-2 border-muted-foreground/30 text-muted-foreground"
+                              className="mt-2 mb-2 pl-4 border-l-2 border-muted-foreground/30 text-muted-foreground break-words"
                             >
                               {children}
                             </blockquote>

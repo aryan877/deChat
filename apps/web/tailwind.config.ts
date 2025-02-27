@@ -1,4 +1,6 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
+import tailwindcssTypography from "@tailwindcss/typography";
 
 export default {
   content: [
@@ -96,7 +98,54 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            maxWidth: "100%",
+            color: "hsl(var(--foreground))",
+            a: {
+              color: "hsl(var(--primary))",
+              "&:hover": {
+                color: "hsl(var(--primary))",
+              },
+            },
+            code: {
+              color: "hsl(var(--foreground))",
+              backgroundColor: "hsl(var(--muted))",
+              borderRadius: "0.25rem",
+              padding: "0.15rem 0.3rem",
+            },
+            "code::before": {
+              content: '""',
+            },
+            "code::after": {
+              content: '""',
+            },
+            pre: {
+              backgroundColor: "hsl(var(--muted))",
+              borderRadius: "0.375rem",
+              padding: "1rem",
+              overflowX: "auto",
+            },
+            blockquote: {
+              borderLeftColor: "hsl(var(--muted-foreground))",
+            },
+            hr: {
+              borderColor: "hsl(var(--border))",
+            },
+            "h1,h2,h3,h4,h5,h6": {
+              color: "hsl(var(--foreground))",
+            },
+            "ul > li::marker": {
+              color: "hsl(var(--muted-foreground))",
+            },
+            "ol > li::marker": {
+              color: "hsl(var(--muted-foreground))",
+            },
+          },
+        },
+      },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate, tailwindcssTypography],
 } satisfies Config;

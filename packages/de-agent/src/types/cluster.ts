@@ -1,1 +1,1 @@
-export type Cluster = "sonicBlaze";
+export type Cluster = "sonicBlaze" | "sonicMainnet";

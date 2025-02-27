@@ -47,9 +47,11 @@ export class DeAgent {
     appId: string,
     appSecret: string
   ) {
-    this.provider = new ethers.JsonRpcProvider(
-      rpc_url || process.env.SONIC_TESTNET_RPC_URL
-    );
+    if (!rpc_url) {
+      throw new Error("RPC URL is required");
+    }
+
+    this.provider = new ethers.JsonRpcProvider(rpc_url);
 
     if (configOrKey === null) {
       throw new Error("Config is required");
@@ -75,7 +77,13 @@ export class DeAgent {
   }
 
   private toHexQuantity(value: bigint | number | string): Quantity {
-    const hex = BigInt(value).toString(16);
+    // Convert to string first to handle BigInt values properly
+    const valueStr = value.toString();
+    // Remove the 'n' suffix if present (from BigInt)
+    const cleanValue = valueStr.endsWith("n")
+      ? valueStr.slice(0, -1)
+      : valueStr;
+    const hex = BigInt(cleanValue).toString(16);
     return `0x${hex}` as Quantity;
   }
 
@@ -83,9 +91,12 @@ export class DeAgent {
     tx: ethers.TransactionRequest,
     chainId: bigint
   ): PrivyTransaction {
+    // Ensure chainId is properly formatted
+    const chainIdStr = chainId.toString().replace(/n$/, "");
+
     const formattedTx: PrivyTransaction = {
       from: this.wallet_address as `0x${string}`,
-      chainId: this.toHexQuantity(chainId),
+      chainId: this.toHexQuantity(chainIdStr),
     };
 
     if (tx.to) {
@@ -121,12 +132,21 @@ export class DeAgent {
   async signTransaction(tx: ethers.TransactionRequest): Promise<string> {
     try {
       const chainId = await this.provider.getNetwork().then((n) => n.chainId);
-      const formattedTx = this.formatTransactionForPrivy(tx, chainId);
+      // Convert chainId to string and remove 'n' suffix if present
+      const chainIdStr = chainId.toString().replace(/n$/, "");
+
+      // Explicitly set the chainId in the transaction to match the CAIP2 format
+      tx.chainId = BigInt(chainIdStr);
+
+      const formattedTx = this.formatTransactionForPrivy(
+        tx,
+        BigInt(chainIdStr)
+      );
 
       const request: PrivyTransactionRequest = {
         address: this.privyConfig.address,
         chainType: "ethereum",
-        caip2: `eip155:${chainId}`,
+        caip2: `eip155:${chainIdStr}`,
         transaction: formattedTx,
       };
 
@@ -169,14 +189,23 @@ export class DeAgent {
     tx: ethers.TransactionRequest,
     options: {
       confirmations?: number;
+      customRpcUrl?: string;
+      gasMultiplier?: number;
     } = {}
   ): Promise<string> {
     try {
-      const chainId = await this.provider.getNetwork().then((n) => n.chainId);
+      const provider = options.customRpcUrl
+        ? new ethers.JsonRpcProvider(options.customRpcUrl)
+        : this.provider;
 
-      // Check balance if value is specified
+      const chainId = await provider.getNetwork().then((n) => n.chainId);
+
+      const chainIdStr = chainId.toString().replace(/n$/, "");
+
+      tx.chainId = BigInt(chainIdStr);
+
       if (tx.value) {
-        const balance = await this.provider.getBalance(this.wallet_address);
+        const balance = await provider.getBalance(this.wallet_address);
         if (balance < BigInt(tx.value.toString())) {
           throw new Error(
             `Insufficient balance. You have ${ethers.formatEther(balance)} ETH but need ${ethers.formatEther(tx.value)} ETH`
@@ -184,36 +213,46 @@ export class DeAgent {
         }
       }
 
-      // Get gas estimate and nonce if not provided
-      if (!tx.nonce || !tx.gasLimit) {
-        const [gasEstimate, nonce] = await Promise.all([
-          this.provider.estimateGas(tx),
-          this.provider.getTransactionCount(this.wallet_address),
-        ]);
+      const feeData = await provider.getFeeData();
 
-        tx = {
-          ...tx,
-          gasLimit: tx.gasLimit || gasEstimate,
-          nonce: tx.nonce || nonce,
-        };
-      }
+      const gasMultiplier = options.gasMultiplier || 1.2;
 
-      const formattedTx = this.formatTransactionForPrivy(tx, chainId);
-
-      const request: PrivyTransactionRequest = {
-        address: this.privyConfig.address,
-        chainType: "ethereum",
-        caip2: `eip155:${chainId}`,
-        transaction: formattedTx,
+      const preparedTx: ethers.TransactionRequest = {
+        ...tx,
+        nonce:
+          tx.nonce || (await provider.getTransactionCount(this.wallet_address)),
       };
 
-      const { hash } =
-        await this.privyConfig.privyClient.walletApi.ethereum.sendTransaction(
-          request as any
-        );
+      if (!preparedTx.gasLimit) {
+        preparedTx.gasLimit = await provider.estimateGas(preparedTx);
+      }
+
+      if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+        preparedTx.maxFeePerGas =
+          preparedTx.maxFeePerGas ||
+          BigInt(Math.floor(Number(feeData.maxFeePerGas) * gasMultiplier));
+        preparedTx.maxPriorityFeePerGas =
+          preparedTx.maxPriorityFeePerGas ||
+          BigInt(
+            Math.floor(Number(feeData.maxPriorityFeePerGas) * gasMultiplier)
+          );
+
+        delete preparedTx.gasPrice;
+      } else {
+        preparedTx.gasPrice =
+          preparedTx.gasPrice ||
+          (feeData.gasPrice
+            ? BigInt(Math.floor(Number(feeData.gasPrice) * gasMultiplier))
+            : undefined);
+      }
+
+      const signedTx = await this.signTransaction(preparedTx);
+
+      const txResponse = await provider.broadcastTransaction(signedTx);
+      const hash = txResponse.hash;
 
       if (options.confirmations && options.confirmations > 0) {
-        await this.waitForTransactionConfirmation(hash, options.confirmations);
+        await provider.waitForTransaction(hash, options.confirmations);
       }
 
       return hash;

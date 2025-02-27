@@ -2,6 +2,13 @@ export const ACTION_NAMES = {
   GET_SUPPORTED_CHAINS: "getSupportedChains",
   ASK_FOR_CONFIRMATION: "askForConfirmation",
 
+  // deBridge Actions
+  DEBRIDGE_CHECK_TRANSACTION_STATUS: "debridgeCheckTransactionStatus",
+  DEBRIDGE_CREATE_BRIDGE_ORDER: "debridgeCreateBridgeOrder",
+  DEBRIDGE_EXECUTE_BRIDGE_ORDER: "debridgeExecuteBridgeOrder",
+  DEBRIDGE_GET_BRIDGE_QUOTE: "debridgeGetBridgeQuote",
+  DEBRIDGE_GET_TOKENS_INFO: "debridgeGetTokensInfo",
+
   // Sonic Account Actions
   SONIC_GET_ACCOUNT_INFO: "sonicGetAccountInfo",
   SONIC_GET_MULTI_ACCOUNT_INFO: "sonicGetMultiAccountInfo",
@@ -13,6 +20,7 @@ export const ACTION_NAMES = {
   SONIC_GET_TRANSACTION_STATUS: "sonicGetTransactionStatus",
   SONIC_GET_TRANSACTION_RECEIPT: "sonicGetTransactionReceipt",
   SONIC_GET_INTERNAL_TRANSACTIONS: "sonicGetInternalTransactions",
+  SONIC_TRANSFER: "sonicTransfer",
 
   // Sonic Token Actions
   SONIC_GET_TOKEN_SUPPLY: "sonicGetTokenSupply",

@@ -1,11 +1,33 @@
-import dotenv from "dotenv";
+import { config } from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import { ENV } from "./const/env.js";
+
+// Load environment variables
+config();
+
+// Validate critical environment variables
+const requiredEnvVars = [
+  "OPENAI_API_KEY",
+  "SONIC_API_KEY",
+  "SONIC_TESTNET_RPC_URL",
+  "PRIVY_DEV_APP_ID",
+  "PRIVY_DEV_APP_SECRET",
+];
+
+const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+if (missingVars.length > 0) {
+  console.warn(
+    `Warning: Missing environment variables: ${missingVars.join(", ")}`
+  );
+}
+
+// Set SONIC_API_KEY explicitly for the de-agent package
+process.env.SONIC_API_KEY = process.env.SONIC_API_KEY || "";
 
 // Configure dotenv
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 // Log environment configuration
 console.log("Environment Variables:");
@@ -32,18 +54,6 @@ const PORT = process.env.PORT || 5000;
 
 async function startServer() {
   try {
-    // Ensure all required environment variables are present
-    const requiredEnvVars = ["NODE_ENV", "PORT", "FRONTEND_URL"];
-    const missingVars = requiredEnvVars.filter(
-      (varName) => !process.env[varName]
-    );
-
-    if (missingVars.length > 0) {
-      throw new Error(
-        `Missing required environment variables: ${missingVars.join(", ")}`
-      );
-    }
-
     // Connect to database
     await connectDB();
 
