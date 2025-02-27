@@ -95,7 +95,8 @@ export function generateDeChatAgent({
     privyClient,
     address,
     PRIVY_APP_ID,
-    PRIVY_APP_SECRET
+    PRIVY_APP_SECRET,
+    cluster
   );
 
   // Log the configuration for debugging

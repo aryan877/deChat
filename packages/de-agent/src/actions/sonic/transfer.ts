@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Action } from "../../types/action.js";
 import { transferNative, transferToken } from "../../tools/sonic/transfer.js";
 import { ACTION_NAMES } from "../actionNames.js";
+import { TransferResult } from "../../types/index.js";
 
 // Schema for validation
 const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
@@ -25,7 +26,7 @@ export const sonicTransferAction: Action = {
           to: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
           amount: "1.5",
         },
-        output: { txHash: "0x..." },
+        output: { txHash: "0x...", explorerUrl: "https://..." },
         explanation: "Transfers 1.5 SONIC tokens",
       },
     ],
@@ -36,7 +37,7 @@ export const sonicTransferAction: Action = {
           amount: "100",
           tokenAddress: "0x1234567890123456789012345678901234567890",
         },
-        output: { txHash: "0x..." },
+        output: { txHash: "0x...", explorerUrl: "https://..." },
         explanation: "Transfers 100 tokens of the specified token contract",
       },
     ],
@@ -48,11 +49,11 @@ export const sonicTransferAction: Action = {
   }),
   handler: async (agent, input) => {
     try {
-      let txHash;
+      let result: TransferResult;
 
       if (input.tokenAddress) {
         // Token transfer
-        txHash = await transferToken(
+        result = await transferToken(
           agent,
           input.tokenAddress,
           input.to,
@@ -60,7 +61,7 @@ export const sonicTransferAction: Action = {
         );
       } else {
         // Native SONIC transfer
-        txHash = await transferNative(agent, input.to, input.amount);
+        result = await transferNative(agent, input.to, input.amount);
       }
 
       return {
@@ -68,7 +69,7 @@ export const sonicTransferAction: Action = {
         message: `Successfully transferred ${input.amount} ${
           input.tokenAddress ? "tokens" : "SONIC"
         } to ${input.to}`,
-        data: { txHash },
+        data: result,
       };
     } catch (error) {
       return {

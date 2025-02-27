@@ -3,7 +3,7 @@ import { ArrowUpRight, ExternalLink } from "lucide-react";
 import { TransferResult } from "@repo/de-agent";
 
 interface TransferSuccessProps {
-  data: TransferResult;
+  data: TransferResult | { txHash: string; explorerUrl?: string };
 }
 
 export function TransferSuccess({ data }: TransferSuccessProps) {
@@ -34,17 +34,19 @@ export function TransferSuccess({ data }: TransferSuccessProps) {
               <span className="text-sm font-medium">{truncatedHash}</span>
             </div>
 
-            <div className="flex items-center justify-end mt-1">
-              <a
-                href={explorerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
-              >
-                <span>View on Explorer</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
+            {explorerUrl && (
+              <div className="flex items-center justify-end mt-1">
+                <a
+                  href={explorerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+                >
+                  <span>View on Explorer</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            )}
           </div>
         </div>
 

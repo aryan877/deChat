@@ -224,7 +224,7 @@ export default function ChatMessage({
           <div className="flex-1 min-w-0 pt-[1px] overflow-hidden">
             {/* Show tool results first */}
             {message.toolInvocations && message.toolInvocations.length > 0 && (
-              <div className="mb-4 break-words">
+              <div className="max-w-3xl mx-auto mb-6">
                 {message.toolInvocations.map((toolInvocation) =>
                   renderToolInvocation(toolInvocation)
                 )}

@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import { Config } from "../types/index.js";
 import { PrivyClient } from "@privy-io/server-auth";
+import { Cluster } from "../types/cluster.js";
 
 interface PrivyConfig {
   privyClient: PrivyClient;
@@ -37,6 +38,7 @@ export class DeAgent {
   public provider: ethers.JsonRpcProvider;
   public wallet_address: string;
   public config: Config;
+  public cluster: Cluster;
   private privyConfig: PrivyConfig;
 
   constructor(
@@ -45,7 +47,8 @@ export class DeAgent {
     privyClient: PrivyClient,
     address: string,
     appId: string,
-    appSecret: string
+    appSecret: string,
+    cluster: Cluster = "sonicMainnet"
   ) {
     if (!rpc_url) {
       throw new Error("RPC URL is required");
@@ -74,6 +77,7 @@ export class DeAgent {
     };
 
     this.wallet_address = address;
+    this.cluster = cluster;
   }
 
   private toHexQuantity(value: bigint | number | string): Quantity {

@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { validateAddress } from "./utils.js";
 import { DeAgent } from "../../agent/index.js";
 import { Cluster } from "../../types/cluster.js";
-import { TransferResult } from "src/types/index.js";
+import { TransferResult } from "../../types/index.js";
 
 const ERC20_ABI = [
   "function transfer(address to, uint256 amount) returns (bool)",
@@ -32,7 +32,7 @@ function getExplorerUrl(txHash: string, cluster: Cluster): string {
  * @param agent DeAgent instance for transaction signing
  * @param to Recipient address
  * @param amount Amount to send in SONIC
- * @param cluster Network cluster (optional, will try to detect if not provided)
+ * @param cluster Network cluster (optional, will use agent's cluster if not provided)
  * @returns Transaction hash and explorer URL
  * @throws {Error} If the transfer fails
  */
@@ -54,8 +54,7 @@ export async function transferNative(
   try {
     const txHash = await agent.sendTransaction(tx, { confirmations: 1 });
 
-    // Use provided cluster or default to mainnet
-    const networkCluster = cluster || "sonicMainnet";
+    const networkCluster = cluster || agent.cluster || "sonicMainnet";
 
     return {
       txHash,
@@ -74,7 +73,7 @@ export async function transferNative(
  * @param tokenAddress The ERC20 token contract address
  * @param to Recipient address
  * @param amount Amount to send in token units
- * @param cluster Network cluster (optional, will try to detect if not provided)
+ * @param cluster Network cluster (optional, will use agent's cluster if not provided)
  * @returns Transaction hash and explorer URL
  * @throws {Error} If the transfer fails
  */
@@ -111,8 +110,8 @@ export async function transferToken(
 
     const txHash = await agent.sendTransaction(tx, { confirmations: 1 });
 
-    // Use provided cluster or default to mainnet
-    const networkCluster = cluster || "sonicMainnet";
+    // Use provided cluster, agent's cluster, or default to mainnet
+    const networkCluster = cluster || agent.cluster || "sonicMainnet";
 
     return {
       txHash,
