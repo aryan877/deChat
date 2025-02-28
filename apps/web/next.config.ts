@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@repo/typescript-config", "@repo/de-agent"],
+  images: {
+    domains: ["repository.sonic.soniclabs.com"],
+  },
   async headers() {
     return [
       {

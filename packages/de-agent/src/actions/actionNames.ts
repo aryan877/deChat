@@ -34,6 +34,9 @@ export const ACTION_NAMES = {
   SONIC_GET_BLOCK_BY_TIMESTAMP: "sonicGetBlockByTimestamp",
   SONIC_GET_VALIDATED_BLOCKS: "sonicGetValidatedBlocks",
 
+  // Sonic Staking Actions
+  SONIC_GET_STAKERS: "sonicGetStakers",
+
   // Chainlink Actions
   CHAINLINK_GET_PRICE_FEEDS: "chainlinkGetPriceFeeds",
   CHAINLINK_GET_PRICE_DATA: "chainlinkGetPriceData",

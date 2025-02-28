@@ -136,3 +136,26 @@ export interface SonicLog {
 export interface SonicLogResponse extends SonicBaseResponse {
   result: SonicLog[];
 }
+
+// Staker types
+export interface SonicStakerInfo {
+  logoUrl?: string;
+  name?: string;
+}
+
+export interface SonicStaker {
+  id: string;
+  isActive: boolean;
+  stake: string;
+  stakerAddress: string;
+  stakerInfo: SonicStakerInfo | null;
+  delegatedLimit: string;
+  totalStake: string;
+  totalDelegatedLimit: string;
+}
+
+export interface SonicStakersResponse {
+  data: {
+    stakers: SonicStaker[];
+  };
+}

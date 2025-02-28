@@ -7,12 +7,14 @@ import { getBlockRewardAction } from "./getBlockReward.js";
 import { getTokenSupplyAction } from "./getTokenSupply.js";
 import { getTransactionStatusAction } from "./getTransactionStatus.js";
 import { sonicTransferAction } from "./transfer.js";
+import { getStakersAction } from "./getStakers.js";
 
 // Export individual actions
 export { getAccountInfoAction } from "./getAccountInfo.js";
 export { getBlockRewardAction } from "./getBlockReward.js";
 export { getTokenSupplyAction } from "./getTokenSupply.js";
 export { getTransactionStatusAction } from "./getTransactionStatus.js";
+export { getStakersAction } from "./getStakers.js";
 
 // Export all actions
 export const sonicActions: Record<string, Action> = {
@@ -21,4 +23,5 @@ export const sonicActions: Record<string, Action> = {
   [ACTION_NAMES.SONIC_GET_TOKEN_SUPPLY]: getTokenSupplyAction,
   [ACTION_NAMES.SONIC_GET_TRANSACTION_STATUS]: getTransactionStatusAction,
   [ACTION_NAMES.SONIC_TRANSFER]: sonicTransferAction,
+  [ACTION_NAMES.SONIC_GET_STAKERS]: getStakersAction,
 } as const;

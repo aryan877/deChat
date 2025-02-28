@@ -5,10 +5,12 @@ import type {
   deBridgeSupportedChainsResponse,
   ChainlinkPriceFeedInfo,
   ChainlinkPriceFeedResponse,
+  SonicStakersResponse,
 } from "@repo/de-agent";
 import { TransferSuccess } from "./TransferSuccess";
 import { ChainlinkPriceFeedsSuccess } from "./ChainlinkPriceFeedsSuccess";
 import { ChainlinkPriceDataSuccess } from "./ChainlinkPriceDataSuccess";
+import { StakersSuccess } from "./StakersSuccess";
 
 // Define a mapping of tool names to their success result types
 export type SuccessResultsMap = {
@@ -23,6 +25,7 @@ export type SuccessResultsMap = {
   [ACTION_NAMES.CHAINLINK_GET_PRICE_DATA]: ChainlinkPriceFeedResponse & {
     formattedPrice: string;
   };
+  [ACTION_NAMES.SONIC_GET_STAKERS]: SonicStakersResponse;
 };
 
 // Registry of tools that have success components
@@ -31,6 +34,7 @@ export const SUCCESS_COMPONENTS_REGISTRY = {
   [ACTION_NAMES.SONIC_TRANSFER]: true,
   [ACTION_NAMES.CHAINLINK_GET_PRICE_FEEDS]: true,
   [ACTION_NAMES.CHAINLINK_GET_PRICE_DATA]: true,
+  [ACTION_NAMES.SONIC_GET_STAKERS]: true,
 } as const;
 
 // Type guard to check if a tool has success results
@@ -78,6 +82,8 @@ export function SuccessResults<T extends keyof SuccessResultsMap>({
           }
         />
       );
+    case ACTION_NAMES.SONIC_GET_STAKERS:
+      return <StakersSuccess data={data as SonicStakersResponse} />;
     default:
       return null;
   }
