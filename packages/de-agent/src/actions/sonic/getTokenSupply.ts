@@ -3,8 +3,12 @@ import type { Action } from "../../types/action.js";
 import { getSonicTokenSupply } from "../../tools/sonic/index.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
-const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
-const networkSchema = z.enum(["mainnet", "testnet"]).default("mainnet");
+const getTokenSupplySchema = z.object({
+  contractAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
+  network: z.enum(["mainnet", "testnet"]).default("mainnet"),
+});
+
+export type GetTokenSupplyInput = z.infer<typeof getTokenSupplySchema>;
 
 export const getTokenSupplyAction: Action = {
   name: ACTION_NAMES.SONIC_GET_TOKEN_SUPPLY,
@@ -26,19 +30,17 @@ export const getTokenSupplyAction: Action = {
       },
     ],
   ],
-  schema: z.object({
-    contractAddress: addressSchema,
-    network: networkSchema,
-  }),
+  schema: getTokenSupplySchema,
   handler: async (agent, input) => {
+    const params = input as GetTokenSupplyInput;
     try {
       const result = await getSonicTokenSupply(
-        input.contractAddress,
-        input.network
+        params.contractAddress,
+        params.network
       );
       return {
         status: "success",
-        message: `Successfully retrieved token supply for ${input.contractAddress}`,
+        message: `Successfully retrieved token supply for ${params.contractAddress}`,
         data: result,
       };
     } catch (error) {

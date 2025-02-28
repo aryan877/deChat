@@ -3,8 +3,12 @@ import type { Action } from "../../types/action.js";
 import { getSonicBlockReward } from "../../tools/sonic/index.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
-const networkSchema = z.enum(["mainnet", "testnet"]).default("mainnet");
-const blockNumberSchema = z.union([z.number(), z.literal("latest")]);
+const getBlockRewardSchema = z.object({
+  blockNumber: z.union([z.number(), z.literal("latest")]),
+  network: z.enum(["mainnet", "testnet"]).default("mainnet"),
+});
+
+export type GetBlockRewardInput = z.infer<typeof getBlockRewardSchema>;
 
 export const getBlockRewardAction: Action = {
   name: ACTION_NAMES.SONIC_GET_BLOCK_REWARD,
@@ -28,19 +32,17 @@ export const getBlockRewardAction: Action = {
       },
     ],
   ],
-  schema: z.object({
-    blockNumber: blockNumberSchema,
-    network: networkSchema,
-  }),
+  schema: getBlockRewardSchema,
   handler: async (agent, input) => {
+    const params = input as GetBlockRewardInput;
     try {
       const result = await getSonicBlockReward(
-        input.blockNumber,
-        input.network
+        params.blockNumber,
+        params.network
       );
       return {
         status: "success",
-        message: `Successfully retrieved block rewards for block ${input.blockNumber}`,
+        message: `Successfully retrieved block rewards for block ${params.blockNumber}`,
         data: result,
       };
     } catch (error) {

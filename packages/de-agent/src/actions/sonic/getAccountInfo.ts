@@ -3,9 +3,13 @@ import type { Action } from "../../types/action.js";
 import { getSonicAccountInfo } from "../../tools/sonic/index.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
-// Schema for address validation
-const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
-const networkSchema = z.enum(["mainnet", "testnet"]).default("mainnet");
+const getAccountInfoSchema = z.object({
+  address: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
+  network: z.enum(["mainnet", "testnet"]).default("mainnet"),
+  tag: z.enum(["latest", "earliest", "pending"]).default("latest"),
+});
+
+export type GetAccountInfoInput = z.infer<typeof getAccountInfoSchema>;
 
 export const getAccountInfoAction: Action = {
   name: ACTION_NAMES.SONIC_GET_ACCOUNT_INFO,
@@ -25,21 +29,18 @@ export const getAccountInfoAction: Action = {
       },
     ],
   ],
-  schema: z.object({
-    address: addressSchema,
-    network: networkSchema,
-    tag: z.enum(["latest", "earliest", "pending"]).default("latest"),
-  }),
+  schema: getAccountInfoSchema,
   handler: async (agent, input) => {
+    const params = input as GetAccountInfoInput;
     try {
       const result = await getSonicAccountInfo(
-        input.address,
-        input.network,
-        input.tag
+        params.address,
+        params.network,
+        params.tag
       );
       return {
         status: "success",
-        message: `Successfully retrieved account info for ${input.address}`,
+        message: `Successfully retrieved account info for ${params.address}`,
         data: result,
       };
     } catch (error) {

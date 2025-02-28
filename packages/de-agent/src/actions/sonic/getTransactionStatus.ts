@@ -3,8 +3,14 @@ import type { Action } from "../../types/action.js";
 import { getSonicTransactionStatus } from "../../tools/sonic/index.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
-const txHashSchema = z.string().regex(/^0x[a-fA-F0-9]{64}$/);
-const networkSchema = z.enum(["mainnet", "testnet"]).default("mainnet");
+const getTransactionStatusSchema = z.object({
+  txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/),
+  network: z.enum(["mainnet", "testnet"]).default("mainnet"),
+});
+
+export type GetTransactionStatusInput = z.infer<
+  typeof getTransactionStatusSchema
+>;
 
 export const getTransactionStatusAction: Action = {
   name: ACTION_NAMES.SONIC_GET_TRANSACTION_STATUS,
@@ -28,19 +34,17 @@ export const getTransactionStatusAction: Action = {
       },
     ],
   ],
-  schema: z.object({
-    txHash: txHashSchema,
-    network: networkSchema,
-  }),
+  schema: getTransactionStatusSchema,
   handler: async (agent, input) => {
+    const params = input as GetTransactionStatusInput;
     try {
       const result = await getSonicTransactionStatus(
-        input.txHash,
-        input.network
+        params.txHash,
+        params.network
       );
       return {
         status: "success",
-        message: `Successfully retrieved transaction status for ${input.txHash}`,
+        message: `Successfully retrieved transaction status for ${params.txHash}`,
         data: result,
       };
     } catch (error) {

@@ -4,11 +4,18 @@ import { transferNative, transferToken } from "../../tools/sonic/transfer.js";
 import { ACTION_NAMES } from "../actionNames.js";
 import { TransferResult } from "../../types/index.js";
 
-// Schema for validation
-const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
-const amountSchema = z.string().refine((val) => !isNaN(parseFloat(val)), {
-  message: "Amount must be a valid number string",
+const transferSchema = z.object({
+  to: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
+  amount: z.string().refine((val) => !isNaN(parseFloat(val)), {
+    message: "Amount must be a valid number string",
+  }),
+  tokenAddress: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{40}$/)
+    .optional(),
 });
+
+export type TransferInput = z.infer<typeof transferSchema>;
 
 export const sonicTransferAction: Action = {
   name: ACTION_NAMES.SONIC_TRANSFER,
@@ -42,33 +49,30 @@ export const sonicTransferAction: Action = {
       },
     ],
   ],
-  schema: z.object({
-    to: addressSchema,
-    amount: amountSchema,
-    tokenAddress: addressSchema.optional(),
-  }),
+  schema: transferSchema,
   handler: async (agent, input) => {
+    const params = input as TransferInput;
     try {
       let result: TransferResult;
 
-      if (input.tokenAddress) {
+      if (params.tokenAddress) {
         // Token transfer
         result = await transferToken(
           agent,
-          input.tokenAddress,
-          input.to,
-          input.amount
+          params.tokenAddress,
+          params.to,
+          params.amount
         );
       } else {
         // Native SONIC transfer
-        result = await transferNative(agent, input.to, input.amount);
+        result = await transferNative(agent, params.to, params.amount);
       }
 
       return {
         status: "success",
-        message: `Successfully transferred ${input.amount} ${
-          input.tokenAddress ? "tokens" : "SONIC"
-        } to ${input.to}`,
+        message: `Successfully transferred ${params.amount} ${
+          params.tokenAddress ? "tokens" : "SONIC"
+        } to ${params.to}`,
         data: result,
       };
     } catch (error) {

@@ -103,44 +103,67 @@ export default {
           css: {
             maxWidth: "100%",
             color: "hsl(var(--foreground))",
+            '[class~="lead"]': {
+              color: "hsl(var(--foreground))",
+            },
             a: {
               color: "hsl(var(--primary))",
               "&:hover": {
                 color: "hsl(var(--primary))",
               },
             },
-            code: {
+            strong: {
               color: "hsl(var(--foreground))",
-              backgroundColor: "hsl(var(--muted))",
-              borderRadius: "0.25rem",
-              padding: "0.15rem 0.3rem",
             },
-            "code::before": {
-              content: '""',
-            },
-            "code::after": {
-              content: '""',
-            },
-            pre: {
-              backgroundColor: "hsl(var(--muted))",
-              borderRadius: "0.375rem",
-              padding: "1rem",
-              overflowX: "auto",
-            },
-            blockquote: {
-              borderLeftColor: "hsl(var(--muted-foreground))",
-            },
-            hr: {
-              borderColor: "hsl(var(--border))",
-            },
-            "h1,h2,h3,h4,h5,h6": {
-              color: "hsl(var(--foreground))",
+            "ol > li::marker": {
+              color: "hsl(var(--muted-foreground))",
             },
             "ul > li::marker": {
               color: "hsl(var(--muted-foreground))",
             },
-            "ol > li::marker": {
+            hr: {
+              borderColor: "hsl(var(--border))",
+            },
+            blockquote: {
+              color: "hsl(var(--foreground))",
+              borderLeftColor: "hsl(var(--border))",
+            },
+            h1: {
+              color: "hsl(var(--foreground))",
+            },
+            h2: {
+              color: "hsl(var(--foreground))",
+            },
+            h3: {
+              color: "hsl(var(--foreground))",
+            },
+            h4: {
+              color: "hsl(var(--foreground))",
+            },
+            "figure figcaption": {
               color: "hsl(var(--muted-foreground))",
+            },
+            code: {
+              color: "hsl(var(--foreground))",
+              backgroundColor: "hsl(var(--muted))",
+            },
+            "a code": {
+              color: "hsl(var(--primary))",
+            },
+            pre: {
+              color: "hsl(var(--foreground))",
+              backgroundColor: "hsl(var(--muted))",
+            },
+            thead: {
+              color: "hsl(var(--foreground))",
+              borderBottomColor: "hsl(var(--border))",
+            },
+            "tbody tr": {
+              borderBottomColor: "hsl(var(--border))",
+            },
+            kbd: {
+              color: "hsl(var(--foreground))",
+              backgroundColor: "hsl(var(--muted))",
             },
           },
         },
