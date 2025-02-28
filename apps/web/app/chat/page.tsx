@@ -84,6 +84,7 @@ const ChatContent = () => {
     reload,
     addToolResult,
     stop,
+    error,
   } = useChat({
     api: "/api/chat/message",
     id: chatId || undefined,
@@ -349,6 +350,33 @@ const ChatContent = () => {
 
         <div className="sticky bottom-0 bg-background px-4 md:px-6">
           <div className="max-w-3xl mx-auto">
+            {error && (
+              <div className="flex justify-center py-2">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleReload}
+                  disabled={isWaitingForResponse}
+                  className="flex items-center gap-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={isWaitingForResponse ? "animate-spin" : ""}
+                  >
+                    <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                  </svg>
+                  Retry
+                </Button>
+              </div>
+            )}
             <form onSubmit={handleFormSubmit} className="relative py-3">
               <Textarea
                 ref={textareaRef}
