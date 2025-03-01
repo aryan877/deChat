@@ -4,7 +4,13 @@ import { getSonicAccountInfo } from "../../tools/sonic/index.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
 const getAccountInfoSchema = z.object({
-  address: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
+  address: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{40}$/)
+    .optional()
+    .describe(
+      "Optional address to check. Will use agent's address if not provided."
+    ),
   network: z.enum(["mainnet", "testnet"]).default("mainnet"),
   tag: z.enum(["latest", "earliest", "pending"]).default("latest"),
 });
@@ -18,14 +24,24 @@ export const getAccountInfoAction: Action = {
     "check sonic wallet balance",
     "get sonic account info",
     "check sonic address balance",
+    "get my sonic balance",
+    "check my sonic account",
   ],
-  description: "Get account balance and information from Sonic chain",
+  description:
+    "Get account balance and information from Sonic chain (defaults to agent's address if none provided)",
   examples: [
+    [
+      {
+        input: {},
+        output: { balance: "1000000000000000000" },
+        explanation: "Gets the balance of the agent's account on mainnet",
+      },
+    ],
     [
       {
         input: { address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e" },
         output: { balance: "1000000000000000000" },
-        explanation: "Gets the balance of an account on mainnet",
+        explanation: "Gets the balance of a specific account on mainnet",
       },
     ],
   ],
@@ -34,13 +50,15 @@ export const getAccountInfoAction: Action = {
     const params = input as GetAccountInfoInput;
     try {
       const result = await getSonicAccountInfo(
+        agent,
         params.address,
         params.network,
         params.tag
       );
+      const displayAddress = params.address || agent.wallet_address;
       return {
         status: "success",
-        message: `Successfully retrieved account info for ${params.address}`,
+        message: `Successfully retrieved account info for ${displayAddress}`,
         data: result,
       };
     } catch (error) {

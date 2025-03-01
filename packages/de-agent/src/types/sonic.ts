@@ -179,3 +179,32 @@ export interface SonicDelegationParams {
   validatorId: string;
   amount: string;
 }
+
+// Delegation by address types
+export interface SonicDelegationByAddress {
+  address: string;
+  amount: string;
+  amountDelegated: string;
+  amountInWithdraw: string;
+  createdTime: string;
+  pendingRewards: {
+    amount: string;
+  };
+  toStakerId: string;
+  withdrawRequests: Array<{
+    amount: string;
+    createdTime: string;
+    withdrawRequestID: string;
+    withdrawTime: string | null;
+  }>;
+}
+
+export interface SonicDelegationsByAddressResponse {
+  data: {
+    delegationsByAddress: {
+      edges: Array<{
+        delegation: SonicDelegationByAddress;
+      }>;
+    };
+  };
+}
