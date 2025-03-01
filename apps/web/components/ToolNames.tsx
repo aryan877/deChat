@@ -7,6 +7,7 @@ import {
   FileSearch,
   Coins,
   BarChart,
+  Users,
 } from "lucide-react";
 import React from "react";
 
@@ -46,6 +47,10 @@ const TOOL_DISPLAY_CONFIG: Record<
   [ACTION_NAMES.SONIC_TRANSFER]: {
     icon: <ArrowUpRight className="w-3 h-3" />,
     label: "Transfer",
+  },
+  [ACTION_NAMES.SONIC_DELEGATE]: {
+    icon: <Users className="w-3 h-3" />,
+    label: "Delegate",
   },
 };
 

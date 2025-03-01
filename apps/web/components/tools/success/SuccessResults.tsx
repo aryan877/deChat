@@ -11,6 +11,7 @@ import { TransferSuccess } from "./TransferSuccess";
 import { ChainlinkPriceFeedsSuccess } from "./ChainlinkPriceFeedsSuccess";
 import { ChainlinkPriceDataSuccess } from "./ChainlinkPriceDataSuccess";
 import { StakersSuccess } from "./StakersSuccess";
+import { DelegateSuccess, type DelegateSuccessData } from "./DelegateSuccess";
 
 // Define a mapping of tool names to their success result types
 export type SuccessResultsMap = {
@@ -26,6 +27,7 @@ export type SuccessResultsMap = {
     formattedPrice: string;
   };
   [ACTION_NAMES.SONIC_GET_STAKERS]: SonicStakersResponse;
+  [ACTION_NAMES.SONIC_DELEGATE]: DelegateSuccessData;
 };
 
 // Registry of tools that have success components
@@ -35,6 +37,7 @@ export const SUCCESS_COMPONENTS_REGISTRY = {
   [ACTION_NAMES.CHAINLINK_GET_PRICE_FEEDS]: true,
   [ACTION_NAMES.CHAINLINK_GET_PRICE_DATA]: true,
   [ACTION_NAMES.SONIC_GET_STAKERS]: true,
+  [ACTION_NAMES.SONIC_DELEGATE]: true,
 } as const;
 
 // Type guard to check if a tool has success results
@@ -84,6 +87,8 @@ export function SuccessResults<T extends keyof SuccessResultsMap>({
       );
     case ACTION_NAMES.SONIC_GET_STAKERS:
       return <StakersSuccess data={data as SonicStakersResponse} />;
+    case ACTION_NAMES.SONIC_DELEGATE:
+      return <DelegateSuccess data={data as DelegateSuccessData} />;
     default:
       return null;
   }

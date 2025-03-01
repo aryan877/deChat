@@ -60,71 +60,73 @@ export function StakersSuccess({ data }: StakersSuccessProps) {
 
       {/* Stakers Table */}
       <div className="border border-border rounded-lg overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-muted/50">
-              <th className="px-4 py-2 text-left text-sm font-medium text-muted-foreground w-8">
-                #
-              </th>
-              <th className="px-4 py-2 text-left text-sm font-medium text-muted-foreground">
-                Staker Info
-              </th>
-              <th className="px-4 py-2 text-right text-sm font-medium text-muted-foreground hidden md:table-cell">
-                Status
-              </th>
-              <th className="px-4 py-2 text-right text-sm font-medium text-muted-foreground">
-                Self Staked
-              </th>
-              <th className="px-4 py-2 text-right text-sm font-medium text-muted-foreground hidden sm:table-cell">
-                Delegated
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {activeStakers.map((staker, index) => (
-              <tr
-                key={staker.id}
-                className="hover:bg-muted/30 transition-colors"
-              >
-                <td className="px-4 py-3 text-sm text-muted-foreground">
-                  {index + 1}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-col">
-                    <span className="font-medium text-sm">
-                      {staker.stakerInfo?.name || "Unknown Staker"}
-                    </span>
-                    <div className="flex gap-2 items-center text-xs text-muted-foreground">
-                      <span className="font-mono truncate max-w-[160px]">
-                        {staker.stakerAddress}
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded-md bg-muted">
-                        ID #{staker.id}
-                      </span>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-right hidden md:table-cell">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500">
-                    Active
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right whitespace-nowrap">
-                  <span className="font-medium text-sm">
-                    {formatTokenAmount(staker.stake)}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right whitespace-nowrap hidden sm:table-cell">
-                  <span className="font-medium text-sm">
-                    {formatTokenAmount(
-                      calculateDelegated(staker.totalStake, staker.stake)
-                    )}
-                  </span>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px]">
+            <thead>
+              <tr className="bg-muted/50">
+                <th className="px-4 py-2 text-left text-sm font-medium text-muted-foreground w-8">
+                  #
+                </th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-muted-foreground">
+                  Staker Info
+                </th>
+                <th className="px-4 py-2 text-right text-sm font-medium text-muted-foreground">
+                  Status
+                </th>
+                <th className="px-4 py-2 text-right text-sm font-medium text-muted-foreground">
+                  Self Staked
+                </th>
+                <th className="px-4 py-2 text-right text-sm font-medium text-muted-foreground">
+                  Delegated
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {activeStakers.map((staker, index) => (
+                <tr
+                  key={staker.id}
+                  className="hover:bg-muted/30 transition-colors"
+                >
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
+                    {index + 1}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col">
+                      <span className="font-medium text-sm">
+                        {staker.stakerInfo?.name || "Unknown Staker"}
+                      </span>
+                      <div className="flex gap-2 items-center text-xs text-muted-foreground">
+                        <span className="font-mono truncate max-w-[160px]">
+                          {staker.stakerAddress}
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded-md bg-muted">
+                          ID #{staker.id}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500">
+                      Active
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <span className="font-medium text-sm">
+                      {formatTokenAmount(staker.stake)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <span className="font-medium text-sm">
+                      {formatTokenAmount(
+                        calculateDelegated(staker.totalStake, staker.stake)
+                      )}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

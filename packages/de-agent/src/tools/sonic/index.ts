@@ -19,3 +19,5 @@ export * from "./utils.js";
 
 // Stakers-related exports
 export * from "./getStakers.js";
+
+export { delegateToValidator } from "./stake.js";

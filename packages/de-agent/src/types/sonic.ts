@@ -159,3 +159,23 @@ export interface SonicStakersResponse {
     stakers: SonicStaker[];
   };
 }
+
+// Staking types
+export interface SonicDelegationResponse {
+  status: "success" | "error";
+  message: string;
+  data?: {
+    txHash: string;
+    explorerUrl: string;
+  };
+  error?: {
+    code: string;
+    message: string;
+    details: unknown;
+  };
+}
+
+export interface SonicDelegationParams {
+  validatorId: string;
+  amount: string;
+}
