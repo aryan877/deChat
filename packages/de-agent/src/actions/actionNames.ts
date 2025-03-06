@@ -44,4 +44,6 @@ export const ACTION_NAMES = {
   SONIC_STAKE: "sonicStake",
   SONIC_GET_DELEGATIONS: "sonicGetDelegations",
   SONIC_UNSTAKE: "sonicUnstake",
+  SONIC_TRADE_QUOTE: "sonicTradeQuote",
+  SONIC_SEARCH: "sonicSearch",
 } as const;

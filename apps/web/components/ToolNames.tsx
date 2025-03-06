@@ -8,6 +8,7 @@ import {
   Coins,
   BarChart,
   Users,
+  Search,
 } from "lucide-react";
 import React from "react";
 
@@ -59,6 +60,10 @@ const TOOL_DISPLAY_CONFIG: Record<
   [ACTION_NAMES.SONIC_GET_DELEGATIONS]: {
     icon: <Users className="w-3 h-3" />,
     label: "Get Delegations",
+  },
+  [ACTION_NAMES.SONIC_SEARCH]: {
+    icon: <Search className="w-3 h-3" />,
+    label: "Search",
   },
 };
 

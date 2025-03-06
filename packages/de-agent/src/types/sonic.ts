@@ -208,3 +208,90 @@ export interface SonicDelegationsByAddressResponse {
     };
   };
 }
+
+// Trade types
+export interface SonicTradeToken {
+  tokenAddress: string;
+  amount?: string;
+  proportion?: number;
+}
+
+export interface TokenInfo {
+  address: string;
+  symbol: string;
+  decimals: number;
+}
+
+export interface SonicTradeQuoteRequest {
+  chainId: number;
+  inputTokens: SonicTradeToken[];
+  outputTokens: SonicTradeToken[];
+  userAddr: string;
+  slippageLimitPercent: number;
+  sourceBlacklist: string[];
+  simulate: boolean;
+  pathId: boolean;
+  referralCode: number;
+  gasPrice: number;
+}
+
+export interface SonicTradeQuoteResponse {
+  traceId: string;
+  inTokens: string[];
+  outTokens: string[];
+  inAmounts: string[];
+  outAmounts: string[];
+  gasEstimate: number;
+  dataGasEstimate: number;
+  gweiPerGas: number;
+  gasEstimateValue: number;
+  inValues: number[];
+  outValues: number[];
+  netOutValue: number;
+  priceImpact: number;
+  percentDiff: number;
+  partnerFeePercent: number;
+  pathId: string;
+  pathViz: any | null;
+  blockNumber: number;
+  inputToken: TokenInfo;
+  outputToken: TokenInfo;
+}
+
+export interface SonicTradeQuoteResult {
+  status: "success" | "error";
+  message: string;
+  data?: SonicTradeQuoteResponse;
+  error?: {
+    code: string;
+    message: string;
+    details: unknown;
+  };
+}
+
+// Search types
+export interface SonicSearchResult {
+  title: string;
+  img: string;
+  rate: string;
+  address: string;
+  link: string;
+  group: string;
+  groupid: string;
+  website: string;
+  is_checked: string;
+  desc: string;
+  reputation: string;
+  ps: boolean;
+}
+
+export interface SonicSearchResponse {
+  status: "success" | "error";
+  message: string;
+  data?: SonicSearchResult[];
+  error?: {
+    code: string;
+    message: string;
+    details: unknown;
+  };
+}

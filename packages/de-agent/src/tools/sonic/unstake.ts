@@ -66,8 +66,6 @@ export async function undelegateFromValidator(
     const wrIdStr = `${currentTimestamp}${randomDigits}`;
     const wrId = BigInt(wrIdStr);
 
-    // Parse amount to wei - ensure it matches the format in the transaction
-    // Example from successful transaction: 70312500000000000
     const amountWei = ethers.parseEther(params.amount);
 
     // Format validator ID as uint256
