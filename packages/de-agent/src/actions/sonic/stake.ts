@@ -11,7 +11,7 @@ const delegateSchema = z.object({
 export type DelegateInput = z.infer<typeof delegateSchema>;
 
 export const delegateAction: Action = {
-  name: ACTION_NAMES.SONIC_DELEGATE,
+  name: ACTION_NAMES.SONIC_STAKE,
   similes: [
     "delegate to sonic validator",
     "stake with sonic validator",

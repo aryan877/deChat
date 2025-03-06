@@ -41,6 +41,7 @@ export const ACTION_NAMES = {
   CHAINLINK_GET_PRICE_FEEDS: "chainlinkGetPriceFeeds",
   CHAINLINK_GET_PRICE_DATA: "chainlinkGetPriceData",
 
-  SONIC_DELEGATE: "sonicDelegate",
+  SONIC_STAKE: "sonicStake",
   SONIC_GET_DELEGATIONS: "sonicGetDelegations",
+  SONIC_UNSTAKE: "sonicUnstake",
 } as const;

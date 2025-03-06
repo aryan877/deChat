@@ -14,6 +14,7 @@ import { ChainlinkPriceDataSuccess } from "./ChainlinkPriceDataSuccess";
 import { StakersSuccess } from "./StakersSuccess";
 import { DelegateSuccess, type DelegateSuccessData } from "./DelegateSuccess";
 import { DelegationsSuccess } from "./DelegationsSuccess";
+import { UnstakeSuccess, type UnstakeSuccessData } from "./UnstakeSuccess";
 
 // Define a mapping of tool names to their success result types
 export type SuccessResultsMap = {
@@ -29,8 +30,9 @@ export type SuccessResultsMap = {
     formattedPrice: string;
   };
   [ACTION_NAMES.SONIC_GET_STAKERS]: SonicStakersResponse;
-  [ACTION_NAMES.SONIC_DELEGATE]: DelegateSuccessData;
+  [ACTION_NAMES.SONIC_STAKE]: DelegateSuccessData;
   [ACTION_NAMES.SONIC_GET_DELEGATIONS]: SonicDelegationsByAddressResponse;
+  [ACTION_NAMES.SONIC_UNSTAKE]: UnstakeSuccessData;
 };
 
 // Registry of tools that have success components
@@ -40,8 +42,9 @@ export const SUCCESS_COMPONENTS_REGISTRY = {
   [ACTION_NAMES.CHAINLINK_GET_PRICE_FEEDS]: true,
   [ACTION_NAMES.CHAINLINK_GET_PRICE_DATA]: true,
   [ACTION_NAMES.SONIC_GET_STAKERS]: true,
-  [ACTION_NAMES.SONIC_DELEGATE]: true,
+  [ACTION_NAMES.SONIC_STAKE]: true,
   [ACTION_NAMES.SONIC_GET_DELEGATIONS]: true,
+  [ACTION_NAMES.SONIC_UNSTAKE]: true,
 } as const;
 
 // Type guard to check if a tool has success results
@@ -91,12 +94,14 @@ export function SuccessResults<T extends keyof SuccessResultsMap>({
       );
     case ACTION_NAMES.SONIC_GET_STAKERS:
       return <StakersSuccess data={data as SonicStakersResponse} />;
-    case ACTION_NAMES.SONIC_DELEGATE:
+    case ACTION_NAMES.SONIC_STAKE:
       return <DelegateSuccess data={data as DelegateSuccessData} />;
     case ACTION_NAMES.SONIC_GET_DELEGATIONS:
       return (
         <DelegationsSuccess data={data as SonicDelegationsByAddressResponse} />
       );
+    case ACTION_NAMES.SONIC_UNSTAKE:
+      return <UnstakeSuccess data={data as UnstakeSuccessData} />;
     default:
       return null;
   }

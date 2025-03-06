@@ -21,3 +21,4 @@ export * from "./utils.js";
 export * from "./getStakers.js";
 
 export { delegateToValidator } from "./stake.js";
+export { undelegateFromValidator } from "./unstake.js";

@@ -7,6 +7,7 @@ import { getPriceDataAction } from "./chainlink/getPriceData.js";
 import { getPriceFeedsAction } from "./chainlink/getPriceFeeds.js";
 import { delegateAction } from "./sonic/stake.js";
 import { getDelegationsAction } from "./sonic/getDelegations.js";
+import { unstakeAction } from "./sonic/unstake.js";
 
 export { ACTION_NAMES };
 
@@ -16,8 +17,9 @@ export const ACTIONS: Record<string, Action> = {
   ...sonicActions,
   [ACTION_NAMES.CHAINLINK_GET_PRICE_DATA]: getPriceDataAction,
   [ACTION_NAMES.CHAINLINK_GET_PRICE_FEEDS]: getPriceFeedsAction,
-  [ACTION_NAMES.SONIC_DELEGATE]: delegateAction,
+  [ACTION_NAMES.SONIC_STAKE]: delegateAction,
   [ACTION_NAMES.SONIC_GET_DELEGATIONS]: getDelegationsAction,
+  [ACTION_NAMES.SONIC_UNSTAKE]: unstakeAction,
 };
 
 export type { Action, ActionExample, Handler };

@@ -48,9 +48,17 @@ const TOOL_DISPLAY_CONFIG: Record<
     icon: <ArrowUpRight className="w-3 h-3" />,
     label: "Transfer",
   },
-  [ACTION_NAMES.SONIC_DELEGATE]: {
+  [ACTION_NAMES.SONIC_STAKE]: {
     icon: <Users className="w-3 h-3" />,
-    label: "Delegate",
+    label: "Stake",
+  },
+  [ACTION_NAMES.SONIC_UNSTAKE]: {
+    icon: <Users className="w-3 h-3" />,
+    label: "Unstake",
+  },
+  [ACTION_NAMES.SONIC_GET_DELEGATIONS]: {
+    icon: <Users className="w-3 h-3" />,
+    label: "Get Delegations",
   },
 };
 

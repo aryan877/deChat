@@ -227,8 +227,18 @@ export class DeAgent {
           tx.nonce || (await provider.getTransactionCount(this.wallet_address)),
       };
 
+      // Try to estimate gas, but use a safe default if it fails
       if (!preparedTx.gasLimit) {
-        preparedTx.gasLimit = await provider.estimateGas(preparedTx);
+        try {
+          preparedTx.gasLimit = await provider.estimateGas(preparedTx);
+        } catch (error) {
+          console.warn(
+            "Gas estimation failed, using default gas limit:",
+            error
+          );
+          // Use a safe default gas limit for unstaking (300,000 gas)
+          preparedTx.gasLimit = BigInt(300000);
+        }
       }
 
       if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
