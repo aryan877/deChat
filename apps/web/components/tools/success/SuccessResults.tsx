@@ -19,6 +19,15 @@ import { DelegationsSuccess } from "./DelegationsSuccess";
 import { UnstakeSuccess, type UnstakeSuccessData } from "./UnstakeSuccess";
 import { SearchSuccess } from "./SearchSuccess";
 import { TradeSuccess } from "./TradeSuccess";
+import { SwapSuccess, type SwapSuccessData } from "./SwapSuccess";
+import {
+  AccountInfoSuccess,
+  type AccountInfoSuccessData,
+} from "./AccountInfoSuccess";
+import {
+  TokenBalanceSuccess,
+  type TokenBalanceSuccessData,
+} from "./TokenBalanceSuccess";
 
 // Define a mapping of tool names to their success result types
 export type SuccessResultsMap = {
@@ -39,6 +48,9 @@ export type SuccessResultsMap = {
   [ACTION_NAMES.SONIC_UNSTAKE]: UnstakeSuccessData;
   [ACTION_NAMES.SONIC_SEARCH]: SonicSearchResult[];
   [ACTION_NAMES.SONIC_TRADE_QUOTE]: SonicTradeQuoteResponse;
+  [ACTION_NAMES.SONIC_SWAP]: SwapSuccessData;
+  [ACTION_NAMES.SONIC_GET_ACCOUNT_INFO]: AccountInfoSuccessData;
+  [ACTION_NAMES.SONIC_GET_TOKEN_BALANCE]: TokenBalanceSuccessData;
 };
 
 // Registry of tools that have success components
@@ -53,6 +65,9 @@ export const SUCCESS_COMPONENTS_REGISTRY = {
   [ACTION_NAMES.SONIC_UNSTAKE]: true,
   [ACTION_NAMES.SONIC_SEARCH]: true,
   [ACTION_NAMES.SONIC_TRADE_QUOTE]: true,
+  [ACTION_NAMES.SONIC_SWAP]: true,
+  [ACTION_NAMES.SONIC_GET_ACCOUNT_INFO]: true,
+  [ACTION_NAMES.SONIC_GET_TOKEN_BALANCE]: true,
 } as const;
 
 // Type guard to check if a tool has success results
@@ -114,6 +129,12 @@ export function SuccessResults<T extends keyof SuccessResultsMap>({
       return <SearchSuccess data={data as SonicSearchResult[]} />;
     case ACTION_NAMES.SONIC_TRADE_QUOTE:
       return <TradeSuccess data={data as SonicTradeQuoteResponse} />;
+    case ACTION_NAMES.SONIC_SWAP:
+      return <SwapSuccess data={data as SwapSuccessData} />;
+    case ACTION_NAMES.SONIC_GET_ACCOUNT_INFO:
+      return <AccountInfoSuccess data={data as AccountInfoSuccessData} />;
+    case ACTION_NAMES.SONIC_GET_TOKEN_BALANCE:
+      return <TokenBalanceSuccess data={data as TokenBalanceSuccessData} />;
     default:
       return null;
   }

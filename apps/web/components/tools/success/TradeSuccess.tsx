@@ -1,12 +1,5 @@
 import React, { useState } from "react";
 import { ethers } from "ethers";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowRight,
@@ -23,6 +16,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface TradeSuccessProps {
   data: SonicTradeQuoteResponse;
@@ -78,7 +78,7 @@ export function TradeSuccess({ data }: TradeSuccessProps) {
   const exchangeRate = Number(outputAmount) / (Number(inputAmount) || 1);
   const formattedExchangeRate = exchangeRate.toFixed(6);
 
-  // Format price impact as percentage
+  // Price impact is already in percentage form in the API response
   const priceImpactPercent = (data?.priceImpact || 0).toFixed(2);
   const isPriceImpactNegative = (data?.priceImpact || 0) < 0;
 
@@ -96,11 +96,9 @@ export function TradeSuccess({ data }: TradeSuccessProps) {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card>
       <CardHeader>
-        <CardTitle className="text-xl sm:text-2xl font-bold">
-          Trade Quote
-        </CardTitle>
+        <CardTitle>Trade Quote</CardTitle>
         <CardDescription>Swap tokens on Sonic</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -212,7 +210,7 @@ export function TradeSuccess({ data }: TradeSuccessProps) {
         </div>
 
         {/* Warning for high price impact */}
-        {(data?.priceImpact || 0) < -0.05 && (
+        {(data?.priceImpact || 0) < -5 && (
           <div className="p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
             Warning: High price impact! This trade will move the market price by
             more than 5%.

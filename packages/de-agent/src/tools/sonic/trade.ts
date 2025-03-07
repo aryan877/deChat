@@ -5,6 +5,7 @@ import {
   SonicTradeQuoteRequest,
   SonicTradeQuoteResult,
 } from "../../types/sonic.js";
+import { searchSonic } from "./search.js";
 
 const ODOS_API_URL = "https://api.odos.xyz/sor/quote/v2";
 
@@ -16,65 +17,149 @@ const ERC20_ABI = [
 /**
  * Get token decimals and symbol
  * @param agent DeAgent instance
- * @param tokenAddress Token contract address
+ * @param tokenInput Token address or symbol
  * @returns Token decimals and symbol
  */
 async function getTokenInfo(
   agent: DeAgent,
-  tokenAddress: string
+  tokenInput: string
 ): Promise<{ address: string; decimals: number; symbol: string }> {
-  // Validate the address format
-  if (!tokenAddress || !tokenAddress.startsWith("0x")) {
-    console.error(`Invalid token address format: ${tokenAddress}`);
-    return {
-      address: tokenAddress,
+  // Handle common token symbols directly to avoid unnecessary API calls
+  // This is a fallback in case the search doesn't work
+  const knownTokens: Record<
+    string,
+    { address: string; decimals: number; symbol: string }
+  > = {
+    sonic: {
+      address: "0x0000000000000000000000000000000000000000",
       decimals: 18,
-      symbol: tokenAddress || "UNKNOWN",
-    };
-  }
+      symbol: "SONIC",
+    },
+    usdt: {
+      address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      decimals: 6,
+      symbol: "USDT",
+    },
+    usdc: {
+      address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      decimals: 6,
+      symbol: "USDC",
+    },
+    weth: {
+      address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      decimals: 18,
+      symbol: "WETH",
+    },
+    wbtc: {
+      address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+      decimals: 8,
+      symbol: "WBTC",
+    },
+  };
 
-  // Native SONIC token has 18 decimals
-  if (tokenAddress === "0x0000000000000000000000000000000000000000") {
-    return { address: tokenAddress, decimals: 18, symbol: "SONIC" };
-  }
+  // If input is already an address (starts with 0x), use it directly
+  if (tokenInput.startsWith("0x")) {
+    // Native SONIC token has 18 decimals
+    if (tokenInput === "0x0000000000000000000000000000000000000000") {
+      return { address: tokenInput, decimals: 18, symbol: "SONIC" };
+    }
 
-  try {
-    // Create a contract instance without using ENS resolution
-    const tokenContract = new ethers.Contract(
-      tokenAddress,
-      ERC20_ABI,
-      agent.provider
-    );
-
-    // Use try-catch for each call to handle potential contract errors
-    let decimals = 18; // Default to 18
-    let symbol = "UNKNOWN";
-
+    // For other addresses, try to get info from the contract
     try {
-      if (typeof tokenContract.decimals === "function") {
-        const fetchedDecimals = await tokenContract.decimals();
-        decimals = Number(fetchedDecimals);
-      }
-    } catch (decimalError) {
-      console.error(
-        `Error fetching decimals for ${tokenAddress}:`,
-        decimalError
+      const tokenContract = new ethers.Contract(
+        tokenInput,
+        ERC20_ABI,
+        agent.provider
       );
-    }
 
-    try {
-      if (typeof tokenContract.symbol === "function") {
-        const fetchedSymbol = await tokenContract.symbol();
-        symbol = fetchedSymbol;
+      // Use try-catch for each call to handle potential contract errors
+      let decimals = 18; // Default to 18
+      let symbol = "UNKNOWN";
+
+      try {
+        if (typeof tokenContract.decimals === "function") {
+          const fetchedDecimals = await tokenContract.decimals();
+          decimals = Number(fetchedDecimals);
+        }
+      } catch (decimalError) {
+        console.error(
+          `Error fetching decimals for ${tokenInput}:`,
+          decimalError
+        );
       }
-    } catch (symbolError) {
-      console.error(`Error fetching symbol for ${tokenAddress}:`, symbolError);
+
+      try {
+        if (typeof tokenContract.symbol === "function") {
+          const fetchedSymbol = await tokenContract.symbol();
+          symbol = fetchedSymbol;
+        }
+      } catch (symbolError) {
+        console.error(`Error fetching symbol for ${tokenInput}:`, symbolError);
+      }
+
+      return { address: tokenInput, decimals, symbol };
+    } catch (error) {
+      console.error(
+        `Error getting token info for address ${tokenInput}:`,
+        error
+      );
+      return { address: tokenInput, decimals: 18, symbol: "UNKNOWN" };
+    }
+  }
+
+  // If input is a symbol (not an address), try to find the address
+  else {
+    // First check if it's a known token
+    const lowerInput = tokenInput.toLowerCase();
+    if (knownTokens[lowerInput]) {
+      return knownTokens[lowerInput];
     }
 
-    return { address: tokenAddress, decimals, symbol };
-  } catch (error) {
-    console.error(`Error getting token info for ${tokenAddress}:`, error);
-    return { address: tokenAddress, decimals: 18, symbol: "UNKNOWN" };
+    // If not a known token, try to search for it
+    try {
+      const searchResponse = await searchSonic(agent, tokenInput);
+
+      if (searchResponse.data && searchResponse.data.length > 0) {
+        // Find the most relevant result
+        const token = searchResponse.data.find(
+          (result) =>
+            result.title.toLowerCase() === lowerInput ||
+            result.title.toLowerCase().includes(lowerInput)
+        );
+
+        if (token) {
+          return {
+            address: token.address,
+            decimals: 18, // Default, will be updated if possible
+            symbol: token.title,
+          };
+        }
+      }
+
+      // If search didn't find anything, use the default for the symbol if known
+      if (knownTokens[lowerInput]) {
+        return knownTokens[lowerInput];
+      }
+
+      // Last resort: return a placeholder
+      return {
+        address: "0x0000000000000000000000000000000000000000", // Default to SONIC
+        decimals: 18,
+        symbol: tokenInput.toUpperCase(),
+      };
+    } catch {
+      // If search failed but we know the token, use the known info
+      if (knownTokens[lowerInput]) {
+        return knownTokens[lowerInput];
+      }
+
+      // Last resort: return a placeholder
+      return {
+        address: "0x0000000000000000000000000000000000000000", // Default to SONIC
+        decimals: 18,
+        symbol: tokenInput.toUpperCase(),
+      };
+    }
   }
 }
 
@@ -186,7 +271,6 @@ export async function getTradeQuote(
       data,
     };
   } catch (error) {
-    console.error("Error getting trade quote:", error);
     return {
       status: "error",
       message: "Failed to get trade quote",

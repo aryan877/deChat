@@ -27,6 +27,7 @@ export const ACTION_NAMES = {
   SONIC_GET_TOKEN_TRANSFERS: "sonicGetTokenTransfers",
   SONIC_GET_NFT_TRANSFERS: "sonicGetNFTTransfers",
   SONIC_GET_ERC1155_TRANSFERS: "sonicGetERC1155Transfers",
+  SONIC_GET_TOKEN_BALANCE: "sonicGetTokenBalance",
 
   // Sonic Block Actions
   SONIC_GET_BLOCK_REWARD: "sonicGetBlockReward",
@@ -45,5 +46,6 @@ export const ACTION_NAMES = {
   SONIC_GET_DELEGATIONS: "sonicGetDelegations",
   SONIC_UNSTAKE: "sonicUnstake",
   SONIC_TRADE_QUOTE: "sonicTradeQuote",
+  SONIC_SWAP: "sonicSwap",
   SONIC_SEARCH: "sonicSearch",
 } as const;

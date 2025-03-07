@@ -3,6 +3,12 @@ import { SonicBalanceResponse } from "../../types/sonic.js";
 import { NetworkType, callSonicApi, validateAddress } from "./utils.js";
 import { DeAgent } from "../../agent/index.js";
 
+export interface AccountInfoResponse {
+  address: string;
+  balance: string;
+  tag: string;
+}
+
 /**
  * Get account balance and other information from Sonic chain
  * @param agent DeAgent instance (used for default address)
@@ -17,7 +23,7 @@ export async function getSonicAccountInfo(
   address?: string,
   network: NetworkType = "mainnet",
   tag: string = "latest"
-): Promise<SonicBalanceResponse> {
+): Promise<AccountInfoResponse> {
   // Use provided address or fall back to agent's address
   const targetAddress = address || agent.wallet_address;
 
@@ -31,7 +37,7 @@ export async function getSonicAccountInfo(
     throw new Error('Invalid tag. Must be "latest", "earliest", or "pending"');
   }
 
-  return callSonicApi<SonicBalanceResponse>(
+  const response = await callSonicApi<SonicBalanceResponse>(
     network,
     API_MODULES.ACCOUNT,
     API_ACTIONS.BALANCE,
@@ -40,6 +46,12 @@ export async function getSonicAccountInfo(
       tag,
     }
   );
+
+  return {
+    address: targetAddress,
+    balance: response.result,
+    tag,
+  };
 }
 
 /**

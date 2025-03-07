@@ -65,6 +65,14 @@ const TOOL_DISPLAY_CONFIG: Record<
     icon: <Search className="w-3 h-3" />,
     label: "Search",
   },
+  [ACTION_NAMES.SONIC_TRADE_QUOTE]: {
+    icon: <ArrowUpRight className="w-3 h-3" />,
+    label: "Trade Quote",
+  },
+  [ACTION_NAMES.SONIC_SWAP]: {
+    icon: <ArrowUpRight className="w-3 h-3" />,
+    label: "Swap",
+  },
 };
 
 export function ToolNames({ toolNames, className }: ToolNamesProps) {
