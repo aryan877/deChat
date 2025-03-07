@@ -3,7 +3,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Message } from "@/app/types";
 import { nanoid } from "nanoid";
-import { User, XCircle, Copy, Check } from "lucide-react";
+import { User, XCircle, Copy, Check, Loader2 } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { ToolInvocation } from "ai";
@@ -388,17 +388,29 @@ export default function ChatMessage({
                     </ReactMarkdown>
                   </div>
                 </div>
-                <button
-                  onClick={handleCopy}
-                  className="flex-none p-1 hover:bg-primary/10 rounded-md transition-colors group"
-                  title="Copy message"
-                >
-                  {copied ? (
-                    <Check className="w-3.5 h-3.5 text-primary" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-                  )}
-                </button>
+                <div className="flex-none">
+                  <button
+                    onClick={handleCopy}
+                    className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded"
+                    title="Copy to clipboard"
+                  >
+                    {copied ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Loading indicator */}
+            {isLoading && message.role === "assistant" && (
+              <div className="flex items-center mt-2">
+                <Loader2 className="h-4 w-4 text-muted-foreground animate-spin mr-2" />
+                <span className="text-sm text-muted-foreground">
+                  Thinking...
+                </span>
               </div>
             )}
           </div>

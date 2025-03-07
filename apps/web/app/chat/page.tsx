@@ -22,11 +22,33 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { chatClient } from "@/app/clients/chat";
 import { GetThreadsResponse } from "@/app/types/api/chat";
 import { localStorageUtils } from "@/utils/localStorage";
-import { SendIcon, RefreshCcw, AlertCircle } from "lucide-react";
+import { SendIcon, RefreshCcw, AlertCircle, Loader2 } from "lucide-react";
 import ChatMessage from "@/components/chat/ChatMessage";
 import { ScrollDownIcon } from "@/components/ScrollDownIcon";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { StopIcon } from "@/components/StopIcon";
+
+// Custom hook to warn user when leaving page during active operations
+const usePageLeaveWarning = (shouldWarn: boolean) => {
+  // Handle browser's native beforeunload event
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (shouldWarn) {
+        // Standard way to show a confirmation dialog before leaving
+        const message =
+          "You have an ongoing operation. Are you sure you want to leave?";
+        e.preventDefault();
+        e.returnValue = message; // Required for Chrome
+        return message; // For older browsers
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [shouldWarn]);
+};
 
 const ChatContent = () => {
   const router = useRouter();
@@ -39,10 +61,15 @@ const ChatContent = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { logout } = usePrivy();
   const { data: initialMessages = [] } = useThreadMessages(chatId);
-  const [hasInitialMessagesSaved, setHasInitialMessagesSaved] = useState(false);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [hasActiveToolCall, setHasActiveToolCall] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Add a ref to track previous messages to avoid unnecessary saves
+  const prevMessagesRef = useRef<string>("");
+  // Add a ref to track if we've already handled the pending message
+  const pendingMessageHandledRef = useRef(false);
+
+  usePageLeaveWarning(isWaitingForResponse || hasActiveToolCall);
 
   const {
     data,
@@ -102,6 +129,9 @@ const ChatContent = () => {
     onResponse: () => {
       setIsWaitingForResponse(false);
     },
+    onError: () => {
+      setIsWaitingForResponse(false);
+    },
   });
 
   // Check for active tool calls
@@ -112,31 +142,55 @@ const ChatContent = () => {
     setHasActiveToolCall(hasActiveTool);
   }, [messages]);
 
+  // Improved message saving logic - save messages when they change and not loading
   useEffect(() => {
-    if (!isChatLoading && messages.length > 0) {
-      if (chatId) {
-        // Only save if these aren't the initial messages or if we have new messages
-        if (
-          !hasInitialMessagesSaved &&
-          messages.length !== initialMessages.length &&
-          messages.length > 0
-        ) {
-          saveAllMessagesMutation({
-            messages,
-            threadId: chatId,
-          }).catch(console.error);
-          setHasInitialMessagesSaved(true);
-        }
+    if (!isChatLoading && chatId && messages.length > 0) {
+      const currentMessagesJson = JSON.stringify(messages);
+
+      // Only save if messages have actually changed
+      if (prevMessagesRef.current !== currentMessagesJson) {
+        prevMessagesRef.current = currentMessagesJson;
+        saveAllMessagesMutation({
+          messages,
+          threadId: chatId,
+        }).catch(console.error);
       }
     }
-  }, [
-    chatId,
-    isChatLoading,
-    saveAllMessagesMutation,
-    messages,
-    initialMessages.length,
-    hasInitialMessagesSaved,
-  ]);
+  }, [chatId, isChatLoading, saveAllMessagesMutation, messages]);
+
+  // Modify the effect to handle pending messages
+  useEffect(() => {
+    const handlePendingMessage = async () => {
+      // Skip if we've already handled the pending message for this chatId
+      if (pendingMessageHandledRef.current) return;
+
+      const pendingMessage = localStorageUtils.getPendingMessage();
+      if (pendingMessage && chatId) {
+        try {
+          // Mark as handled immediately to prevent duplicate handling
+          pendingMessageHandledRef.current = true;
+
+          // Clear the pending message first
+          localStorageUtils.clearPendingMessage();
+          // Set the input value
+          handleInputChange({
+            target: { value: pendingMessage },
+          } as React.ChangeEvent<HTMLTextAreaElement>);
+          // Submit the message
+          setIsWaitingForResponse(true);
+          const fakeEvent = {
+            preventDefault: () => {},
+          } as FormEvent<HTMLFormElement>;
+          await handleSubmit(fakeEvent);
+        } catch (error) {
+          console.error("Error handling pending message:", error);
+          setIsWaitingForResponse(false);
+        }
+      }
+    };
+
+    handlePendingMessage();
+  }, [chatId, handleInputChange, handleSubmit]);
 
   // Add scroll handler to check if we're at bottom
   const handleScroll = useCallback(() => {
@@ -164,32 +218,6 @@ const ChatContent = () => {
         messagesContainer.removeEventListener("scroll", handleScroll);
     }
   }, [handleScroll]);
-
-  // Modify the effect to handle pending messages
-  useEffect(() => {
-    const handlePendingMessage = async () => {
-      const pendingMessage = localStorageUtils.getPendingMessage();
-      if (pendingMessage && chatId) {
-        try {
-          // Clear the pending message first
-          localStorageUtils.clearPendingMessage();
-          // Set the input value
-          handleInputChange({
-            target: { value: pendingMessage },
-          } as React.ChangeEvent<HTMLTextAreaElement>);
-          // Submit the message
-          const fakeEvent = {
-            preventDefault: () => {},
-          } as FormEvent<HTMLFormElement>;
-          await handleSubmit(fakeEvent);
-        } catch (error) {
-          console.error("Error handling pending message:", error);
-        }
-      }
-    };
-
-    handlePendingMessage();
-  }, [chatId, handleInputChange, handleSubmit]);
 
   // Auto-resize textarea based on content
   useEffect(() => {
@@ -219,11 +247,13 @@ const ChatContent = () => {
     if (!chatId && input.trim()) {
       try {
         localStorageUtils.savePendingMessage(input);
+        setIsWaitingForResponse(true);
         const response = await createThreadMutation();
         router.push(`/chat?chatId=${response.threadId}`);
       } catch (error) {
         console.error("Error creating thread:", error);
         localStorageUtils.clearPendingMessage();
+        setIsWaitingForResponse(false);
       }
       return;
     }
@@ -247,7 +277,10 @@ const ChatContent = () => {
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleFormSubmit(e as unknown as FormEvent<HTMLFormElement>);
+      const fakeEvent = {
+        preventDefault: () => {},
+      } as FormEvent<HTMLFormElement>;
+      handleFormSubmit(fakeEvent);
     }
   }
 
@@ -326,7 +359,12 @@ const ChatContent = () => {
                 <ChatMessage
                   key={message.id}
                   message={message}
-                  isLoading={isChatLoading || isWaitingForResponse}
+                  isLoading={
+                    (isChatLoading || isWaitingForResponse) &&
+                    messages.length > 0 &&
+                    message.id === messages[messages.length - 1]?.id &&
+                    message.role === "assistant"
+                  }
                   addToolResult={addToolResult}
                 />
               ))
@@ -394,7 +432,7 @@ const ChatContent = () => {
                 style={{
                   minHeight: "40px",
                   maxHeight: "160px",
-                  overflow: "hidden", // Hide scrollbar during auto-resize
+                  overflow: "hidden",
                 }}
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-2">
@@ -418,7 +456,11 @@ const ChatContent = () => {
                   }
                   className="p-1.5 h-8 w-8 bg-primary hover:bg-primary/90 rounded-md transition-colors"
                 >
-                  {isWaitingForResponse ? <LoadingSpinner /> : <SendIcon />}
+                  {isWaitingForResponse || isChatLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <SendIcon />
+                  )}
                 </Button>
               </div>
             </form>
