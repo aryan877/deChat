@@ -20,5 +20,14 @@ export * from "./utils.js";
 // Stakers-related exports
 export * from "./getStakers.js";
 
+// Delegation-related exports
 export { delegateToValidator } from "./stake.js";
 export { undelegateFromValidator } from "./unstake.js";
+
+// Native Bridge exports
+export {
+  bridgeToSonic,
+  claimOnSonic,
+  bridgeToEthereum,
+  claimOnEthereum,
+} from "./nativeBridge.js";

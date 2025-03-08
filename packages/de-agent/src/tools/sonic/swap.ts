@@ -4,6 +4,82 @@ import { TransferResult } from "../../types/index.js";
 
 const ODOS_API_URL = "https://api.odos.xyz/sor/assemble";
 const EXPLORER_URL = "https://sonicscan.org";
+const ODOS_ROUTER = "0xaC041Df48dF9791B0654f1Dbbf2CC8450C5f2e9D";
+
+// Maximum uint256 value for unlimited token approvals
+const MAX_UINT256 = ethers.MaxUint256;
+
+const ERC20_ABI = [
+  "function approve(address spender, uint256 amount) external returns (bool)",
+  "function allowance(address owner, address spender) external view returns (uint256)",
+];
+
+/**
+ * Check and approve token for Odos router if needed
+ * @param agent DeAgent instance for transaction signing
+ * @param tokenAddress The token address to approve
+ * @param amount The amount to approve
+ * @returns Transaction hash of approval if needed, null if already approved
+ */
+async function checkAndApproveIfNeeded(
+  agent: DeAgent,
+  tokenAddress: string,
+  amount: string
+): Promise<string | null> {
+  if (!agent.wallet_address) {
+    throw new Error("Agent wallet address not available");
+  }
+
+  try {
+    // Create contract interface
+    const tokenContract = new ethers.Contract(
+      tokenAddress,
+      ERC20_ABI,
+      agent.provider
+    );
+
+    // Check current allowance - handle possible undefined with a type guard
+    const allowanceFunc = tokenContract.allowance;
+    if (typeof allowanceFunc !== "function") {
+      throw new Error("Token contract does not have allowance method");
+    }
+
+    const currentAllowance = await allowanceFunc(
+      agent.wallet_address,
+      ODOS_ROUTER
+    );
+    const requiredAmount = BigInt(amount);
+
+    // If allowance is already sufficient, no need to approve again
+    if (currentAllowance >= requiredAmount) {
+      return null;
+    }
+
+    // Encode the approve function call
+    const approveData = ethers.Interface.from(ERC20_ABI).encodeFunctionData(
+      "approve",
+      [
+        ODOS_ROUTER,
+        MAX_UINT256, // Always approve max to avoid future approvals
+      ]
+    );
+
+    // Send approval transaction
+    const tx = await agent.sendTransaction(
+      {
+        to: tokenAddress,
+        data: approveData,
+      },
+      { confirmations: 1 }
+    );
+
+    return tx;
+  } catch (error) {
+    throw new Error(
+      `Failed to approve token: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
 
 /**
  * Execute a token swap using the pathId from a previous quote
@@ -48,6 +124,25 @@ export async function executeSwap(
 
     const data = await response.json();
 
+    // Check if we need to approve input tokens
+    if (data.inputTokens && data.inputTokens.length > 0) {
+      for (const inputToken of data.inputTokens) {
+        if (inputToken.tokenAddress !== ethers.ZeroAddress) {
+          try {
+            await checkAndApproveIfNeeded(
+              agent,
+              inputToken.tokenAddress,
+              inputToken.amount
+            );
+          } catch (error) {
+            throw new Error(
+              `Failed to approve token: ${error instanceof Error ? error.message : "Unknown error"}`
+            );
+          }
+        }
+      }
+    }
+
     // Extract transaction details from the response
     const tx: ethers.TransactionRequest = {
       to: data.transaction.to,
@@ -56,7 +151,7 @@ export async function executeSwap(
       gasLimit: data.transaction.gas,
     };
 
-    // Send the transaction
+    // Send the swap transaction
     const txHash = await agent.sendTransaction(tx, { confirmations: 1 });
 
     return {

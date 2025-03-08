@@ -274,6 +274,30 @@ const ChatContent = () => {
     }
   };
 
+  // Add a helper function to handle stopping and cancelling tool calls
+  const handleStop = () => {
+    // Stop the chat generation first to ensure streaming stops immediately
+    stop();
+    setIsWaitingForResponse(false);
+
+    // After stopping, mark any pending tools as cancelled
+    messages.forEach((message) => {
+      if (message.toolInvocations) {
+        message.toolInvocations.forEach((tool) => {
+          if (tool.state === "call" || tool.state === "partial-call") {
+            addToolResult({
+              toolCallId: tool.toolCallId,
+              result: {
+                status: "cancelled",
+                message: "Operation cancelled by user",
+              },
+            });
+          }
+        });
+      }
+    });
+  };
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -439,7 +463,7 @@ const ChatContent = () => {
                 {isChatLoading && (
                   <Button
                     type="button"
-                    onClick={stop}
+                    onClick={handleStop}
                     className="p-1.5 h-8 w-8 bg-destructive hover:bg-destructive/90 rounded-md transition-colors"
                     title="Stop generating"
                   >

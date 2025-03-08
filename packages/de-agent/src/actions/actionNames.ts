@@ -9,6 +9,12 @@ export const ACTION_NAMES = {
   DEBRIDGE_GET_BRIDGE_QUOTE: "debridgeGetBridgeQuote",
   DEBRIDGE_GET_TOKENS_INFO: "debridgeGetTokensInfo",
 
+  // Sonic Native Bridge Actions
+  SONIC_BRIDGE_TO_SONIC: "sonicBridgeToSonic",
+  SONIC_BRIDGE_TO_ETHEREUM: "sonicBridgeToEthereum",
+  SONIC_CLAIM_ON_SONIC: "sonicClaimOnSonic",
+  SONIC_CLAIM_ON_ETHEREUM: "sonicClaimOnEthereum",
+
   // Sonic Account Actions
   SONIC_GET_ACCOUNT_INFO: "sonicGetAccountInfo",
   SONIC_GET_MULTI_ACCOUNT_INFO: "sonicGetMultiAccountInfo",
