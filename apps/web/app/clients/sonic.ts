@@ -47,7 +47,36 @@ async function getSonicTransactions(
   return data;
 }
 
+/**
+ * Transfer tokens on the Sonic chain
+ * @param toAddress Recipient wallet address
+ * @param amount Amount to transfer (in token units)
+ * @param tokenAddress Optional ERC-20 token address (if not provided, transfers native SONIC)
+ * @param cluster Network cluster (defaults to sonicMainnet)
+ * @returns Transaction hash and explorer URL
+ */
+async function transferTokens(
+  toAddress: string,
+  amount: string,
+  tokenAddress?: string,
+  cluster: string = "sonicMainnet"
+): Promise<{ txHash: string; explorerUrl: string }> {
+  try {
+    const { data } = await api.post("/api/sonic/transfer", {
+      toAddress,
+      amount,
+      tokenAddress,
+      cluster,
+    });
+    return data;
+  } catch (error) {
+    console.error("Transfer error:", error);
+    throw new Error(error instanceof Error ? error.message : "Transfer failed");
+  }
+}
+
 export const sonicClient = {
   getSonicBalances,
   getSonicTransactions,
+  transferTokens,
 };

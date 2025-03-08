@@ -5,7 +5,6 @@ export * from "./cluster.js";
 export * from "./action.js";
 export * from "./sonic.js";
 export * from "./chainlink.js";
-export * from "./nativeBridge.js";
 
 export interface Config {
   OPENAI_API_KEY?: string;

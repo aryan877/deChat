@@ -10,6 +10,7 @@ import { notFoundHandler } from "./middleware/errors/notFoundHandler.js";
 import { ErrorCode, ErrorResponse } from "./middleware/errors/types.js";
 import cookieParser from "cookie-parser";
 import { setupWalletRoutes } from "./routes/walletRoutes.js";
+import { setupSonicRoutes } from "./routes/sonicRoutes.js";
 
 const app: Express = express();
 const httpServer = createServer(app);
@@ -29,20 +30,19 @@ app.use(
     credentials: true,
   })
 );
-// // Rate limiting
-// const limiter = rateLimit({
-//   windowMs: 60 * 1000, // 1 minute
-//   max: 1000, // 1000 requests per minute
-//   message: {
-//     error: {
-//       code: ErrorCode.RATE_LIMIT_ERROR,
-//       message: "Too many requests, please try again later",
-//     },
-//   } as ErrorResponse,
-// });
-// app.use(limiter);
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 1000, // 1000 requests per minute
+  message: {
+    error: {
+      code: ErrorCode.RATE_LIMIT_ERROR,
+      message: "Too many requests, please try again later",
+    },
+  } as ErrorResponse,
+});
+app.use(limiter);
 
-// Add cookie parser middleware before routes
 app.use(cookieParser());
 
 // Body parser middleware
@@ -78,10 +78,12 @@ export const initializeRoutes = async () => {
   // Create separate router instances for each route
   const chatRouter = express.Router();
   const walletRouter = express.Router();
+  const sonicRouter = express.Router();
 
   // Setup routes with their own router instances
   app.use("/api/chat", setupChatRoutes(chatRouter));
   app.use("/api/wallet", setupWalletRoutes(walletRouter));
+  app.use("/api/sonic", setupSonicRoutes(sonicRouter));
   console.log("🛠️ Routes configured");
 
   // Handle 404 for undefined routes

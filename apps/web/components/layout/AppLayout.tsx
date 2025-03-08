@@ -18,7 +18,7 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children, title }: AppLayoutProps) {
-  const { user, ready, logout } = usePrivy();
+  const { ready, logout } = usePrivy();
   const router = useRouter();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 

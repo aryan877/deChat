@@ -1,6 +1,7 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { sonicClient } from "@/app/clients/sonic";
 import { TokenBalance, Transaction } from "@/app/types/api/sonic";
+import { useMutation } from "@tanstack/react-query";
 
 /**
  * Query key factory for Sonic-related queries
@@ -71,27 +72,20 @@ export function useSonicBalances(walletAddress: string | undefined) {
  * Provides loading states, error handling, and pagination controls.
  */
 export function useSonicTransactions(walletAddress: string | undefined) {
-  const {
-    data,
-    isLoading,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch,
-  } = useInfiniteQuery({
-    queryKey: sonicKeys.transactions(walletAddress || "", "146"),
-    queryFn: async ({ pageParam }) => {
-      if (!walletAddress) throw new Error("No wallet address");
-      return await sonicClient.getSonicTransactions(walletAddress, {
-        offset: pageParam,
-        limit: 10,
-      });
-    },
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.next_offset,
-    enabled: !!walletAddress,
-  });
+  const { data, isLoading, error, fetchNextPage, isFetchingNextPage, refetch } =
+    useInfiniteQuery({
+      queryKey: sonicKeys.transactions(walletAddress || "", "146"),
+      queryFn: async ({ pageParam }) => {
+        if (!walletAddress) throw new Error("No wallet address");
+        return await sonicClient.getSonicTransactions(walletAddress, {
+          offset: pageParam,
+          limit: 10,
+        });
+      },
+      initialPageParam: undefined as string | undefined,
+      getNextPageParam: (lastPage) => lastPage.next_offset,
+      enabled: !!walletAddress,
+    });
 
   const transactions =
     data?.pages.flatMap((page) =>
@@ -141,5 +135,38 @@ export function useSonicTransactions(walletAddress: string | undefined) {
     hasNextPage: !!data?.pages[data.pages.length - 1]?.next_offset,
     isFetchingNextPage,
     refreshTransactions: () => refetch(),
+  };
+}
+
+/**
+ * Hook for transferring tokens (native SONIC or ERC-20)
+ *
+ * Uses hooks:
+ * - useMutation
+ *
+ * This hook provides functions to transfer both native SONIC tokens and ERC-20 tokens
+ * using the backend API which handles the transaction signing with Privy.
+ */
+export function useSonicTransfer() {
+  const { mutateAsync, isPending, isError, error, reset } = useMutation({
+    mutationFn: async ({
+      toAddress,
+      amount,
+      tokenAddress,
+    }: {
+      toAddress: string;
+      amount: string;
+      tokenAddress?: string;
+    }) => {
+      return await sonicClient.transferTokens(toAddress, amount, tokenAddress);
+    },
+  });
+
+  return {
+    transferTokens: mutateAsync,
+    isTransferring: isPending,
+    isError,
+    error,
+    reset,
   };
 }

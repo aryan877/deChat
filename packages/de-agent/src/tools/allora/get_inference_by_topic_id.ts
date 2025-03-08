@@ -15,7 +15,7 @@ export async function getInferenceByTopicId(
       process.env.ALLORA_NETWORK === "mainnet"
         ? ChainSlug.MAINNET
         : ChainSlug.TESTNET;
-    const apiKey = process.env.ALLORA_API_KEY || "UP-d33e797de5134909854be2b7";
+    const apiKey = process.env.ALLORA_API_KEY || "UP-4ee58766a09b4ccf9ca74a97";
     const apiUrl = process.env.ALLORA_API_URL || "";
 
     const config: AlloraAPIClientConfig = {

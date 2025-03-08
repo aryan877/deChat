@@ -3,14 +3,11 @@
 import { useCreateWallet, usePrivy } from "@privy-io/react-auth";
 import {
   Copy,
-  Wallet,
   Plus,
   LogOut,
-  Send,
   RefreshCw,
   Download,
   Coins,
-  Shield,
   ExternalLink,
   Zap,
   ChevronRight,
@@ -34,7 +31,6 @@ import {
 } from "@/components/ui/tooltip";
 import { Cluster } from "@repo/de-agent";
 import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 
 interface WalletInfoProps {
   onLogoutClick: () => void;
@@ -118,7 +114,6 @@ export function WalletInfo({
     <div className="p-3">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Shield className="h-4 w-4 text-primary" />
           <span className="text-sm font-medium text-foreground">
             Sonic Wallet
           </span>
@@ -166,7 +161,6 @@ export function WalletInfo({
           <Card className="p-3 space-y-2 bg-muted/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
-                <Shield className="h-3 w-3 text-primary" />
                 <span className="text-xs font-medium">Address</span>
               </div>
               <Tooltip open={copied}>
@@ -247,13 +241,12 @@ export function WalletInfo({
             onClick={() => router.push("/wallet")}
             variant="default"
             size="sm"
-            className="w-full h-8 text-xs bg-primary hover:bg-primary/90 flex items-center justify-between"
+            className="w-full h-8 text-xs bg-primary hover:bg-primary/90 flex items-center justify-center"
           >
             <div className="flex items-center gap-1">
-              <Shield className="h-3 w-3" />
-              <span>View Full Wallet</span>
+              <span>View Wallet</span>
             </div>
-            <ChevronRight className="h-3 w-3" />
+            <ChevronRight className="h-3 w-3 ml-2" />
           </Button>
         </div>
       ) : (
@@ -266,7 +259,7 @@ export function WalletInfo({
           ) : (
             <div className="flex flex-col gap-2 text-xs">
               <div className="flex items-center gap-1">
-                <Shield className="h-3 w-3 text-primary" />
+                <Zap className="h-3 w-3 text-primary" />
                 <span className="font-medium">Get Started</span>
               </div>
               <p className="text-muted-foreground text-xs">

@@ -15,6 +15,7 @@ import {
   ArrowDown,
   ArrowUp,
   ExternalLink,
+  Send,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,6 +31,29 @@ import { usePrivy } from "@privy-io/react-auth";
 import { WalletInfo } from "@/components/chat/WalletInfo";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
+import { useNotificationStore } from "@/app/store/notificationStore";
+import { useSonicTransfer } from "@/hooks/useSonic";
+
+interface Token {
+  address?: string;
+  symbol: string;
+  name?: string;
+  decimals: number;
+  amount: string;
+  value_usd: number;
+  low_liquidity?: boolean;
+}
 
 export default function WalletPage() {
   const { user } = usePrivy();
@@ -52,6 +76,22 @@ export default function WalletPage() {
     isFetchingNextPage,
     refreshTransactions,
   } = useSonicTransactions(walletAddress);
+
+  // Transfer state
+  const [recipientAddress, setRecipientAddress] = useState("");
+  const [amount, setAmount] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedToken, setSelectedToken] = useState<Token>({
+    symbol: "S",
+    decimals: 18,
+    amount: "0",
+    value_usd: 0,
+  });
+
+  const { transferTokens, isTransferring, reset } = useSonicTransfer();
+
+  // Notification store
+  const { addNotification } = useNotificationStore();
 
   // Helper function to safely format currency values
   const formatCurrency = (value: number): string => {
@@ -102,7 +142,93 @@ export default function WalletPage() {
     }
   };
 
-  // Render wallet connection UI if no wallet is connected
+  const handleTransfer = async () => {
+    if (!walletAddress || !recipientAddress || !amount) {
+      addNotification("error", "Please fill all fields");
+      return;
+    }
+
+    try {
+      // Call the backend API to handle the transfer
+      const result = await transferTokens({
+        toAddress: recipientAddress,
+        amount,
+        tokenAddress:
+          selectedToken.symbol === "SONIC" ? undefined : selectedToken.address,
+      });
+
+      addNotification("success", `Transfer successful!`, {
+        txHash: result.txHash,
+      });
+      setIsDialogOpen(false);
+
+      // Reset form
+      setRecipientAddress("");
+      setAmount("");
+      setSelectedToken({
+        symbol: "SONIC",
+        decimals: 18,
+        amount: "0",
+        value_usd: 0,
+      });
+
+      // Refresh balances
+      refreshBalances();
+    } catch (err) {
+      addNotification(
+        "error",
+        `Transfer failed: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
+    }
+  };
+
+  // Reset form when dialog closes
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      setRecipientAddress("");
+      setAmount("");
+      setSelectedToken({
+        symbol: "S",
+        decimals: 18,
+        amount: "0",
+        value_usd: 0,
+      });
+      reset();
+    } else if (open && !isDialogOpen) {
+      // This is triggered when opening from the top button
+      // Find the native S token in balances
+      const nativeToken = balances.find((token) => token.symbol === "S");
+      if (nativeToken) {
+        setSelectedToken(nativeToken);
+      }
+    }
+  };
+
+  const handleTokenTransfer = (token: Token) => {
+    setSelectedToken(token);
+    setIsDialogOpen(true);
+  };
+
+  // Handle setting max amount
+  const handleSetMaxAmount = () => {
+    if (selectedToken) {
+      setAmount(
+        formatTokenAmount(selectedToken.amount, selectedToken.decimals)
+      );
+    }
+  };
+
+  // Handle setting half amount
+  const handleSetHalfAmount = () => {
+    if (selectedToken) {
+      const tokenAmount =
+        Number(selectedToken.amount) / 10 ** selectedToken.decimals;
+      const halfAmount = (tokenAmount / 2).toString();
+      setAmount(halfAmount);
+    }
+  };
+
   if (!walletAddress) {
     return (
       <AppLayout title="Sonic Wallet">
@@ -140,18 +266,161 @@ export default function WalletPage() {
                   {truncateAddress(walletAddress)}
                 </CardDescription>
               </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => refreshBalances()}
-                disabled={isLoadingBalances || isRefetchingBalances}
-              >
-                {isRefetchingBalances ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="h-4 w-4" />
-                )}
-              </Button>
+              <div className="flex gap-3 items-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => refreshBalances()}
+                  disabled={isLoadingBalances || isRefetchingBalances}
+                  className="h-10 w-10 p-0"
+                >
+                  {isRefetchingBalances ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-5 w-5" />
+                  )}
+                </Button>
+
+                <Dialog
+                  open={isDialogOpen}
+                  onOpenChange={handleDialogOpenChange}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="default"
+                      size="default"
+                      className="h-10 px-4 font-medium"
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Transfer S
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden">
+                    <div className="bg-primary/5 px-6 py-5 border-b">
+                      <DialogTitle className="text-xl">
+                        Transfer {selectedToken.symbol}
+                      </DialogTitle>
+                      <DialogDescription className="mt-1.5">
+                        Send {selectedToken.symbol} to another wallet on the
+                        Sonic Mainnet.
+                      </DialogDescription>
+                    </div>
+
+                    <div className="p-6">
+                      <div className="space-y-5">
+                        <div className="space-y-2.5">
+                          <Label
+                            htmlFor="recipient"
+                            className="text-sm font-medium"
+                          >
+                            Recipient Address
+                          </Label>
+                          <Input
+                            id="recipient"
+                            placeholder="0x..."
+                            className="h-11"
+                            value={recipientAddress}
+                            onChange={(e) =>
+                              setRecipientAddress(e.target.value)
+                            }
+                          />
+                        </div>
+
+                        <div className="space-y-2.5">
+                          <div className="flex justify-between items-center">
+                            <Label
+                              htmlFor="amount"
+                              className="text-sm font-medium"
+                            >
+                              Amount
+                            </Label>
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-6 text-xs px-2"
+                                onClick={handleSetHalfAmount}
+                              >
+                                Half
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-6 text-xs px-2"
+                                onClick={handleSetMaxAmount}
+                              >
+                                Max
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="relative">
+                            <Input
+                              id="amount"
+                              type="number"
+                              placeholder="0.01"
+                              className="h-11 pr-16"
+                              value={amount}
+                              onChange={(e) => setAmount(e.target.value)}
+                            />
+                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-medium text-muted-foreground">
+                              {selectedToken.symbol}
+                            </div>
+                          </div>
+                          {selectedToken && (
+                            <p className="text-xs text-muted-foreground">
+                              Balance:{" "}
+                              {formatTokenAmount(
+                                selectedToken.amount,
+                                selectedToken.decimals
+                              )}{" "}
+                              {selectedToken.symbol}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground">
+                          <p>
+                            Note: Only Sonic Mainnet transfers are supported.
+                            Your transaction will be signed using your connected
+                            wallet.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-3 mt-6">
+                        <DialogClose asChild>
+                          <Button
+                            variant="outline"
+                            size="default"
+                            className="min-w-[80px]"
+                          >
+                            Cancel
+                          </Button>
+                        </DialogClose>
+                        <Button
+                          onClick={handleTransfer}
+                          disabled={
+                            isTransferring || !recipientAddress || !amount
+                          }
+                          size="default"
+                          className="min-w-[100px]"
+                        >
+                          {isTransferring ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Sending...
+                            </>
+                          ) : (
+                            "Transfer"
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardHeader>
             <CardContent>
               {isLoadingBalances ? (
@@ -178,38 +447,64 @@ export default function WalletPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Token</TableHead>
-                        <TableHead>Balance</TableHead>
-                        <TableHead className="text-right">Value</TableHead>
+                        <TableHead className="h-11">Token</TableHead>
+                        <TableHead className="h-11">Balance</TableHead>
+                        <TableHead className="h-11 text-right">Value</TableHead>
+                        <TableHead className="h-11 text-right">
+                          Actions
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {balances.map((token, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="font-medium">
+                        <TableRow key={index} className="h-16">
+                          <TableCell className="font-medium align-middle">
                             <div className="flex flex-col">
                               <div className="flex items-center gap-2">
-                                <span>{token.symbol}</span>
+                                <span className="inline-block">
+                                  {token.symbol}
+                                </span>
                                 {token.low_liquidity && (
                                   <Badge variant="outline" className="text-xs">
                                     Low Liquidity
                                   </Badge>
                                 )}
                               </div>
-                              {token.name && (
-                                <span className="text-xs text-muted-foreground">
+                              {token.symbol === "S" ? (
+                                <span className="text-xs text-muted-foreground mt-0.5">
+                                  Native
+                                </span>
+                              ) : token.name ? (
+                                <span className="text-xs text-muted-foreground mt-0.5">
                                   {token.name}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-transparent mt-0.5">
+                                  placeholder
                                 </span>
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="align-middle">
                             {formatTokenAmount(token.amount, token.decimals)}
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right align-middle">
                             {token.value_usd > 1e12
                               ? "Value too large"
                               : formatCurrency(token.value_usd)}
+                          </TableCell>
+                          <TableCell className="text-right p-0 pr-4 align-middle">
+                            <div className="flex justify-end">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleTokenTransfer(token)}
+                                className="h-9"
+                              >
+                                <Send className="h-4 w-4 mr-1.5" />
+                                Transfer
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -238,15 +533,16 @@ export default function WalletPage() {
                 </CardDescription>
               </div>
               <Button
-                variant="outline"
-                size="icon"
+                variant="ghost"
+                size="sm"
                 onClick={() => refreshTransactions()}
                 disabled={isLoadingTransactions || isFetchingNextPage}
+                className="h-10 w-10 p-0"
               >
                 {isFetchingNextPage ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <RefreshCw className="h-4 w-4" />
+                  <RefreshCw className="h-5 w-5" />
                 )}
               </Button>
             </CardHeader>
