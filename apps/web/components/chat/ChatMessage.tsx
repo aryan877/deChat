@@ -409,7 +409,9 @@ export default function ChatMessage({
               <div className="flex items-center mt-2">
                 <Loader2 className="h-4 w-4 text-muted-foreground animate-spin mr-2" />
                 <span className="text-sm text-muted-foreground">
-                  Thinking...
+                  {message.role === "assistant"
+                    ? "Processing..."
+                    : "Thinking..."}
                 </span>
               </div>
             )}
