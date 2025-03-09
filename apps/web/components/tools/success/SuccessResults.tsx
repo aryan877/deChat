@@ -32,6 +32,18 @@ import {
 } from "./TokenBalanceSuccess";
 import { BalancesSuccess } from "./BalancesSuccess";
 import { BridgeQuoteSuccess } from "./BridgeQuoteSuccess";
+import {
+  BridgeStatusSuccess,
+  type BridgeStatusSuccessProps,
+} from "./BridgeStatusSuccess";
+import {
+  BridgeTransferSuccess,
+  type BridgeTransferSuccessProps,
+} from "./BridgeTransferSuccess";
+import {
+  SonicPointsSuccess,
+  type SonicPointsSuccessProps,
+} from "./SonicPointsSuccess";
 
 // Define a mapping of tool names to their success result types
 export type SuccessResultsMap = {
@@ -57,6 +69,9 @@ export type SuccessResultsMap = {
   [ACTION_NAMES.SONIC_GET_TOKEN_BALANCE]: TokenBalanceSuccessData;
   [ACTION_NAMES.SONIC_GET_BALANCES]: DuneBalancesResponse;
   [ACTION_NAMES.DEBRIDGE_FETCH_BRIDGE_QUOTE]: deBridgeEnhancedQuoteResponse;
+  [ACTION_NAMES.DEBRIDGE_VERIFY_TX_STATUS]: BridgeStatusSuccessProps["data"];
+  [ACTION_NAMES.DEBRIDGE_EXECUTE_BRIDGE_TRANSFER]: BridgeTransferSuccessProps["data"];
+  [ACTION_NAMES.SONIC_GET_POINTS]: SonicPointsSuccessProps["data"];
 };
 
 // Registry of tools that have success components
@@ -76,6 +91,9 @@ export const SUCCESS_COMPONENTS_REGISTRY = {
   [ACTION_NAMES.SONIC_GET_TOKEN_BALANCE]: true,
   [ACTION_NAMES.SONIC_GET_BALANCES]: true,
   [ACTION_NAMES.DEBRIDGE_FETCH_BRIDGE_QUOTE]: true,
+  [ACTION_NAMES.DEBRIDGE_VERIFY_TX_STATUS]: true,
+  [ACTION_NAMES.DEBRIDGE_EXECUTE_BRIDGE_TRANSFER]: true,
+  [ACTION_NAMES.SONIC_GET_POINTS]: true,
 } as const;
 
 // Type guard to check if a tool has success results
@@ -150,6 +168,20 @@ export function SuccessResults<T extends keyof SuccessResultsMap>({
         <BridgeQuoteSuccess
           data={{ data: data as deBridgeEnhancedQuoteResponse }}
         />
+      );
+    case ACTION_NAMES.DEBRIDGE_VERIFY_TX_STATUS:
+      return (
+        <BridgeStatusSuccess data={data as BridgeStatusSuccessProps["data"]} />
+      );
+    case ACTION_NAMES.DEBRIDGE_EXECUTE_BRIDGE_TRANSFER:
+      return (
+        <BridgeTransferSuccess
+          data={data as BridgeTransferSuccessProps["data"]}
+        />
+      );
+    case ACTION_NAMES.SONIC_GET_POINTS:
+      return (
+        <SonicPointsSuccess data={data as SonicPointsSuccessProps["data"]} />
       );
     default:
       return null;

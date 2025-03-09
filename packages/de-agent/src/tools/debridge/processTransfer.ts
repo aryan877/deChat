@@ -278,7 +278,6 @@ export async function processTransfer(
 
     return txHash;
   } catch (error) {
-    console.log(error);
     if (axios.isAxiosError(error)) {
       throw new Error(
         `Failed to execute bridge transfer: ${error.message}. ${error.response?.data}`

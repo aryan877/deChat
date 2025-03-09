@@ -94,6 +94,10 @@ const TOOL_DISPLAY_CONFIG: Record<
     icon: <ListChecks className="w-3 h-3" />,
     label: "Bridge Status",
   },
+  [ACTION_NAMES.SONIC_GET_POINTS]: {
+    icon: <Users className="w-3 h-3" />,
+    label: "Sonic Points",
+  },
 };
 
 export function ToolNames({ toolNames, className }: ToolNamesProps) {

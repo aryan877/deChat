@@ -295,3 +295,26 @@ export interface SonicSearchResponse {
     details: unknown;
   };
 }
+
+// Sonic Points types
+export interface SonicPointsResponse {
+  user_activity_last_detected: string;
+  wallet_address: string;
+  sonic_points: number;
+  loyalty_multiplier: number;
+  ecosystem_points: number;
+  passive_liquidity_points: number;
+  active_liquidity_points: number;
+  rank: number;
+}
+
+export interface SonicPointsResult {
+  status: "success" | "error";
+  message: string;
+  data?: SonicPointsResponse;
+  error?: {
+    code: string;
+    message: string;
+    details: unknown;
+  };
+}
