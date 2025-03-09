@@ -98,6 +98,10 @@ const TOOL_DISPLAY_CONFIG: Record<
     icon: <Users className="w-3 h-3" />,
     label: "Sonic Points",
   },
+  [ACTION_NAMES.SHADOW_TOKEN_SEARCH]: {
+    icon: <Search className="w-3 h-3" />,
+    label: "Shadow Token Search",
+  },
 };
 
 export function ToolNames({ toolNames, className }: ToolNamesProps) {

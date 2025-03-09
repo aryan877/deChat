@@ -1,6 +1,6 @@
 import React from "react";
 import { Trophy, Star, Users, Calendar } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { format } from "date-fns";
 import type { SonicPointsResponse } from "@repo/de-agent";
 
 export interface SonicPointsSuccessProps {
@@ -96,7 +96,7 @@ export function SonicPointsSuccess({ data }: SonicPointsSuccessProps) {
                 Last Activity Detected
               </p>
               <p className="font-medium">
-                {formatDate(new Date(data.user_activity_last_detected))}
+                {format(new Date(data.user_activity_last_detected), "PPP")}
               </p>
             </div>
           </div>

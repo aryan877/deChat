@@ -18,6 +18,7 @@ import { unstakeAction } from "./sonic/unstake.js";
 import { tradeQuoteAction } from "./sonic/trade.js";
 import { swapAction } from "./sonic/swap.js";
 import { searchAction } from "./sonic/search.js";
+import { shadowTokenSearchAction } from "./knowledge/shadowTokenSearch.js";
 
 export { ACTION_NAMES };
 
@@ -40,6 +41,9 @@ export const ACTIONS: Record<string, Action> = {
   [ACTION_NAMES.DEBRIDGE_EXECUTE_BRIDGE_TRANSFER]: processTransferAction,
   [ACTION_NAMES.DEBRIDGE_FETCH_BRIDGE_QUOTE]: fetchBridgeQuoteAction,
   [ACTION_NAMES.DEBRIDGE_FETCH_TOKEN_DATA]: fetchTokenDataAction,
+
+  // Knowledge actions
+  [ACTION_NAMES.SHADOW_TOKEN_SEARCH]: shadowTokenSearchAction,
 };
 
 export type { Action, ActionExample, Handler };

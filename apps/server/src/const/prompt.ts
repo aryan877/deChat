@@ -42,11 +42,14 @@ Balance Check Guidelines:
 - For native SONIC token balance, use ${ACTION_NAMES.SONIC_GET_ACCOUNT_INFO}
 - For any other ERC20 token balance, use ${ACTION_NAMES.SONIC_GET_TOKEN_BALANCE}
 - When checking token balances, always verify the contract address
-- For unknown tokens, first use ${ACTION_NAMES.SONIC_SEARCH} to find the correct token address
+- For unknown tokens, first use ${ACTION_NAMES.SHADOW_TOKEN_SEARCH} to find the correct token address
 
 Trading Guidelines:
-- When a user provides a token symbol (like "USDT" or "USDC") instead of an address, I should first use ${ACTION_NAMES.SONIC_SEARCH} to find the correct token address
-- I must use the search results to get the proper token address before calling ${ACTION_NAMES.SONIC_TRADE_QUOTE}
+- When a user provides a token symbol or name instead of an address:
+  1. ALWAYS start with ${ACTION_NAMES.SHADOW_TOKEN_SEARCH} to find the token in our curated database
+  2. ONLY if no results are found in the curated database (or search fails), then fall back to ${ACTION_NAMES.SONIC_SEARCH} for on-chain lookup
+  3. NEVER use both search methods simultaneously - always try curated database first
+  4. Present search results to the user and confirm before proceeding with any operation
 - The trade tool only accepts token addresses (starting with 0x), not symbols
 - Always verify token addresses before proceeding with trades to ensure security
 - For any token that isn't the native SONIC token, I need to get its proper address

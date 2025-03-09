@@ -11,6 +11,7 @@ import { ErrorCode, ErrorResponse } from "./middleware/errors/types.js";
 import cookieParser from "cookie-parser";
 import { setupWalletRoutes } from "./routes/walletRoutes.js";
 import { setupSonicRoutes } from "./routes/sonicRoutes.js";
+import { startTokenSyncCron } from "./cron/tokenSync.js";
 
 const app: Express = express();
 const httpServer = createServer(app);
@@ -109,6 +110,9 @@ export const connectDB = async () => {
     console.log(
       `📦 Connected to MongoDB (${process.env.NODE_ENV} environment)`
     );
+
+    // Start token sync cron job after successful DB connection
+    startTokenSyncCron();
   } catch (error) {
     console.error("MongoDB connection error:", error);
     throw error;

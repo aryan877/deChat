@@ -94,18 +94,23 @@ export default function WalletPage() {
   const { addNotification } = useNotificationStore();
 
   // Helper function to safely format currency values
-  const formatCurrency = (value: number): string => {
+  const formatCurrency = (value: number | undefined | null): string => {
+    // Handle undefined, null, or NaN values
+    if (value === undefined || value === null || isNaN(value)) {
+      return "$0.00";
+    }
+
     // Handle extremely large values
     if (value > 1e12) {
       return "Value too large";
     }
 
     try {
-      return value.toLocaleString(undefined, {
+      return new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
         maximumFractionDigits: 2,
-      });
+      }).format(value);
     } catch (error) {
       console.error("Error formatting currency:", error);
       return "$0.00";
@@ -113,12 +118,22 @@ export default function WalletPage() {
   };
 
   // Helper function to safely format token amounts
-  const formatTokenAmount = (amount: string, decimals: number): string => {
+  const formatTokenAmount = (
+    amount: string | undefined | null,
+    decimals: number
+  ): string => {
+    if (!amount) {
+      return "0";
+    }
+
     try {
       const value = Number(amount) / 10 ** decimals;
-      return value.toLocaleString(undefined, {
+      if (isNaN(value)) {
+        return "0";
+      }
+      return new Intl.NumberFormat("en-US", {
         maximumFractionDigits: 6,
-      });
+      }).format(value);
     } catch (error) {
       console.error("Error formatting token amount:", error);
       return "0";
@@ -126,7 +141,10 @@ export default function WalletPage() {
   };
 
   // Helper function to truncate addresses
-  const truncateAddress = (address: string) => {
+  const truncateAddress = (address: string | undefined): string => {
+    if (!address) {
+      return "Invalid Address";
+    }
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
@@ -435,11 +453,17 @@ export default function WalletPage() {
                     <h3 className="text-lg font-medium">Total Value</h3>
                     <span className="text-lg font-bold">
                       {formatCurrency(
-                        balances.reduce((sum, token) => {
-                          // Skip tokens with unreasonably large values
-                          if (token.value_usd > 1e12) return sum;
+                        balances?.reduce((sum, token) => {
+                          // Skip tokens with unreasonably large values or invalid values
+                          if (
+                            !token?.value_usd ||
+                            token.value_usd > 1e12 ||
+                            isNaN(token.value_usd)
+                          ) {
+                            return sum;
+                          }
                           return sum + token.value_usd;
-                        }, 0)
+                        }, 0) ?? 0
                       )}
                     </span>
                   </div>
@@ -456,25 +480,25 @@ export default function WalletPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {balances.map((token, index) => (
+                      {balances?.map((token, index) => (
                         <TableRow key={index} className="h-16">
                           <TableCell className="font-medium align-middle">
                             <div className="flex flex-col">
                               <div className="flex items-center gap-2">
                                 <span className="inline-block">
-                                  {token.symbol}
+                                  {token?.symbol || "Unknown"}
                                 </span>
-                                {token.low_liquidity && (
+                                {token?.low_liquidity && (
                                   <Badge variant="outline" className="text-xs">
                                     Low Liquidity
                                   </Badge>
                                 )}
                               </div>
-                              {token.symbol === "S" ? (
+                              {token?.symbol === "S" ? (
                                 <span className="text-xs text-muted-foreground mt-0.5">
                                   Native
                                 </span>
-                              ) : token.name ? (
+                              ) : token?.name ? (
                                 <span className="text-xs text-muted-foreground mt-0.5">
                                   {token.name}
                                 </span>
@@ -486,12 +510,15 @@ export default function WalletPage() {
                             </div>
                           </TableCell>
                           <TableCell className="align-middle">
-                            {formatTokenAmount(token.amount, token.decimals)}
+                            {formatTokenAmount(
+                              token?.amount,
+                              token?.decimals || 18
+                            )}
                           </TableCell>
                           <TableCell className="text-right align-middle">
-                            {token.value_usd > 1e12
+                            {token?.value_usd > 1e12
                               ? "Value too large"
-                              : formatCurrency(token.value_usd)}
+                              : formatCurrency(token?.value_usd)}
                           </TableCell>
                           <TableCell className="text-right p-0 pr-4 align-middle">
                             <div className="flex justify-end">
