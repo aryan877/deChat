@@ -1,4 +1,5 @@
 import { DEBRIDGE_API } from "../../constants/index.js";
+import axios from "axios";
 import { deBridgeSupportedChainsResponse } from "../../types/index.js";
 
 /**
@@ -7,17 +8,19 @@ import { deBridgeSupportedChainsResponse } from "../../types/index.js";
  * @throws {Error} If the API request fails or returns an error
  */
 export async function getDebridgeSupportedChains(): Promise<deBridgeSupportedChainsResponse> {
-  const response = await fetch(`${DEBRIDGE_API}/supported-chains-info`);
+  try {
+    const response = await axios.get(`${DEBRIDGE_API}/supported-chains-info`);
+    const data = response.data;
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch supported chains: ${response.statusText}`);
+    if ("error" in data) {
+      throw new Error(`API Error: ${data.error}`);
+    }
+
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Failed to fetch supported chains: ${error.message}`);
+    }
+    throw error;
   }
-
-  const data = await response.json();
-
-  if ("error" in data) {
-    throw new Error(`API Error: ${data.error}`);
-  }
-
-  return data;
 }

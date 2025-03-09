@@ -1,4 +1,5 @@
 import { DEBRIDGE_API } from "../../constants/index.js";
+import axios from "axios";
 import {
   deBridgeOrderInput,
   deBridgeOrderResponse,
@@ -9,16 +10,16 @@ import {
  * This endpoint returns both the quote and transaction data needed for execution.
  *
  * @param params Required parameters for building a bridge transaction
- * @param params.srcChainId Source chain ID (e.g., "1" for Ethereum)
- * @param params.srcChainTokenIn Source token address (use "0x0000000000000000000000000000000000000000" for native tokens on EVM)
- * @param params.srcChainTokenInAmount Amount of source tokens to bridge (in smallest units)
- * @param params.dstChainId Destination chain ID (e.g., "7565164" for Solana)
- * @param params.dstChainTokenOut Destination token address
+ * @param params.srcChainId Source chain ID (e.g., "1" for Ethereum, "100000014" for Sonic)
+ * @param params.srcChainTokenIn Source token address (use "0x0000000000000000000000000000000000000000" for native tokens on EVM chains, "11111111111111111111111111111111" for Solana's native SOL)
+ * @param params.srcChainTokenInAmount Amount of source tokens to bridge (in smallest units - e.g., 1.0 token with 18 decimals = 1000000000000000000)
+ * @param params.dstChainId Destination chain ID (e.g., "7565164" for Solana, "100000014" for Sonic)
+ * @param params.dstChainTokenOut Destination token address (use "0x0000000000000000000000000000000000000000" for native tokens on EVM chains, "11111111111111111111111111111111" for Solana's native SOL)
  * @param params.dstChainTokenOutRecipient Recipient address on destination chain
  * @param params.slippage Optional slippage tolerance in percentage (e.g., 0.5 for 0.5%)
  * @returns Quote information and transaction data
  */
-export async function getBridgeQuote(
+export async function fetchBridgeQuote(
   params: deBridgeOrderInput
 ): Promise<deBridgeOrderResponse> {
   // Validate required parameters
@@ -28,15 +29,21 @@ export async function getBridgeQuote(
     );
   }
 
+  // Always set dstChainTokenOutAmount to "auto" to get the best rate
+  const dstChainTokenOutAmount = "auto";
+
+  // Always set prependOperatingExpenses to "true" to include all fees
+  const prependOperatingExpenses = "true";
+
   const queryParams = new URLSearchParams({
     srcChainId: params.srcChainId,
     srcChainTokenIn: params.srcChainTokenIn,
     srcChainTokenInAmount: params.srcChainTokenInAmount,
     dstChainId: params.dstChainId,
     dstChainTokenOut: params.dstChainTokenOut,
-    dstChainTokenOutAmount: params.dstChainTokenOutAmount || "auto",
+    dstChainTokenOutAmount: dstChainTokenOutAmount,
     dstChainTokenOutRecipient: params.dstChainTokenOutRecipient,
-    prependOperatingExpenses: "true",
+    prependOperatingExpenses: prependOperatingExpenses,
     additionalTakerRewardBps: (params.additionalTakerRewardBps || 0).toString(),
     ...(params.slippage && { slippage: params.slippage.toString() }),
     ...(params.srcIntermediaryTokenAddress && {
@@ -63,22 +70,24 @@ export async function getBridgeQuote(
     }),
   });
 
-  const response = await fetch(
-    `${DEBRIDGE_API}/dln/order/create-tx?${queryParams}`
-  );
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `Failed to get bridge quote: ${response.status} - ${errorText}`
+  try {
+    const response = await axios.get(
+      `${DEBRIDGE_API}/dln/order/create-tx?${queryParams}`
     );
+
+    const data = response.data;
+
+    if (data.error) {
+      throw new Error(`API Error: ${data.error}`);
+    }
+
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        `Failed to get bridge quote: ${error.response?.status} - ${error.response?.data}`
+      );
+    }
+    throw error;
   }
-
-  const data = await response.json();
-
-  if (data.error) {
-    throw new Error(`API Error: ${data.error}`);
-  }
-
-  return data;
 }

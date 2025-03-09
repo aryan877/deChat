@@ -1,9 +1,9 @@
 import { z } from "zod";
 import type { Action } from "../../types/action.js";
-import { getBridgeQuote } from "../../tools/debridge/getBridgeQuote.js";
+import { processTransfer } from "../../tools/debridge/processTransfer.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
-const getBridgeQuoteSchema = z.object({
+const processTransferSchema = z.object({
   srcChainId: z.string().describe("Source chain ID (e.g., '1' for Ethereum)"),
   srcChainTokenIn: z.string().describe("Token address on source chain"),
   srcChainTokenInAmount: z
@@ -14,26 +14,22 @@ const getBridgeQuoteSchema = z.object({
   dstChainTokenOutRecipient: z
     .string()
     .describe("Recipient address on destination chain"),
-  account: z.string().describe("Sender's wallet address"),
-  slippage: z
-    .number()
-    .optional()
-    .describe("Optional slippage tolerance in percentage"),
   referralCode: z.string().optional().describe("Optional referral code"),
 });
 
-export type GetBridgeQuoteInput = z.infer<typeof getBridgeQuoteSchema>;
+export type ProcessTransferInput = z.infer<typeof processTransferSchema>;
 
-export const getBridgeQuoteAction: Action = {
-  name: ACTION_NAMES.DEBRIDGE_GET_BRIDGE_QUOTE,
+export const processTransferAction: Action = {
+  name: ACTION_NAMES.DEBRIDGE_EXECUTE_BRIDGE_TRANSFER,
   similes: [
-    "get bridge quote",
-    "estimate bridge cost",
-    "check bridge fees",
-    "calculate bridge amount",
+    "process bridge transfer",
+    "execute cross-chain transfer",
+    "bridge tokens",
+    "transfer across chains",
+    "send tokens to another chain",
   ],
   description:
-    "Get a quote for bridging tokens between chains including fees and estimated output",
+    "Process and execute a bridge transfer for cross-chain token movement",
   examples: [
     [
       {
@@ -45,45 +41,41 @@ export const getBridgeQuoteAction: Action = {
           dstChainTokenOut: "0x...",
           dstChainTokenOutRecipient: "0x...",
           account: "0x...",
-          slippage: 0.5,
         },
         output: {
-          estimatedGas: "500000",
-          fee: "0.001",
-          estimatedOutput: "990000000000000000",
+          txHash: "0x...",
         },
-        explanation: "Gets a quote for bridging 1 ETH from Ethereum to BSC",
+        explanation: "Bridges tokens from Ethereum to BSC",
       },
     ],
   ],
-  schema: getBridgeQuoteSchema,
+  schema: processTransferSchema,
   handler: async (agent, input) => {
-    const params = input as GetBridgeQuoteInput;
+    const params = input as ProcessTransferInput;
     try {
-      const quote = await getBridgeQuote({
+      const txHash = await processTransfer(agent, {
         srcChainId: params.srcChainId,
         srcChainTokenIn: params.srcChainTokenIn,
         srcChainTokenInAmount: params.srcChainTokenInAmount,
         dstChainId: params.dstChainId,
         dstChainTokenOut: params.dstChainTokenOut,
         dstChainTokenOutRecipient: params.dstChainTokenOutRecipient,
-        account: params.account,
-        slippage: params.slippage,
+        account: agent.wallet_address,
         referralCode: params.referralCode
           ? Number(params.referralCode)
           : undefined,
       });
       return {
         status: "success",
-        message: "Successfully retrieved bridge quote",
-        data: quote,
+        message: "Successfully executed bridge transfer",
+        data: { txHash },
       };
     } catch (error) {
       return {
         status: "error",
-        message: "Failed to get bridge quote",
+        message: "Failed to execute bridge transfer",
         error: {
-          code: "QUOTE_ERROR",
+          code: "BRIDGE_ERROR",
           message:
             error instanceof Error ? error.message : "Unknown error occurred",
           details: error,

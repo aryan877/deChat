@@ -1,9 +1,9 @@
 import { z } from "zod";
 import type { Action } from "../../types/action.js";
-import { createDebridgeBridgeOrder } from "../../tools/debridge/createBridgeOrder.js";
+import { fetchBridgeQuote } from "../../tools/debridge/fetchBridgeQuote.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
-const createBridgeOrderSchema = z.object({
+const fetchBridgeQuoteSchema = z.object({
   srcChainId: z.string().describe("Source chain ID (e.g., '1' for Ethereum)"),
   srcChainTokenIn: z.string().describe("Token address on source chain"),
   srcChainTokenInAmount: z
@@ -15,20 +15,25 @@ const createBridgeOrderSchema = z.object({
     .string()
     .describe("Recipient address on destination chain"),
   account: z.string().describe("Sender's wallet address"),
+  slippage: z
+    .number()
+    .optional()
+    .describe("Optional slippage tolerance in percentage"),
   referralCode: z.string().optional().describe("Optional referral code"),
 });
 
-export type CreateBridgeOrderInput = z.infer<typeof createBridgeOrderSchema>;
+export type FetchBridgeQuoteInput = z.infer<typeof fetchBridgeQuoteSchema>;
 
-export const createBridgeOrderAction: Action = {
-  name: ACTION_NAMES.DEBRIDGE_CREATE_BRIDGE_ORDER,
+export const fetchBridgeQuoteAction: Action = {
+  name: ACTION_NAMES.DEBRIDGE_FETCH_BRIDGE_QUOTE,
   similes: [
-    "create bridge order",
-    "start bridge transaction",
-    "initiate token bridge",
-    "setup cross-chain transfer",
+    "fetch bridge quote",
+    "estimate bridge cost",
+    "check bridge fees",
+    "calculate bridge amount",
   ],
-  description: "Create a new bridge order for cross-chain token transfer",
+  description:
+    "Fetch a quote for bridging tokens between chains including fees and estimated output",
   examples: [
     [
       {
@@ -40,20 +45,22 @@ export const createBridgeOrderAction: Action = {
           dstChainTokenOut: "0x...",
           dstChainTokenOutRecipient: "0x...",
           account: "0x...",
+          slippage: 0.5,
         },
         output: {
-          orderId: "123",
-          tx: { to: "0x...", data: "0x...", value: "0" },
+          estimatedGas: "500000",
+          fee: "0.001",
+          estimatedOutput: "990000000000000000",
         },
-        explanation: "Creates a bridge order from Ethereum to BSC",
+        explanation: "Gets a quote for bridging 1 ETH from Ethereum to BSC",
       },
     ],
   ],
-  schema: createBridgeOrderSchema,
+  schema: fetchBridgeQuoteSchema,
   handler: async (agent, input) => {
-    const params = input as CreateBridgeOrderInput;
+    const params = input as FetchBridgeQuoteInput;
     try {
-      const order = await createDebridgeBridgeOrder({
+      const quote = await fetchBridgeQuote({
         srcChainId: params.srcChainId,
         srcChainTokenIn: params.srcChainTokenIn,
         srcChainTokenInAmount: params.srcChainTokenInAmount,
@@ -61,21 +68,22 @@ export const createBridgeOrderAction: Action = {
         dstChainTokenOut: params.dstChainTokenOut,
         dstChainTokenOutRecipient: params.dstChainTokenOutRecipient,
         account: params.account,
+        slippage: params.slippage,
         referralCode: params.referralCode
           ? Number(params.referralCode)
           : undefined,
       });
       return {
         status: "success",
-        message: "Successfully created bridge order",
-        data: order,
+        message: "Successfully retrieved bridge quote",
+        data: quote,
       };
     } catch (error) {
       return {
         status: "error",
-        message: "Failed to create bridge order",
+        message: "Failed to get bridge quote",
         error: {
-          code: "CREATION_ERROR",
+          code: "QUOTE_ERROR",
           message:
             error instanceof Error ? error.message : "Unknown error occurred",
           details: error,

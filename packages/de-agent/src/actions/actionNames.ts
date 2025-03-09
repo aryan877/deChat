@@ -3,11 +3,11 @@ export const ACTION_NAMES = {
   ASK_FOR_CONFIRMATION: "askForConfirmation",
 
   // deBridge Actions
-  DEBRIDGE_CHECK_TRANSACTION_STATUS: "debridgeCheckTransactionStatus",
-  DEBRIDGE_CREATE_BRIDGE_ORDER: "debridgeCreateBridgeOrder",
-  DEBRIDGE_EXECUTE_BRIDGE_ORDER: "debridgeExecuteBridgeOrder",
-  DEBRIDGE_GET_BRIDGE_QUOTE: "debridgeGetBridgeQuote",
-  DEBRIDGE_GET_TOKENS_INFO: "debridgeGetTokensInfo",
+  DEBRIDGE_VERIFY_TX_STATUS: "debridgeVerifyTxStatus",
+  DEBRIDGE_EXECUTE_BRIDGE_TRANSFER: "debridgeExecuteBridgeTransfer",
+  DEBRIDGE_FETCH_BRIDGE_QUOTE: "debridgeFetchBridgeQuote",
+  DEBRIDGE_FETCH_TOKEN_DATA: "debridgeFetchTokenData",
+  DEBRIDGE_PROCESS_TRANSFER: "debridgeProcessTransfer",
 
   // Sonic Account Actions
   SONIC_GET_ACCOUNT_INFO: "sonicGetAccountInfo",
@@ -28,6 +28,7 @@ export const ACTION_NAMES = {
   SONIC_GET_NFT_TRANSFERS: "sonicGetNFTTransfers",
   SONIC_GET_ERC1155_TRANSFERS: "sonicGetERC1155Transfers",
   SONIC_GET_TOKEN_BALANCE: "sonicGetTokenBalance",
+  SONIC_GET_BALANCES: "sonicGetBalances",
 
   // Sonic Block Actions
   SONIC_GET_BLOCK_REWARD: "sonicGetBlockReward",

@@ -9,6 +9,8 @@ import type {
   SonicDelegationsByAddressResponse,
   SonicSearchResult,
   SonicTradeQuoteResponse,
+  DuneBalancesResponse,
+  deBridgeEnhancedQuoteResponse,
 } from "@repo/de-agent";
 import { TransferSuccess } from "./TransferSuccess";
 import { ChainlinkPriceFeedsSuccess } from "./ChainlinkPriceFeedsSuccess";
@@ -28,6 +30,8 @@ import {
   TokenBalanceSuccess,
   type TokenBalanceSuccessData,
 } from "./TokenBalanceSuccess";
+import { BalancesSuccess } from "./BalancesSuccess";
+import { BridgeQuoteSuccess } from "./BridgeQuoteSuccess";
 
 // Define a mapping of tool names to their success result types
 export type SuccessResultsMap = {
@@ -51,6 +55,8 @@ export type SuccessResultsMap = {
   [ACTION_NAMES.SONIC_SWAP]: SwapSuccessData;
   [ACTION_NAMES.SONIC_GET_ACCOUNT_INFO]: AccountInfoSuccessData;
   [ACTION_NAMES.SONIC_GET_TOKEN_BALANCE]: TokenBalanceSuccessData;
+  [ACTION_NAMES.SONIC_GET_BALANCES]: DuneBalancesResponse;
+  [ACTION_NAMES.DEBRIDGE_FETCH_BRIDGE_QUOTE]: deBridgeEnhancedQuoteResponse;
 };
 
 // Registry of tools that have success components
@@ -68,6 +74,8 @@ export const SUCCESS_COMPONENTS_REGISTRY = {
   [ACTION_NAMES.SONIC_SWAP]: true,
   [ACTION_NAMES.SONIC_GET_ACCOUNT_INFO]: true,
   [ACTION_NAMES.SONIC_GET_TOKEN_BALANCE]: true,
+  [ACTION_NAMES.SONIC_GET_BALANCES]: true,
+  [ACTION_NAMES.DEBRIDGE_FETCH_BRIDGE_QUOTE]: true,
 } as const;
 
 // Type guard to check if a tool has success results
@@ -135,6 +143,14 @@ export function SuccessResults<T extends keyof SuccessResultsMap>({
       return <AccountInfoSuccess data={data as AccountInfoSuccessData} />;
     case ACTION_NAMES.SONIC_GET_TOKEN_BALANCE:
       return <TokenBalanceSuccess data={data as TokenBalanceSuccessData} />;
+    case ACTION_NAMES.SONIC_GET_BALANCES:
+      return <BalancesSuccess data={data as DuneBalancesResponse} />;
+    case ACTION_NAMES.DEBRIDGE_FETCH_BRIDGE_QUOTE:
+      return (
+        <BridgeQuoteSuccess
+          data={{ data: data as deBridgeEnhancedQuoteResponse }}
+        />
+      );
     default:
       return null;
   }

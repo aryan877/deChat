@@ -1,9 +1,9 @@
 import { z } from "zod";
 import type { Action } from "../../types/action.js";
-import { getDebridgeTokensInfo } from "../../tools/debridge/getTokensInfo.js";
+import { fetchTokenData } from "../../tools/debridge/fetchTokenData.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
-const getTokensInfoSchema = z.object({
+const fetchTokenDataSchema = z.object({
   chainId: z
     .string()
     .describe("Chain ID to get token information for (e.g., '1' for Ethereum)"),
@@ -17,18 +17,18 @@ const getTokensInfoSchema = z.object({
     .describe("Optional search term to filter tokens by name or symbol"),
 });
 
-export type GetTokensInfoInput = z.infer<typeof getTokensInfoSchema>;
+export type FetchTokenDataInput = z.infer<typeof fetchTokenDataSchema>;
 
-export const getTokensInfoAction: Action = {
-  name: ACTION_NAMES.DEBRIDGE_GET_TOKENS_INFO,
+export const fetchTokenDataAction: Action = {
+  name: ACTION_NAMES.DEBRIDGE_FETCH_TOKEN_DATA,
   similes: [
-    "get token information",
+    "fetch token information",
     "list supported tokens",
     "search available tokens",
     "check token details",
   ],
   description:
-    "Get information about tokens supported by deBridge on a specific chain",
+    "Fetch information about tokens supported by deBridge on a specific chain. Sonic uses chain ID '100000014' in the deBridge protocol.",
   examples: [
     [
       {
@@ -49,11 +49,11 @@ export const getTokensInfoAction: Action = {
       },
     ],
   ],
-  schema: getTokensInfoSchema,
+  schema: fetchTokenDataSchema,
   handler: async (agent, input) => {
-    const params = input as GetTokensInfoInput;
+    const params = input as FetchTokenDataInput;
     try {
-      const tokensInfo = await getDebridgeTokensInfo({
+      const tokensInfo = await fetchTokenData({
         chainId: params.chainId,
         tokenAddress: params.tokenAddress,
         search: params.search,

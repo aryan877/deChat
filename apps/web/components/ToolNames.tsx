@@ -9,6 +9,9 @@ import {
   BarChart,
   Users,
   Search,
+  ArrowRightLeft,
+  ListChecks,
+  Info,
 } from "lucide-react";
 import React from "react";
 
@@ -23,7 +26,7 @@ const TOOL_DISPLAY_CONFIG: Record<
 > = {
   [ACTION_NAMES.GET_SUPPORTED_CHAINS]: {
     icon: <AlertCircle className="w-3 h-3" />,
-    label: "Supported Chains",
+    label: "Debridge Supported Chains",
   },
   [ACTION_NAMES.ASK_FOR_CONFIRMATION]: {
     icon: <AlertCircle className="w-3 h-3" />,
@@ -72,6 +75,24 @@ const TOOL_DISPLAY_CONFIG: Record<
   [ACTION_NAMES.SONIC_SWAP]: {
     icon: <ArrowUpRight className="w-3 h-3" />,
     label: "Swap",
+  },
+
+  // DeBridge tools
+  [ACTION_NAMES.DEBRIDGE_FETCH_TOKEN_DATA]: {
+    icon: <Info className="w-3 h-3" />,
+    label: "DeBridge Token Data",
+  },
+  [ACTION_NAMES.DEBRIDGE_FETCH_BRIDGE_QUOTE]: {
+    icon: <ArrowRightLeft className="w-3 h-3" />,
+    label: "Bridge Quote",
+  },
+  [ACTION_NAMES.DEBRIDGE_EXECUTE_BRIDGE_TRANSFER]: {
+    icon: <ArrowRightLeft className="w-3 h-3" />,
+    label: "Bridge Transfer",
+  },
+  [ACTION_NAMES.DEBRIDGE_VERIFY_TX_STATUS]: {
+    icon: <ListChecks className="w-3 h-3" />,
+    label: "Bridge Status",
   },
 };
 

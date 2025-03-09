@@ -1,25 +1,23 @@
 import { z } from "zod";
 import type { Action } from "../../types/action.js";
-import { checkDebridgeTransactionStatus } from "../../tools/debridge/checkTransactionStatus.js";
+import { verifyTxStatus } from "../../tools/debridge/verifyTxStatus.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
-const checkTransactionStatusSchema = z.object({
+const verifyTxStatusSchema = z.object({
   txHash: z.string().describe("The transaction hash to check status for"),
 });
 
-export type CheckTransactionStatusInput = z.infer<
-  typeof checkTransactionStatusSchema
->;
+export type VerifyTxStatusInput = z.infer<typeof verifyTxStatusSchema>;
 
-export const checkTransactionStatusAction: Action = {
-  name: ACTION_NAMES.DEBRIDGE_CHECK_TRANSACTION_STATUS,
+export const verifyTxStatusAction: Action = {
+  name: ACTION_NAMES.DEBRIDGE_VERIFY_TX_STATUS,
   similes: [
-    "check bridge transaction status",
+    "verify bridge transaction status",
     "get bridge transaction status",
     "check debridge transaction",
     "verify bridge status",
   ],
-  description: "Check the status of a cross-chain bridge transaction",
+  description: "Verify the status of a cross-chain bridge transaction",
   examples: [
     [
       {
@@ -29,11 +27,11 @@ export const checkTransactionStatusAction: Action = {
       },
     ],
   ],
-  schema: checkTransactionStatusSchema,
+  schema: verifyTxStatusSchema,
   handler: async (agent, input) => {
-    const params = input as CheckTransactionStatusInput;
+    const params = input as VerifyTxStatusInput;
     try {
-      const status = await checkDebridgeTransactionStatus(agent, params.txHash);
+      const status = await verifyTxStatus(agent, params.txHash);
       return {
         status: "success",
         message: "Successfully retrieved transaction status",
