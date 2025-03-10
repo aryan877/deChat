@@ -57,6 +57,22 @@ COPY --from=pruner --chown=nodeapp:nodeapp /app/out/full/ .
 # Build all packages
 RUN pnpm turbo run build --filter=server
 
+#
+# 4) Runner - Final stage that will run the application
+#
+FROM base AS runner
+WORKDIR /app
+
+# Copy package.json files and workspace config
+COPY --from=pruner --chown=nodeapp:nodeapp /app/out/json/ .
+
+# Copy only production dependencies
+RUN pnpm install --frozen-lockfile --prod
+
+# Copy built files from builder
+COPY --from=builder --chown=nodeapp:nodeapp /app/apps/server/dist /app/apps/server/dist
+COPY --from=builder --chown=nodeapp:nodeapp /app/packages /app/packages
+
 # Set default environment variables
 ENV NODE_ENV=production \
     PORT=5000
@@ -68,4 +84,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/health || exit 1
 
 # Start the application
-CMD ["pnpm", "run", "start"]
+WORKDIR /app/apps/server
+CMD ["node", "dist/index.js"]
