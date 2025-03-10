@@ -108,6 +108,39 @@ const initializeAstraDB = () => {
   return db;
 };
 
+// Function to check if the collection exists and count documents
+async function countDocumentsInAstraDB() {
+  try {
+    console.log("🔌 Connecting to AstraDB to check document count...");
+    const db = initializeAstraDB();
+    const colls = await db.listCollections();
+
+    // Check if collection exists
+    const collectionExists = colls.some(
+      (coll: any) => coll.name === COLLECTION_NAME
+    );
+
+    if (!collectionExists) {
+      console.log(`ℹ️ Collection ${COLLECTION_NAME} does not exist. Count: 0`);
+      return 0;
+    }
+
+    // Count documents
+    const collection = db.collection(COLLECTION_NAME);
+
+    // AstraDB doesn't have a direct count method, so we'll use find with a limit
+    // to check if there are any documents
+    const result = await collection.find({}, { limit: 1 }).toArray();
+    const count = result.length;
+
+    console.log(`📊 Document count in ${COLLECTION_NAME}: ${count}`);
+    return count;
+  } catch (error) {
+    console.error("❌ Error counting documents:", error);
+    throw error;
+  }
+}
+
 // Function to create embedding using OpenAI
 async function createEmbedding(text: string) {
   try {
@@ -302,16 +335,20 @@ export const startDocsSyncCron = async () => {
     // Check when the last successful sync was performed
     const lastSync = await getLastSuccessfulDocsSync();
 
-    // If no previous successful sync exists, perform initial sync
-    if (!lastSync) {
+    // Check if there are documents in AstraDB
+    const documentCount = await countDocumentsInAstraDB();
+
+    // If no previous successful sync exists or there are no documents, perform initial sync
+    if (!lastSync || documentCount === 0) {
       console.log(
-        "🔄 No previous Sonic docs sync found. Performing initial sync..."
+        `🔄 ${!lastSync ? "No previous Sonic docs sync found" : "No documents found in AstraDB"}. Performing initial sync...`
       );
       await performDocsSync();
     } else {
       console.log(
         `🔄 Last successful Sonic docs sync: ${lastSync.toISOString()}`
       );
+      console.log(`📊 Current document count in AstraDB: ${documentCount}`);
 
       // Check if it's time for a new sync based on the minimum interval
       const now = new Date();
@@ -344,6 +381,16 @@ export const startDocsSyncCron = async () => {
       // Check last successful sync
       const lastSync = await getLastSuccessfulDocsSync();
       const now = new Date();
+
+      // Check if there are documents in AstraDB
+      const documentCount = await countDocumentsInAstraDB();
+
+      // Sync if the collection is empty or enough time has passed
+      if (documentCount === 0) {
+        console.log("⚠️ No documents found in AstraDB. Performing sync...");
+        await performDocsSync();
+        return;
+      }
 
       if (
         lastSync &&
