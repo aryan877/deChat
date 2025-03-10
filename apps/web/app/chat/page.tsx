@@ -31,11 +31,12 @@ import { StopIcon } from "@/components/StopIcon";
 const ActionGuide = () => {
   return (
     <div className="text-center py-6">
-      <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-4">
-        Welcome to Sonic DeFi AI Assistant
+      <h1 className="text-xl md:text-2xl font-bold text-primary mb-4">
+        Welcome to DeChat
       </h1>
-      <p className="text-sm text-muted-foreground mb-8">
-        Here are some actions you can perform with our AI assistant
+      <p className="text-xs text-white mb-6">
+        Your personal AI assistant for navigating DeFi on Sonic - get quotes,
+        execute trades, check balances, and explore the Sonic ecosystem
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left max-w-3xl mx-auto">
