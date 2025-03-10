@@ -134,15 +134,6 @@ export default function Home() {
             </div>
             <div className="flex gap-6 justify-center">
               <a
-                href="https://github.com/blorm-network/ZerePy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5"
-              >
-                <Github className="h-4 w-4" />
-                GitHub
-              </a>
-              <a
                 href="https://github.com/aryan877/deChat"
                 target="_blank"
                 rel="noopener noreferrer"
