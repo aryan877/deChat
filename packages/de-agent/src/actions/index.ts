@@ -21,15 +21,23 @@ import { swapAction } from "./sonic/swap.js";
 import { searchAction } from "./sonic/search.js";
 import { shadowTokenSearchAction } from "./knowledge/shadowTokenSearch.js";
 import { sonicDocsSearchAction } from "./knowledge/sonicDocsSearch.js";
+import { alloraActions } from "./allora/index.js";
 
 export { ACTION_NAMES };
 
 export const ACTIONS: Record<string, Action> = {
   [ACTION_NAMES.ASK_FOR_CONFIRMATION]: askForConfirmationAction,
+
+  // Include action groups
   ...sonicActions,
   ...duneActions,
+  ...alloraActions,
+
+  // Chainlink actions
   [ACTION_NAMES.CHAINLINK_GET_PRICE_DATA]: getPriceDataAction,
   [ACTION_NAMES.CHAINLINK_GET_PRICE_FEEDS]: getPriceFeedsAction,
+
+  // Sonic individual actions
   [ACTION_NAMES.SONIC_STAKE]: delegateAction,
   [ACTION_NAMES.SONIC_GET_DELEGATIONS]: getDelegationsAction,
   [ACTION_NAMES.SONIC_UNSTAKE]: unstakeAction,

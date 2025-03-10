@@ -107,6 +107,18 @@ const TOOL_DISPLAY_CONFIG: Record<
     icon: <Book className="w-3 h-3" />,
     label: "Sonic Docs Search",
   },
+  [ACTION_NAMES.ALLORA_FETCH_TOPICS]: {
+    icon: <Info className="w-3 h-3" />,
+    label: "Allora Topics",
+  },
+  [ACTION_NAMES.ALLORA_FETCH_INFERENCE]: {
+    icon: <Info className="w-3 h-3" />,
+    label: "Allora Inference",
+  },
+  [ACTION_NAMES.ALLORA_FETCH_PRICE_INFERENCE]: {
+    icon: <Info className="w-3 h-3" />,
+    label: "Allora Price Inference",
+  },
 };
 
 export function ToolNames({ toolNames, className }: ToolNamesProps) {

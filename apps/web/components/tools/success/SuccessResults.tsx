@@ -13,6 +13,8 @@ import type {
   deBridgeEnhancedQuoteResponse,
   ShadowTokenSearchResponse,
   SonicDocsSearchResponse,
+  AlloraInferenceResponse,
+  AlloraSdkTopic,
 } from "@repo/de-agent";
 import { TransferSuccess } from "./TransferSuccess";
 import { ChainlinkPriceFeedsSuccess } from "./ChainlinkPriceFeedsSuccess";
@@ -48,6 +50,9 @@ import {
 } from "./SonicPointsSuccess";
 import { TokenSearchSuccess } from "./TokenSearchSuccess";
 import { DocsSearchSuccess } from "./DocsSearchSuccess";
+import { AlloraTopicsSuccess } from "./AlloraTopicsSuccess";
+import { AlloraInferenceSuccess } from "./AlloraInferenceSuccess";
+import { AlloraPriceInferenceSuccess } from "./AlloraPriceInferenceSuccess";
 
 // Define a mapping of tool names to their success result types
 export type SuccessResultsMap = {
@@ -78,8 +83,11 @@ export type SuccessResultsMap = {
   [ACTION_NAMES.SONIC_GET_POINTS]: SonicPointsSuccessProps["data"];
   [ACTION_NAMES.SHADOW_TOKEN_SEARCH]: ShadowTokenSearchResponse;
   [ACTION_NAMES.SONIC_DOCS_SEARCH]: SonicDocsSearchResponse;
+  // Allora types
+  [ACTION_NAMES.ALLORA_FETCH_TOPICS]: AlloraSdkTopic[];
+  [ACTION_NAMES.ALLORA_FETCH_INFERENCE]: AlloraInferenceResponse;
+  [ACTION_NAMES.ALLORA_FETCH_PRICE_INFERENCE]: AlloraInferenceResponse;
 };
-
 // Registry of tools that have success components
 export const SUCCESS_COMPONENTS_REGISTRY = {
   [ACTION_NAMES.GET_SUPPORTED_CHAINS]: true,
@@ -102,6 +110,9 @@ export const SUCCESS_COMPONENTS_REGISTRY = {
   [ACTION_NAMES.SONIC_GET_POINTS]: true,
   [ACTION_NAMES.SHADOW_TOKEN_SEARCH]: true,
   [ACTION_NAMES.SONIC_DOCS_SEARCH]: true,
+  [ACTION_NAMES.ALLORA_FETCH_TOPICS]: true,
+  [ACTION_NAMES.ALLORA_FETCH_INFERENCE]: true,
+  [ACTION_NAMES.ALLORA_FETCH_PRICE_INFERENCE]: true,
 } as const;
 
 // Type guard to check if a tool has success results
@@ -195,6 +206,17 @@ export function SuccessResults<T extends keyof SuccessResultsMap>({
       return <TokenSearchSuccess data={data as ShadowTokenSearchResponse} />;
     case ACTION_NAMES.SONIC_DOCS_SEARCH:
       return <DocsSearchSuccess data={data as SonicDocsSearchResponse} />;
+
+    // Allora cases
+    case ACTION_NAMES.ALLORA_FETCH_TOPICS:
+      return <AlloraTopicsSuccess data={data as AlloraSdkTopic[]} />;
+    case ACTION_NAMES.ALLORA_FETCH_INFERENCE:
+      return <AlloraInferenceSuccess data={data as AlloraInferenceResponse} />;
+    case ACTION_NAMES.ALLORA_FETCH_PRICE_INFERENCE:
+      return (
+        <AlloraPriceInferenceSuccess data={data as AlloraInferenceResponse} />
+      );
+
     default:
       return null;
   }

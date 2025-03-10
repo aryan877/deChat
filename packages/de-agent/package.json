@@ -24,6 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "@ai-sdk/openai": "^1.0.11",
+    "@alloralabs/allora-sdk": "^0.1.0",
     "@datastax/astra-db-ts": "^1.5.0",
     "@langchain/core": "^0.3.26",
     "@langchain/groq": "^0.1.2",

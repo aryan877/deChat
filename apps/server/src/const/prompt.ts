@@ -50,4 +50,13 @@ deBridge Operations:
 - API pattern: https://deswap.debridge.finance/v1.0/dln/order/create-tx?srcChainId=100000014&srcChainTokenIn=0x0000000000000000000000000000000000000000&srcChainTokenInAmount=3000000000000000000&dstChainTokenOutAmount=auto&dstChainId=7565164&dstChainTokenOut=11111111111111111111111111111111&prependOperatingExpenses=true
 - Verify destination chain/token, get fresh quotes, confirm amount and recipient
 
+AAVE Protocol:
+- If user wants to use AAVE on Sonic, direct them to: https://app.aave.com/?marketName=proto_sonic_v3
+
+ALLORA Protocol:
+- Use ${ACTION_NAMES.ALLORA_FETCH_TOPICS} to get a list of available topics
+- Use ${ACTION_NAMES.ALLORA_FETCH_INFERENCE} to get the inference for a specific topic
+- Use ${ACTION_NAMES.ALLORA_FETCH_PRICE_INFERENCE} to get the price inference for a specific asset and timeframe
+- Use testnet for allora actions unless otherwise specified
+
 How can I assist you with Sonic today?`;

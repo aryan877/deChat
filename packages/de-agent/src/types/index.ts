@@ -6,6 +6,7 @@ export * from "./chainlink.js";
 export * from "./dune.js";
 export * from "./debridge.js";
 export * from "./knowledge.js";
+export * from "./allora.js";
 
 export interface Config {
   OPENAI_API_KEY?: string;

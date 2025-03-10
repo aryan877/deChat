@@ -57,4 +57,9 @@ export const ACTION_NAMES = {
   // Knowledge Actions
   SHADOW_TOKEN_SEARCH: "shadowTokenSearch",
   SONIC_DOCS_SEARCH: "sonicDocsSearch",
+
+  // Allora Actions
+  ALLORA_FETCH_TOPICS: "alloraFetchTopics",
+  ALLORA_FETCH_INFERENCE: "alloraFetchInference",
+  ALLORA_FETCH_PRICE_INFERENCE: "alloraFetchPriceInference",
 } as const;

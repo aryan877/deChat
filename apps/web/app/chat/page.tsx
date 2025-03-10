@@ -37,33 +37,33 @@ import {
 // Action Guide component to display available actions
 const ActionGuide = () => {
   return (
-    <div className="text-center py-6">
-      <h1 className="text-xl md:text-2xl font-bold text-primary mb-4">
+    <div className="text-center py-4">
+      <h1 className="text-xl md:text-2xl font-bold text-primary mb-3">
         Welcome to DeChat
       </h1>
-      <p className="text-xs text-white mb-6">
+      <p className="text-xs text-white/80 mb-4">
         Your personal AI assistant for navigating DeFi on Sonic - get quotes,
         execute trades, check balances, and explore the Sonic ecosystem
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left max-w-3xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left max-w-5xl mx-auto">
         {/* Account & Balance Section */}
-        <div className="bg-muted/50 p-4 rounded-lg border border-border">
-          <h2 className="text-lg font-semibold text-primary mb-3">
+        <div className="bg-muted/50 p-3 rounded-lg border border-border">
+          <h2 className="text-base font-semibold text-primary mb-2">
             📊 Account & Balance
           </h2>
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             <li>
-              <p className="font-medium">Check Account Info</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Check Account Info</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Show me my account balance&quot;
                 </span>
               </p>
             </li>
             <li>
-              <p className="font-medium">View Token Balance</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">View Token Balance</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;What&apos;s my USDC balance?&quot;
                 </span>
@@ -73,68 +73,69 @@ const ActionGuide = () => {
         </div>
 
         {/* Trading & Swapping Section */}
-        <div className="bg-muted/50 p-4 rounded-lg border border-border">
-          <h2 className="text-lg font-semibold text-primary mb-3">
+        <div className="bg-muted/50 p-3 rounded-lg border border-border">
+          <h2 className="text-base font-semibold text-primary mb-2">
             💱 Trading & Swapping
           </h2>
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             <li>
-              <p className="font-medium">Get Trade Quote</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Get Trade Quote</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Get a quote to swap 1.5 SONIC for USDC&quot;
                 </span>
               </p>
             </li>
             <li>
-              <p className="font-medium">Execute Swap</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Execute Swap</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">&quot;Execute the swap&quot;</span>
               </p>
             </li>
           </ul>
         </div>
+
         {/* Staking Section */}
-        <div className="bg-muted/50 p-4 rounded-lg border border-border">
-          <h2 className="text-lg font-semibold text-primary mb-3">
+        <div className="bg-muted/50 p-3 rounded-lg border border-border">
+          <h2 className="text-base font-semibold text-primary mb-2">
             ⚡ Staking & Delegation
           </h2>
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             <li>
-              <p className="font-medium">View My Stakes</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">View My Stakes</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Show my staked SONIC tokens&quot;
                 </span>
               </p>
             </li>
             <li>
-              <p className="font-medium">View Validators</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">View Validators</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Show me all Sonic validators&quot;
                 </span>
               </p>
             </li>
             <li>
-              <p className="font-medium">Stake Tokens</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Stake Tokens</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Stake 10 SONIC with validator 18&quot;
                 </span>
               </p>
             </li>
             <li>
-              <p className="font-medium">Unstake Tokens</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Unstake Tokens</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Unstake 5 SONIC from validator 18&quot;
                 </span>
               </p>
             </li>
             <li>
-              <p className="font-medium">Withdraw Tokens</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Withdraw Tokens</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Withdraw my unlocked tokens from validator 18&quot;
                 </span>
@@ -143,23 +144,59 @@ const ActionGuide = () => {
           </ul>
         </div>
 
+        {/* Allora Oracle Section */}
+        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-3 pt-7 rounded-lg border border-primary/20 relative">
+          <div className="absolute top-0 right-0 bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-bl-md">
+            Powered by Allora
+          </div>
+          <h2 className="text-base font-semibold text-primary mb-2">
+            🔮 Price Predictions
+          </h2>
+          <ul className="space-y-2">
+            <li>
+              <p className="text-sm font-medium">View Topics</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;Show me available Allora topics&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="text-sm font-medium">Get Price Inference</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;Get price prediction for BTC&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="text-sm font-medium">Topic Inference</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;Get inference for topic 18&quot;
+                </span>
+              </p>
+            </li>
+          </ul>
+        </div>
+
         {/* Transfers Section */}
-        <div className="bg-muted/50 p-4 rounded-lg border border-border">
-          <h2 className="text-lg font-semibold text-primary mb-3">
+        <div className="bg-muted/50 p-3 rounded-lg border border-border">
+          <h2 className="text-base font-semibold text-primary mb-2">
             💸 Transfers & Transactions
           </h2>
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             <li>
-              <p className="font-medium">Transfer Tokens</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Transfer Tokens</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Send 1 SONIC to 0x742d35...&quot;
                 </span>
               </p>
             </li>
             <li>
-              <p className="font-medium">Check Transaction Status</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Check Transaction Status</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Check status of transaction 0xae10b8...&quot;
                 </span>
@@ -169,22 +206,22 @@ const ActionGuide = () => {
         </div>
 
         {/* Price Data Section */}
-        <div className="bg-muted/50 p-4 rounded-lg border border-border">
-          <h2 className="text-lg font-semibold text-primary mb-3">
+        <div className="bg-muted/50 p-3 rounded-lg border border-border">
+          <h2 className="text-base font-semibold text-primary mb-2">
             📈 Market & Price Data
           </h2>
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             <li>
-              <p className="font-medium">Get Price Feeds</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Get Price Feeds</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Show available Chainlink price feeds&quot;
                 </span>
               </p>
             </li>
             <li>
-              <p className="font-medium">Get Current Prices</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Get Current Prices</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;What&apos;s the current BTC/USD price?&quot;
                 </span>
@@ -193,30 +230,30 @@ const ActionGuide = () => {
           </ul>
         </div>
 
-        {/* Cross-Chain Bridge Section - Enhanced with more deBridge functionality */}
-        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/20 relative overflow-hidden">
-          <div className="absolute top-0 right-0 bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-bl-md">
+        {/* Cross-Chain Bridge Section */}
+        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-3 pt-7 rounded-lg border border-primary/20 relative col-span-1 md:col-span-2">
+          <div className="absolute top-0 right-0 bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-bl-md">
             Powered by deBridge
           </div>
-          <h2 className="text-lg font-semibold text-primary mb-3">
+          <h2 className="text-base font-semibold text-primary mb-2">
             🌉 Cross-Chain Bridge
           </h2>
           <p className="text-xs text-muted-foreground mb-3">
             DeChat integrates with deBridge protocol to enable seamless
             cross-chain transfers between Sonic and other major blockchains.
           </p>
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             <li>
-              <p className="font-medium">View Supported Chains</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">View Supported Chains</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;What chains can I bridge to?&quot;
                 </span>
               </p>
             </li>
             <li>
-              <p className="font-medium">Get Bridge Quote</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Get Bridge Quote</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Get a quote to bridge 10 USDC from Sonic to
                   Ethereum&quot;
@@ -224,16 +261,16 @@ const ActionGuide = () => {
               </p>
             </li>
             <li>
-              <p className="font-medium">Execute Bridge Transfer</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Execute Bridge Transfer</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Bridge 5 USDC from Sonic to Ethereum&quot;
                 </span>
               </p>
             </li>
             <li>
-              <p className="font-medium">Verify Transaction Status</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Verify Transaction Status</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Check the status of my bridge transaction
                   0xae10b8...&quot;
@@ -244,11 +281,11 @@ const ActionGuide = () => {
         </div>
 
         {/* Sonic Docs */}
-        <div className="bg-muted/50 p-4 rounded-lg border border-border">
-          <h2 className="text-lg font-semibold text-primary mb-3">
+        <div className="bg-muted/50 p-3 rounded-lg border border-border">
+          <h2 className="text-base font-semibold text-primary mb-2">
             📚 Ask About Sonic
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             <span className="italic">
               &quot;What is Sonic blockchain?&quot;
             </span>
@@ -258,36 +295,36 @@ const ActionGuide = () => {
         </div>
 
         {/* Search & Information Section */}
-        <div className="bg-muted/50 p-4 rounded-lg border border-border col-span-1 md:col-span-2">
-          <h2 className="text-lg font-semibold text-primary mb-3">
+        <div className="bg-muted/50 p-3 rounded-lg border border-border col-span-1 md:col-span-2">
+          <h2 className="text-base font-semibold text-primary mb-2">
             🔍 Search & Information
           </h2>
-          <ul className="space-y-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <li>
-              <p className="font-medium">Search Tokens</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Search Tokens</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Search for ETH tokens&quot;
                 </span>
               </p>
             </li>
             <li>
-              <p className="font-medium">Check Sonic Points</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Check Sonic Points</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">&quot;Show my Sonic Points&quot;</span>
               </p>
             </li>
             <li>
-              <p className="font-medium">Get Token Supply</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Get Token Supply</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;What&apos;s the total supply of USDC?&quot;
                 </span>
               </p>
             </li>
             <li>
-              <p className="font-medium">Get Block Reward</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-medium">Get Block Reward</p>
+              <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;What was the reward for block 12345?&quot;
                 </span>
@@ -297,7 +334,7 @@ const ActionGuide = () => {
         </div>
       </div>
 
-      <p className="text-sm text-muted-foreground mt-8">
+      <p className="text-xs text-muted-foreground mt-6">
         Type your question or command in the input box below to get started
       </p>
     </div>
