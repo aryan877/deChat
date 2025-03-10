@@ -289,11 +289,8 @@ const performDocsSync = async () => {
     await ensureConnection();
     console.log("🔄 Starting Sonic docs sync...");
 
-    // Step 1: Delete all existing documents
-    console.log("🗑️ Deleting all existing documents...");
-    await deleteAllDocuments();
-
-    // Step 2: Crawl data
+    // Step 1: Crawl data first - this is safer
+    console.log("🔍 Starting data crawl...");
     let crawlData;
     try {
       crawlData = await crawlAndSaveData();
@@ -304,7 +301,14 @@ const performDocsSync = async () => {
       );
     }
 
-    // Step 3: Store data in AstraDB
+    // Only proceed with deletion if crawl was successful
+    console.log("✅ Crawl successful. Now safe to delete existing documents.");
+
+    // Step 2: Delete existing documents (only after successful crawl)
+    console.log("🗑️ Deleting existing documents...");
+    await deleteAllDocuments();
+
+    // Step 3: Store new data in AstraDB
     console.log("💾 Storing data in AstraDB...");
     const result = await storeInAstraDB(crawlData);
     documentsProcessed = result.successCount;
