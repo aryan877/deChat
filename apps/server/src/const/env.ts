@@ -4,6 +4,7 @@ config();
 
 export const ENV = {
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
   MONGODB: {
     TEST_URI: process.env.MONGODB_TEST_URI,
     PROD_URI: process.env.MONGODB_PROD_URI,
@@ -27,6 +28,13 @@ export const ENV = {
   FRONTEND_URL: process.env.FRONTEND_URL,
   SONIC_API_KEY: process.env.SONIC_API_KEY,
   DUNE_API_KEY: process.env.DUNE_API_KEY,
+  ASTRA_DB: {
+    TOKEN: process.env.ASTRA_DB_TOKEN,
+    APPLICATION_TOKEN: process.env.ASTRA_DB_APPLICATION_TOKEN,
+    API_ENDPOINT: process.env.ASTRA_DB_API_ENDPOINT,
+  },
+  FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
+  ALLORA_API_KEY: process.env.ALLORA_API_KEY,
   PORT: process.env.PORT ? parseInt(process.env.PORT) : 5000,
 } as const;
 

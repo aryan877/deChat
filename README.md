@@ -78,7 +78,3 @@ The DeAgent connects to the Sonic blockchain via RPC and uses Privy for secure t
    ```
    pnpm dev
    ```
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
