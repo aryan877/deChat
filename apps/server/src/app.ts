@@ -115,7 +115,7 @@ export const connectDB = async () => {
     );
 
     // Start token sync cron job after successful DB connection
-    startTokenSyncCron();
+    await startTokenSyncCron();
   } catch (error) {
     console.error("MongoDB connection error:", error);
     throw error;

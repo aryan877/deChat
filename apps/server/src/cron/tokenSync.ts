@@ -32,8 +32,54 @@ const ensureConnection = async () => {
   }
 };
 
-export const startTokenSyncCron = () => {
-  // Run every day at midnight (00:00)
+// Extract sync logic to a separate function to avoid duplication
+const performTokenSync = async () => {
+  try {
+    await ensureConnection();
+    console.log("🔄 Starting token sync...");
+
+    // Fetch and seed tokens
+    const tokens = await fetchTokenList();
+    const updatedCount = await seedTokens(tokens);
+
+    // Ensure indexes
+    await ensureIndexes();
+
+    // Record successful sync
+    await recordSync(updatedCount, "success");
+
+    console.log("✅ Token sync completed successfully");
+  } catch (error) {
+    console.error("❌ Error in token sync:", error);
+    // Record failed sync
+    await recordSync(
+      0,
+      "failed",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+  }
+};
+
+export const startTokenSyncCron = async () => {
+  try {
+    // Check if we need to perform an initial sync
+    await ensureConnection();
+    const lastSync = await getLastSuccessfulSync();
+
+    // If no previous successful sync exists, perform initial sync
+    if (!lastSync) {
+      console.log(
+        "🔄 No previous token sync found. Performing initial sync..."
+      );
+      await performTokenSync();
+    } else {
+      console.log(`🔄 Last successful token sync: ${lastSync.toISOString()}`);
+    }
+  } catch (error) {
+    console.error("❌ Error checking token sync status:", error);
+  }
+
+  // Schedule regular sync
   cron.schedule("0 0 * * *", async () => {
     console.log("🔄 Checking token sync status...");
 
@@ -52,27 +98,9 @@ export const startTokenSyncCron = () => {
         return;
       }
 
-      console.log("🔄 Starting token sync...");
-
-      // Fetch and seed tokens
-      const tokens = await fetchTokenList();
-      const updatedCount = await seedTokens(tokens);
-
-      // Ensure indexes
-      await ensureIndexes();
-
-      // Record successful sync
-      await recordSync(updatedCount, "success");
-
-      console.log("✅ Token sync completed successfully");
+      await performTokenSync();
     } catch (error) {
       console.error("❌ Error in token sync cron job:", error);
-      // Record failed sync
-      await recordSync(
-        0,
-        "failed",
-        error instanceof Error ? error.message : "Unknown error"
-      );
     }
   });
 
