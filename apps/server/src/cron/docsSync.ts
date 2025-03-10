@@ -1,6 +1,5 @@
 import cron from "node-cron";
 import mongoose from "mongoose";
-import fs from "fs";
 import dotenv from "dotenv";
 import FirecrawlApp from "@mendable/firecrawl-js";
 import { DataAPIClient } from "@datastax/astra-db-ts";
@@ -14,7 +13,6 @@ import {
 dotenv.config();
 
 // Constants
-const CRAWL_RESULTS_FILE = "./sonic_docs_crawl_results.json";
 const COLLECTION_NAME = "docs_embeddings";
 const MINIMUM_SYNC_INTERVAL = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
 
@@ -66,7 +64,7 @@ const initializeFirecrawl = () => {
   });
 };
 
-// Function to crawl website and save results
+// Function to crawl website
 async function crawlAndSaveData() {
   try {
     console.log("🔍 Starting Sonic docs crawl process...");
@@ -83,35 +81,12 @@ async function crawlAndSaveData() {
       throw new Error(`Failed to crawl: ${crawlResponse.error}`);
     }
 
-    // Save crawl results to file
-    fs.writeFileSync(
-      CRAWL_RESULTS_FILE,
-      JSON.stringify(crawlResponse, null, 2)
-    );
-    console.log(`📄 Crawl results saved to ${CRAWL_RESULTS_FILE}`);
+    console.log(`✅ Crawl completed successfully`);
 
     return crawlResponse;
   } catch (error) {
     console.error("❌ Error during crawl:", error);
     throw error;
-  }
-}
-
-// Function to load crawl data from file
-function loadCrawlData() {
-  try {
-    console.log(`📂 Loading crawl results from ${CRAWL_RESULTS_FILE}`);
-    if (!fs.existsSync(CRAWL_RESULTS_FILE)) {
-      console.log("❌ Crawl results file not found");
-      return null;
-    }
-    const data = fs.readFileSync(CRAWL_RESULTS_FILE, "utf8");
-    return JSON.parse(data);
-  } catch (error) {
-    console.error(
-      `❌ Error loading crawl data: ${error instanceof Error ? error.message : String(error)}`
-    );
-    return null;
   }
 }
 
@@ -285,23 +260,15 @@ const performDocsSync = async () => {
     console.log("🗑️ Deleting all existing documents...");
     await deleteAllDocuments();
 
-    // Step 2: Crawl or load data
+    // Step 2: Crawl data
     let crawlData;
     try {
       crawlData = await crawlAndSaveData();
     } catch (error) {
-      console.error(
-        "❌ Firecrawl failed, attempting to use cached data:",
-        error
+      console.error("❌ Firecrawl failed:", error);
+      throw new Error(
+        `Failed to crawl: ${error instanceof Error ? error.message : String(error)}`
       );
-      crawlData = loadCrawlData();
-
-      if (!crawlData) {
-        throw new Error("Failed to crawl and no cached data available");
-      }
-
-      usedCachedData = true;
-      console.log("⚠️ Using cached crawl data as fallback");
     }
 
     // Step 3: Store data in AstraDB
@@ -332,20 +299,36 @@ export const startDocsSyncCron = async () => {
     // Check if we need to perform an initial sync
     await ensureConnection();
 
-    // Check if the crawl results file exists
-    const crawlFileExists = fs.existsSync(CRAWL_RESULTS_FILE);
+    // Check when the last successful sync was performed
     const lastSync = await getLastSuccessfulDocsSync();
 
-    // If no previous successful sync exists or no crawl file exists, perform initial sync
-    if (!lastSync || !crawlFileExists) {
+    // If no previous successful sync exists, perform initial sync
+    if (!lastSync) {
       console.log(
-        "🔄 No previous Sonic docs sync or crawl file found. Performing initial sync..."
+        "🔄 No previous Sonic docs sync found. Performing initial sync..."
       );
       await performDocsSync();
     } else {
       console.log(
         `🔄 Last successful Sonic docs sync: ${lastSync.toISOString()}`
       );
+
+      // Check if it's time for a new sync based on the minimum interval
+      const now = new Date();
+      const timeSinceLastSync = now.getTime() - lastSync.getTime();
+
+      if (timeSinceLastSync >= MINIMUM_SYNC_INTERVAL) {
+        console.log(
+          `🔄 Minimum sync interval (${MINIMUM_SYNC_INTERVAL / (24 * 60 * 60 * 1000)} days) has passed. Performing sync...`
+        );
+        await performDocsSync();
+      } else {
+        console.log(
+          `⏳ Not enough time has passed since last sync. Next sync in ${
+            (MINIMUM_SYNC_INTERVAL - timeSinceLastSync) / (24 * 60 * 60 * 1000)
+          } days.`
+        );
+      }
     }
   } catch (error) {
     console.error("❌ Error checking Sonic docs sync status:", error);
