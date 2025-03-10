@@ -68,7 +68,7 @@ deBridge Guidelines:
   1. First, use ${ACTION_NAMES.DEBRIDGE_FETCH_TOKEN_DATA} to get information about tokens on the source and destination chains
   2. Then, use ${ACTION_NAMES.DEBRIDGE_FETCH_BRIDGE_QUOTE} to get a quote for the cross-chain transfer
   3. Next, use ${ACTION_NAMES.DEBRIDGE_EXECUTE_BRIDGE_TRANSFER} to create and execute the bridge transaction
-  4. Optionally, use ${ACTION_NAMES.DEBRIDGE_VERIFY_TX_STATUS} to check the status of the transaction
+  4. After the bridge transfer is executed, always suggest checking the transaction status using ${ACTION_NAMES.DEBRIDGE_VERIFY_TX_STATUS} to monitor the progress
   
 - Important details for deBridge operations:
   - Sonic uses chain ID '100000014' in the deBridge protocol
