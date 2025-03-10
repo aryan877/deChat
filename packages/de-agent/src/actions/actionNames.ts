@@ -38,14 +38,15 @@ export const ACTION_NAMES = {
 
   // Sonic Staking Actions
   SONIC_GET_STAKERS: "sonicGetStakers",
+  SONIC_STAKE: "sonicStake",
+  SONIC_GET_DELEGATIONS: "sonicGetDelegations",
+  SONIC_UNSTAKE: "sonicUnstake",
+  SONIC_WITHDRAW: "sonicWithdraw",
 
   // Chainlink Actions
   CHAINLINK_GET_PRICE_FEEDS: "chainlinkGetPriceFeeds",
   CHAINLINK_GET_PRICE_DATA: "chainlinkGetPriceData",
 
-  SONIC_STAKE: "sonicStake",
-  SONIC_GET_DELEGATIONS: "sonicGetDelegations",
-  SONIC_UNSTAKE: "sonicUnstake",
   SONIC_TRADE_QUOTE: "sonicTradeQuote",
   SONIC_SWAP: "sonicSwap",
   SONIC_SEARCH: "sonicSearch",

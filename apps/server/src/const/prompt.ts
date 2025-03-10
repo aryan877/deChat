@@ -20,6 +20,13 @@ Balance Checks:
 - ERC20 tokens: use ${ACTION_NAMES.SONIC_GET_TOKEN_BALANCE}
 - Unknown tokens: first use ${ACTION_NAMES.SHADOW_TOKEN_SEARCH}
 
+Staking & Delegation Workflow:
+1. Check delegations with ${ACTION_NAMES.SONIC_GET_DELEGATIONS} - this returns all delegations and withdrawal requests with their wrIds
+2. Stake tokens with ${ACTION_NAMES.SONIC_STAKE}
+3. Unstake tokens with ${ACTION_NAMES.SONIC_UNSTAKE} (creates a withdrawal request with wrId)
+4. After lock period ends (currently 14 days), withdraw tokens with ${ACTION_NAMES.SONIC_WITHDRAW} using validatorId and wrId from the delegations response
+5. No need to ask users for wrId - it's available in the delegations response under withdrawRequests
+
 Token Trading Protocol:
 1. For token symbols/names: FIRST use ${ACTION_NAMES.SHADOW_TOKEN_SEARCH}, then ${ACTION_NAMES.SONIC_SEARCH} only if needed
 2. Trade tools require 0x addresses, not symbols

@@ -318,3 +318,22 @@ export interface SonicPointsResult {
     details: unknown;
   };
 }
+
+export interface SonicWithdrawParams {
+  validatorId: string;
+  wrId: string; // Withdrawal request ID
+}
+
+export interface SonicWithdrawResponse {
+  status: "success" | "error";
+  message: string;
+  data?: {
+    txHash: string;
+    explorerUrl: string;
+  };
+  error?: {
+    code: string;
+    message: string;
+    details?: unknown;
+  };
+}

@@ -15,6 +15,7 @@ import { getPriceFeedsAction } from "./chainlink/getPriceFeeds.js";
 import { delegateAction } from "./sonic/stake.js";
 import { getDelegationsAction } from "./sonic/getDelegations.js";
 import { unstakeAction } from "./sonic/unstake.js";
+import { withdrawAction } from "./sonic/withdraw.js";
 import { tradeQuoteAction } from "./sonic/trade.js";
 import { swapAction } from "./sonic/swap.js";
 import { searchAction } from "./sonic/search.js";
@@ -32,6 +33,7 @@ export const ACTIONS: Record<string, Action> = {
   [ACTION_NAMES.SONIC_STAKE]: delegateAction,
   [ACTION_NAMES.SONIC_GET_DELEGATIONS]: getDelegationsAction,
   [ACTION_NAMES.SONIC_UNSTAKE]: unstakeAction,
+  [ACTION_NAMES.SONIC_WITHDRAW]: withdrawAction,
   [ACTION_NAMES.SONIC_TRADE_QUOTE]: tradeQuoteAction,
   [ACTION_NAMES.SONIC_SWAP]: swapAction,
   [ACTION_NAMES.SONIC_SEARCH]: searchAction,
