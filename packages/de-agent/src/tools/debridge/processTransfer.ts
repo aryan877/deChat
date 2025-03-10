@@ -134,20 +134,38 @@ async function checkAndApproveIfNeeded(
       return null;
     }
 
-    // Encode the approve function call with exact amount needed
-    const approveData = ethers.Interface.from(ERC20_ABI).encodeFunctionData(
-      "approve",
-      [routerAddress, requiredAmount]
+    // Use max uint256 value for unlimited approval to prevent future issues
+    const MAX_UINT256 = BigInt(
+      "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     );
 
-    // Send approval transaction
+    // Encode the approve function call with unlimited amount
+    const approveData = ethers.Interface.from(ERC20_ABI).encodeFunctionData(
+      "approve",
+      [routerAddress, MAX_UINT256]
+    );
+
+    // Send approval transaction with higher confirmations to ensure it's processed
     const tx = await agent.sendTransaction(
       {
         to: tokenAddress,
         data: approveData,
+        // Add a slightly higher gas limit to ensure the transaction goes through
+        gasLimit: ethers.toBigInt(100000),
       },
-      { confirmations: 1 }
+      { confirmations: 2 } // Wait for more confirmations to ensure it's properly mined
     );
+
+    // Double-check the allowance after approval to make sure it worked
+    const newAllowance = await allowanceFunc(
+      agent.wallet_address,
+      routerAddress
+    );
+
+    if (newAllowance < requiredAmount) {
+      throw new Error(`Approval transaction completed but allowance is still insufficient. 
+        Current: ${newAllowance.toString()}, Required: ${requiredAmount.toString()}`);
+    }
 
     return tx;
   } catch (error) {
@@ -248,12 +266,19 @@ export async function processTransfer(
     // Check and approve token if needed (only for non-native tokens)
     if (params.srcChainTokenIn !== ethers.ZeroAddress) {
       try {
-        await checkAndApproveIfNeeded(
+        // Wait for the approval transaction to be confirmed
+        const approvalTx = await checkAndApproveIfNeeded(
           agent,
           params.srcChainTokenIn,
           params.srcChainTokenInAmount,
           data.tx.to
         );
+
+        // If an approval was needed, add a small delay to ensure blockchain state is updated
+        if (approvalTx) {
+          // Add a small delay to ensure the approval is fully processed
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        }
       } catch (error) {
         throw new Error(
           `Failed to approve token for bridge transfer: ${
