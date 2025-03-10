@@ -87,13 +87,20 @@ const ActionGuide = () => {
             </li>
           </ul>
         </div>
-
         {/* Staking Section */}
         <div className="bg-muted/50 p-4 rounded-lg border border-border">
           <h2 className="text-lg font-semibold text-primary mb-3">
-            🥩 Staking & Delegation
+            ⚡ Staking & Delegation
           </h2>
           <ul className="space-y-3">
+            <li>
+              <p className="font-medium">View My Stakes</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;Show my staked SONIC tokens&quot;
+                </span>
+              </p>
+            </li>
             <li>
               <p className="font-medium">View Validators</p>
               <p className="text-sm text-muted-foreground">
