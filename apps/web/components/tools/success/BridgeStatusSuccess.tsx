@@ -1,6 +1,5 @@
 import React from "react";
 import { Check, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export interface BridgeStatusSuccessProps {
   data: {
@@ -27,14 +26,15 @@ export function BridgeStatusSuccess({ data }: BridgeStatusSuccessProps) {
             details on deBridge.
           </p>
 
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={() => window.open(data.orderLink, "_blank")}
+          <a
+            href={data.orderLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
           >
             View on deBridge
             <ExternalLink className="w-4 h-4" />
-          </Button>
+          </a>
         </div>
       </div>
     </div>
