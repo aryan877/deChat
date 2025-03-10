@@ -1,84 +1,84 @@
-# Turborepo starter
+# DeChat - AI Assistant for Sonic Blockchain
 
-This Turborepo starter is maintained by the Turborepo core team.
+DeChat is a native AI assistant for the Sonic blockchain that allows users to interact with DeFi protocols, manage assets, and bridge tokens across chains using simple conversational commands.
 
-## Using this example
+**Live Site**: [dechat.cc](https://dechat.cc)
 
-Run the following command:
+## Features
 
-```sh
-npx create-turbo@latest
-```
+- **Sonic Native Assistant**: Purpose-built AI assistant for Sonic blockchain
+- **DeFi Automation**: Stake, swap, transfer, and manage assets with simple commands
+- **Wallet Integration**: Secure wallet connection via Privy
+- **AI-Powered Chat**: Natural language interface for blockchain interactions
 
-## What's inside?
+## Architecture
 
-This Turborepo includes the following packages/apps:
+DeChat is built as a full-stack application with separate frontend and backend components:
 
-### Apps and Packages
+### Frontend (`apps/web`)
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- Next.js application with React for the user interface
+- Privy integration for wallet connection and authentication
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Backend (`apps/server`)
 
-### Utilities
+- Node.js/Express server handling API requests
+- MongoDB database for storing user data and chat threads
+- Integration with OpenAI for natural language processing
 
-This Turborepo has some additional tools already setup for you:
+## DeAgent Package
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+The core of DeChat's blockchain interaction is powered by the custom `de-agent` package:
 
-### Build
+### Structure
 
-To build all apps and packages, run the following command:
+- **Agent**: Core DeAgent class that handles blockchain interactions and transaction signing
+- **Actions**: Predefined blockchain operations (40+ actions) including:
+  - Sonic token transfers and balance checks
+  - Staking and unstaking operations
+  - Cross-chain bridging via deBridge
+  - Price data via Chainlink integration
+  - Token swaps and trading
+- **Tools**: AI-compatible tools that wrap actions for natural language processing
+- **Constants**: Token definitions and configuration defaults
 
-```
-cd my-turborepo
-pnpm build
-```
+The DeAgent connects to the Sonic blockchain via RPC and uses Privy for secure transaction signing, enabling the AI assistant to perform blockchain operations on behalf of users through conversational commands.
 
-### Develop
+## Getting Started
 
-To develop all apps and packages, run the following command:
+### Prerequisites
 
-```
-cd my-turborepo
-pnpm dev
-```
+- Node.js (v18 or later)
+- pnpm
+- MongoDB instance
+- OpenAI API key
+- Privy account and credentials
 
-### Remote Caching
+### Installation
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+1. Clone the repository:
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+   ```
+   git clone https://github.com/aryan877/deChat.git
+   cd deChat
+   ```
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+2. Install dependencies:
 
-```
-cd my-turborepo
-npx turbo login
-```
+   ```
+   pnpm install
+   ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+3. Set up environment variables:
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+   - Copy `.env.example` to `.env` in both `apps/web` and `apps/server` directories
+   - Fill in the required values (API keys, database URIs, etc.)
 
-```
-npx turbo link
-```
+4. Run the development server:
+   ```
+   pnpm dev
+   ```
 
-## Useful Links
+## License
 
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+This project is licensed under the MIT License - see the LICENSE file for details.

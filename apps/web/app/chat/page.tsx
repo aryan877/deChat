@@ -27,6 +27,246 @@ import ChatMessage from "@/components/chat/ChatMessage";
 import { ScrollDownIcon } from "@/components/ScrollDownIcon";
 import { StopIcon } from "@/components/StopIcon";
 
+// Action Guide component to display available actions
+const ActionGuide = () => {
+  return (
+    <div className="text-center py-6">
+      <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-4">
+        Welcome to Sonic DeFi AI Assistant
+      </h1>
+      <p className="text-sm text-muted-foreground mb-8">
+        Here are some actions you can perform with our AI assistant
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left max-w-3xl mx-auto">
+        {/* Account & Balance Section */}
+        <div className="bg-muted/50 p-4 rounded-lg border border-border">
+          <h2 className="text-lg font-semibold text-primary mb-3">
+            📊 Account & Balance
+          </h2>
+          <ul className="space-y-3">
+            <li>
+              <p className="font-medium">Check Account Info</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;Show me my account balance&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="font-medium">View Token Balance</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;What&apos;s my USDC balance?&quot;
+                </span>
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        {/* Trading & Swapping Section */}
+        <div className="bg-muted/50 p-4 rounded-lg border border-border">
+          <h2 className="text-lg font-semibold text-primary mb-3">
+            💱 Trading & Swapping
+          </h2>
+          <ul className="space-y-3">
+            <li>
+              <p className="font-medium">Get Trade Quote</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;Get a quote to swap 1.5 SONIC for USDC&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="font-medium">Execute Swap</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">&quot;Execute the swap&quot;</span>
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        {/* Staking Section */}
+        <div className="bg-muted/50 p-4 rounded-lg border border-border">
+          <h2 className="text-lg font-semibold text-primary mb-3">
+            🥩 Staking & Delegation
+          </h2>
+          <ul className="space-y-3">
+            <li>
+              <p className="font-medium">View Validators</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;Show me all Sonic validators&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="font-medium">Stake Tokens</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;Stake 10 SONIC with validator 18&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="font-medium">Unstake Tokens</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;Unstake 5 SONIC from validator 18&quot;
+                </span>
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        {/* Transfers Section */}
+        <div className="bg-muted/50 p-4 rounded-lg border border-border">
+          <h2 className="text-lg font-semibold text-primary mb-3">
+            💸 Transfers & Transactions
+          </h2>
+          <ul className="space-y-3">
+            <li>
+              <p className="font-medium">Transfer Tokens</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;Send 1 SONIC to 0x742d35...&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="font-medium">Check Transaction Status</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;Check status of transaction 0xae10b8...&quot;
+                </span>
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        {/* Price Data Section */}
+        <div className="bg-muted/50 p-4 rounded-lg border border-border">
+          <h2 className="text-lg font-semibold text-primary mb-3">
+            📈 Market & Price Data
+          </h2>
+          <ul className="space-y-3">
+            <li>
+              <p className="font-medium">Get Price Feeds</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;Show available Chainlink price feeds&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="font-medium">Get Current Prices</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;What&apos;s the current BTC/USD price?&quot;
+                </span>
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        {/* Cross-Chain Bridge Section - Enhanced with more deBridge functionality */}
+        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/20 relative overflow-hidden">
+          <div className="absolute top-0 right-0 bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-bl-md">
+            Powered by deBridge
+          </div>
+          <h2 className="text-lg font-semibold text-primary mb-3">
+            🌉 Cross-Chain Bridge
+          </h2>
+          <p className="text-xs text-muted-foreground mb-3">
+            DeChat integrates with deBridge protocol to enable seamless
+            cross-chain transfers between Sonic and other major blockchains.
+          </p>
+          <ul className="space-y-3">
+            <li>
+              <p className="font-medium">View Supported Chains</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;What chains can I bridge to?&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="font-medium">Get Bridge Quote</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;Get a quote to bridge 10 USDC from Sonic to
+                  Ethereum&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="font-medium">Execute Bridge Transfer</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;Bridge 5 USDC from Sonic to Ethereum&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="font-medium">Verify Transaction Status</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;Check the status of my bridge transaction
+                  0xae10b8...&quot;
+                </span>
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        {/* Search & Information Section */}
+        <div className="bg-muted/50 p-4 rounded-lg border border-border col-span-1 md:col-span-2">
+          <h2 className="text-lg font-semibold text-primary mb-3">
+            🔍 Search & Information
+          </h2>
+          <ul className="space-y-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <li>
+              <p className="font-medium">Search Tokens</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;Search for ETH tokens&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="font-medium">Check Sonic Points</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">&quot;Show my Sonic Points&quot;</span>
+              </p>
+            </li>
+            <li>
+              <p className="font-medium">Get Token Supply</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;What&apos;s the total supply of USDC?&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="font-medium">Get Block Reward</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="italic">
+                  &quot;What was the reward for block 12345?&quot;
+                </span>
+              </p>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <p className="text-sm text-muted-foreground mt-8">
+        Type your question or command in the input box below to get started
+      </p>
+    </div>
+  );
+};
+
 // Custom hook to warn user when leaving page during active operations
 const usePageLeaveWarning = (shouldWarn: boolean) => {
   // Handle browser's native beforeunload event
@@ -370,14 +610,7 @@ const ChatContent = () => {
         >
           <div className="max-w-3xl mx-auto space-y-4">
             {messages.length === 0 ? (
-              <div className="text-center py-8">
-                <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-2 md:mb-3">
-                  Welcome to DeChat
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Start a conversation with our decentralized AI assistant
-                </p>
-              </div>
+              <ActionGuide />
             ) : (
               messages.map((message) => (
                 <ChatMessage

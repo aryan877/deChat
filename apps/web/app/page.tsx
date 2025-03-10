@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function Home() {
   const { authenticated, login } = usePrivy();
@@ -28,12 +29,26 @@ export default function Home() {
       {/* Hero Section */}
       <main className="flex-1 container mx-auto px-6 py-16">
         <div className="flex flex-col items-center text-center space-y-8">
-          <h1 className="text-7xl font-bold gradient-text">DeChat</h1>
+          <div className="flex items-center gap-4">
+            <Image
+              src="/sonic-logo.png"
+              alt="Sonic Logo"
+              width={60}
+              height={60}
+              className="object-contain"
+            />
+            <h1 className="text-7xl font-bold gradient-text">DeChat</h1>
+          </div>
+          <div className="flex items-center justify-center">
+            <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+              Powered by Sonic Blockchain
+            </span>
+          </div>
 
           <p className="text-xl text-muted-foreground max-w-2xl">
-            Building the future of DeFAI on Sonic&apos;s high-performance
-            blockchain. An autonomous decentralized chat agent that
-            revolutionizes Web3 interactions through AI.
+            The native AI assistant for Sonic blockchain. Interact with DeFi
+            protocols, manage assets, and bridge tokens across chains with
+            simple conversational commands.
           </p>
 
           <div className="flex gap-4 mt-8">
@@ -59,10 +74,11 @@ export default function Home() {
                 </div>
               </div>
               <h3 className="text-lg font-semibold mb-2 text-card-foreground">
-                Decentralized Chat
+                Sonic Native Assistant
               </h3>
               <p className="text-muted-foreground">
-                Fully decentralized messaging powered by Sonic&apos;s blockchain
+                Purpose-built AI assistant for Sonic blockchain with deep
+                protocol integration
               </p>
             </div>
             <div className="p-6 rounded-xl bg-card border border-border hover:border-primary/20 transition-colors group">
@@ -72,11 +88,11 @@ export default function Home() {
                 </div>
               </div>
               <h3 className="text-lg font-semibold mb-2 text-card-foreground">
-                AI-Enhanced
+                DeFi Automation
               </h3>
               <p className="text-muted-foreground">
-                Advanced AI capabilities for smarter conversations and
-                automation
+                Stake, swap, transfer, and manage assets with simple
+                conversational commands
               </p>
             </div>
             <div className="p-6 rounded-xl bg-card border border-border hover:border-primary/20 transition-colors group">
@@ -86,11 +102,11 @@ export default function Home() {
                 </div>
               </div>
               <h3 className="text-lg font-semibold mb-2 text-card-foreground">
-                Cross-Chain Ready
+                Cross-Chain with deBridge
               </h3>
               <p className="text-muted-foreground">
-                Seamless integration with Ethereum and other blockchains via
-                Sonic Gateway
+                Seamlessly bridge assets between Sonic and other blockchains
+                using deBridge protocol
               </p>
             </div>
           </div>
@@ -101,9 +117,18 @@ export default function Home() {
       <footer className="border-t border-border mt-auto">
         <div className="container mx-auto px-6 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-muted-foreground text-sm">
-              © 2024 DeChat. Built for Sonic DeFAI Hackathon
-            </p>
+            <div className="flex items-center gap-2">
+              <Image
+                src="/sonic-logo.png"
+                alt="Sonic Logo"
+                width={24}
+                height={24}
+                className="object-contain"
+              />
+              <p className="text-muted-foreground text-sm">
+                © 2024 DeChat. Built on Sonic Blockchain
+              </p>
+            </div>
             <div className="flex gap-6 justify-center">
               <a
                 href="https://github.com/blorm-network/ZerePy"
@@ -113,6 +138,15 @@ export default function Home() {
               >
                 <Github className="h-4 w-4" />
                 GitHub
+              </a>
+              <a
+                href="https://github.com/aryan877/deChat"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5"
+              >
+                <Github className="h-4 w-4" />
+                DeChat Repo
               </a>
             </div>
           </div>
