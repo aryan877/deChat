@@ -12,6 +12,7 @@ import cookieParser from "cookie-parser";
 import { setupWalletRoutes } from "./routes/walletRoutes.js";
 import { setupSonicRoutes } from "./routes/sonicRoutes.js";
 import { startTokenSyncCron } from "./cron/tokenSync.js";
+import { startDocsSyncCron } from "./cron/docsSync.js";
 
 const app: Express = express();
 const httpServer = createServer(app);
@@ -116,6 +117,7 @@ export const connectDB = async () => {
 
     // Start token sync cron job after successful DB connection
     await startTokenSyncCron();
+    await startDocsSyncCron();
   } catch (error) {
     console.error("MongoDB connection error:", error);
     throw error;

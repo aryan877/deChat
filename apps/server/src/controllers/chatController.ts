@@ -7,7 +7,7 @@ import {
   ErrorCode,
 } from "../middleware/errors/types.js";
 import { getUserCluster, getUserId } from "../utils/userIdentification.js";
-import { createSonicTools } from "@repo/de-agent";
+import { createSonicTools } from "@repo/de-agent/server";
 import { streamText, smoothStream } from "ai";
 import { generateDeChatAgent } from "../utils/generateDeChatAgent.js";
 import { assistantPrompt } from "../const/prompt.js";

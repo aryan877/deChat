@@ -228,6 +228,20 @@ const ActionGuide = () => {
           </ul>
         </div>
 
+        {/* Sonic Docs */}
+        <div className="bg-muted/50 p-4 rounded-lg border border-border">
+          <h2 className="text-lg font-semibold text-primary mb-3">
+            📚 Ask About Sonic
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            <span className="italic">
+              &quot;What is Sonic blockchain?&quot;
+            </span>
+            {" or "}
+            <span className="italic">&quot;How does staking work?&quot;</span>
+          </p>
+        </div>
+
         {/* Search & Information Section */}
         <div className="bg-muted/50 p-4 rounded-lg border border-border col-span-1 md:col-span-2">
           <h2 className="text-lg font-semibold text-primary mb-3">

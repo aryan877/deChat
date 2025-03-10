@@ -12,6 +12,7 @@ import {
   ArrowRightLeft,
   ListChecks,
   Info,
+  Book,
 } from "lucide-react";
 import React from "react";
 
@@ -101,6 +102,10 @@ const TOOL_DISPLAY_CONFIG: Record<
   [ACTION_NAMES.SHADOW_TOKEN_SEARCH]: {
     icon: <Search className="w-3 h-3" />,
     label: "Shadow Token Search",
+  },
+  [ACTION_NAMES.SONIC_DOCS_SEARCH]: {
+    icon: <Book className="w-3 h-3" />,
+    label: "Sonic Docs Search",
   },
 };
 

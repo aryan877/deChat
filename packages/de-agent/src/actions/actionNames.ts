@@ -53,6 +53,7 @@ export const ACTION_NAMES = {
   // Sonic Points Actions
   SONIC_GET_POINTS: "sonicGetPoints",
 
-  // Shadow Token Actions
+  // Knowledge Actions
   SHADOW_TOKEN_SEARCH: "shadowTokenSearch",
+  SONIC_DOCS_SEARCH: "sonicDocsSearch",
 } as const;

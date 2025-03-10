@@ -19,6 +19,7 @@ import { tradeQuoteAction } from "./sonic/trade.js";
 import { swapAction } from "./sonic/swap.js";
 import { searchAction } from "./sonic/search.js";
 import { shadowTokenSearchAction } from "./knowledge/shadowTokenSearch.js";
+import { sonicDocsSearchAction } from "./knowledge/sonicDocsSearch.js";
 
 export { ACTION_NAMES };
 
@@ -44,6 +45,7 @@ export const ACTIONS: Record<string, Action> = {
 
   // Knowledge actions
   [ACTION_NAMES.SHADOW_TOKEN_SEARCH]: shadowTokenSearchAction,
+  [ACTION_NAMES.SONIC_DOCS_SEARCH]: sonicDocsSearchAction,
 };
 
 export type { Action, ActionExample, Handler };

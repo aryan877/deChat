@@ -16,6 +16,8 @@
   "description": "",
   "dependencies": {
     "@ai-sdk/openai": "^1.0.11",
+    "@datastax/astra-db-ts": "^1.5.0",
+    "@mendable/firecrawl-js": "^1.19.0",
     "@privy-io/server-auth": "^1.18.0",
     "@repo/de-agent": "workspace:*",
     "ai": "^4.0.22",
@@ -30,6 +32,7 @@
     "mongoose": "^8.0.3",
     "nanoid": "^5.0.4",
     "node-cron": "^3.0.3",
+    "openai": "^4.77.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

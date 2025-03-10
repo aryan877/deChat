@@ -1,4 +1,4 @@
-import { DeAgent, Cluster } from "@repo/de-agent";
+import { DeAgent, Cluster } from "@repo/de-agent/server";
 import { privyClient } from "../lib/privyClient.js";
 import { ENV } from "../const/env.js";
 

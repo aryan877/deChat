@@ -12,6 +12,7 @@ import type {
   DuneBalancesResponse,
   deBridgeEnhancedQuoteResponse,
   ShadowTokenSearchResponse,
+  SonicDocsSearchResponse,
 } from "@repo/de-agent";
 import { TransferSuccess } from "./TransferSuccess";
 import { ChainlinkPriceFeedsSuccess } from "./ChainlinkPriceFeedsSuccess";
@@ -46,6 +47,7 @@ import {
   type SonicPointsSuccessProps,
 } from "./SonicPointsSuccess";
 import { TokenSearchSuccess } from "./TokenSearchSuccess";
+import { DocsSearchSuccess } from "./DocsSearchSuccess";
 
 // Define a mapping of tool names to their success result types
 export type SuccessResultsMap = {
@@ -75,6 +77,7 @@ export type SuccessResultsMap = {
   [ACTION_NAMES.DEBRIDGE_EXECUTE_BRIDGE_TRANSFER]: BridgeTransferSuccessProps["data"];
   [ACTION_NAMES.SONIC_GET_POINTS]: SonicPointsSuccessProps["data"];
   [ACTION_NAMES.SHADOW_TOKEN_SEARCH]: ShadowTokenSearchResponse;
+  [ACTION_NAMES.SONIC_DOCS_SEARCH]: SonicDocsSearchResponse;
 };
 
 // Registry of tools that have success components
@@ -98,6 +101,7 @@ export const SUCCESS_COMPONENTS_REGISTRY = {
   [ACTION_NAMES.DEBRIDGE_EXECUTE_BRIDGE_TRANSFER]: true,
   [ACTION_NAMES.SONIC_GET_POINTS]: true,
   [ACTION_NAMES.SHADOW_TOKEN_SEARCH]: true,
+  [ACTION_NAMES.SONIC_DOCS_SEARCH]: true,
 } as const;
 
 // Type guard to check if a tool has success results
@@ -189,6 +193,8 @@ export function SuccessResults<T extends keyof SuccessResultsMap>({
       );
     case ACTION_NAMES.SHADOW_TOKEN_SEARCH:
       return <TokenSearchSuccess data={data as ShadowTokenSearchResponse} />;
+    case ACTION_NAMES.SONIC_DOCS_SEARCH:
+      return <DocsSearchSuccess data={data as SonicDocsSearchResponse} />;
     default:
       return null;
   }

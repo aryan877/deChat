@@ -31,6 +31,12 @@ import {
 } from "@/components/ui/tooltip";
 import { Cluster } from "@repo/de-agent";
 import { useRouter } from "next/navigation";
+import { useSonicBalances } from "@/hooks/useSonic";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 interface WalletInfoProps {
   onLogoutClick: () => void;
@@ -54,6 +60,24 @@ export function WalletInfo({
   } = useWalletBalance(user?.wallet?.address);
   const [copied, setCopied] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+
+  // Add balances hook
+  const { balances, isLoading: isLoadingBalances } = useSonicBalances(
+    user?.wallet?.address
+  );
+
+  // Helper function to format token amounts
+  const formatTokenAmount = (amount: string, decimals: number): string => {
+    try {
+      const value = Number(amount) / 10 ** decimals;
+      if (isNaN(value)) return "0";
+      return new Intl.NumberFormat("en-US", {
+        maximumFractionDigits: 4,
+      }).format(value);
+    } catch {
+      return "0";
+    }
+  };
 
   if (!ready) return null;
 
@@ -216,26 +240,83 @@ export function WalletInfo({
             </div>
           </Card>
 
-          <div className="flex items-center justify-between bg-muted/50 p-2 rounded-md">
-            <div className="flex items-center gap-2">
-              <Coins className="h-4 w-4 text-primary" />
-              <span className="font-mono text-sm font-medium">
-                {balance || "0"}
-              </span>
-              <span className="text-xs text-muted-foreground">SONIC</span>
-            </div>
-            <Button
-              onClick={refreshBalance}
-              disabled={isLoadingBalance || isRefetchingBalance}
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-            >
-              <RefreshCw
-                className={`h-3 w-3 ${isRefetchingBalance ? "animate-spin" : ""}`}
-              />
-            </Button>
-          </div>
+          <HoverCard>
+            <HoverCardTrigger>
+              <div className="flex items-center justify-between bg-muted/50 p-2 rounded-md cursor-pointer hover:bg-muted/70 transition-colors">
+                <div className="flex items-center gap-2">
+                  <Coins className="h-4 w-4 text-primary" />
+                  <span className="font-mono text-sm font-medium">
+                    {balance || "0"}
+                  </span>
+                  <span className="text-xs text-muted-foreground">SONIC</span>
+                </div>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    refreshBalance();
+                  }}
+                  disabled={isLoadingBalance || isRefetchingBalance}
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                >
+                  <RefreshCw
+                    className={`h-3 w-3 ${isRefetchingBalance ? "animate-spin" : ""}`}
+                  />
+                </Button>
+              </div>
+            </HoverCardTrigger>
+            <HoverCardContent align="start" className="w-full">
+              <div className="p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Token Balances
+                  </span>
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      refreshBalance();
+                    }}
+                    disabled={isLoadingBalances}
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                  >
+                    <RefreshCw
+                      className={`h-3 w-3 ${isLoadingBalances ? "animate-spin" : ""}`}
+                    />
+                  </Button>
+                </div>
+                <div className="max-h-[160px] overflow-y-auto space-y-1 -mx-1 px-1">
+                  {isLoadingBalances ? (
+                    <div className="py-2 text-xs text-center text-muted-foreground">
+                      Loading balances...
+                    </div>
+                  ) : balances && balances.length > 0 ? (
+                    balances.map((token, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-2 hover:bg-muted/50 rounded-sm"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium">
+                            {token.symbol}
+                          </span>
+                        </div>
+                        <span className="text-xs font-mono">
+                          {formatTokenAmount(token.amount, token.decimals)}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="py-2 text-xs text-center text-muted-foreground">
+                      No tokens found
+                    </div>
+                  )}
+                </div>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
 
           <Button
             onClick={() => router.push("/wallet")}
