@@ -8,16 +8,20 @@ import {
 } from "../types/api/chat";
 import { Message } from "../types/models/chat";
 
+export type AIModel = "openai" | "anthropic";
+
 export const chatClient = {
   saveAllMessages: async (
     messages: Message[],
-    threadId: string
+    threadId: string,
+    model?: AIModel
   ): Promise<SaveAllMessagesResponse> => {
     const { data } = await api.post<SaveAllMessagesResponse>(
       "/api/chat/save-all-messages",
       {
         messages,
         threadId,
+        model,
       }
     );
     return data;

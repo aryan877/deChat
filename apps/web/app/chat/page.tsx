@@ -22,10 +22,17 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { chatClient } from "@/app/clients/chat";
 import { GetThreadsResponse } from "@/app/types/api/chat";
 import { localStorageUtils } from "@/utils/localStorage";
-import { SendIcon, RefreshCcw, AlertCircle, Loader2 } from "lucide-react";
+import { RefreshCcw, AlertCircle, Loader2 } from "lucide-react";
 import ChatMessage from "@/components/chat/ChatMessage";
 import { ScrollDownIcon } from "@/components/ScrollDownIcon";
-import { StopIcon } from "@/components/StopIcon";
+import { SendIcon } from "@/components/SendIcon";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Action Guide component to display available actions
 const ActionGuide = () => {
@@ -330,6 +337,9 @@ const ChatContent = () => {
   const prevMessagesRef = useRef<string>("");
   // Add a ref to track if we've already handled the pending message
   const pendingMessageHandledRef = useRef(false);
+  const [selectedModel, setSelectedModel] = useState<"openai" | "anthropic">(
+    "openai"
+  );
 
   usePageLeaveWarning(isWaitingForResponse || hasActiveToolCall);
 
@@ -382,6 +392,7 @@ const ChatContent = () => {
     sendExtraMessageFields: true,
     body: {
       threadId: chatId,
+      model: selectedModel,
     },
     headers: {
       "Content-Type": "application/json",
@@ -628,7 +639,7 @@ const ChatContent = () => {
       <div className="flex-1 flex flex-col min-w-0 relative">
         <div
           ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto px-4 md:px-6 pt-16 md:pt-6 pb-6"
+          className="flex-1 overflow-y-auto px-4 md:px-6 pb-6"
         >
           <div className="max-w-3xl mx-auto space-y-4">
             {messages.length === 0 ? (
@@ -714,7 +725,26 @@ const ChatContent = () => {
                   overflow: "hidden",
                 }}
               />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-2">
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-2 items-center">
+                <div className="mr-2">
+                  <Select
+                    value={selectedModel}
+                    onValueChange={(value: "openai" | "anthropic") =>
+                      setSelectedModel(value)
+                    }
+                  >
+                    <SelectTrigger className="h-6 text-[10px] w-[80px] px-2">
+                      <SelectValue placeholder="Model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="openai">GPT-4o</SelectItem>
+                      <SelectItem value="anthropic">
+                        Claude 3.5 Sonnet
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {isChatLoading && (
                   <Button
                     type="button"
@@ -722,7 +752,21 @@ const ChatContent = () => {
                     className="p-1.5 h-8 w-8 bg-destructive hover:bg-destructive/90 rounded-md transition-colors"
                     title="Stop generating"
                   >
-                    <StopIcon />
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                    >
+                      <rect
+                        x="6"
+                        y="6"
+                        width="12"
+                        height="12"
+                        rx="2"
+                        fill="currentColor"
+                      />
+                    </svg>
                   </Button>
                 )}
                 <Button

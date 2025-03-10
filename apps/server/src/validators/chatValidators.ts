@@ -24,6 +24,7 @@ export const validateSendMessage = validateRequest({
   body: z.object({
     messages: z.array(messageSchema),
     threadId: z.string(),
+    model: z.enum(["openai", "anthropic"]).default("openai"),
   }),
 });
 
