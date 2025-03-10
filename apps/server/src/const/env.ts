@@ -25,9 +25,10 @@ export const ENV = {
     MAINNET: process.env.SONIC_MAINNET_RPC_URL,
   },
   FRONTEND_URL: process.env.FRONTEND_URL,
-  PINATA: {
-    API_KEY: process.env.PINATA_API_KEY,
-    SECRET_KEY: process.env.PINATA_SECRET_API_KEY,
-  },
-  COINGECKO_API_KEY: process.env.COINGECKO_DEMO_API_KEY,
+  SONIC_API_KEY: process.env.SONIC_API_KEY,
+  DUNE_API_KEY: process.env.DUNE_API_KEY,
+  PORT: process.env.PORT ? parseInt(process.env.PORT) : 5000,
 } as const;
+
+// Type for environment configuration
+export type EnvConfig = typeof ENV;

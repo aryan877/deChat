@@ -1,5 +1,5 @@
-import React from "react";
-import { Coins, ExternalLink } from "lucide-react";
+import React, { useState } from "react";
+import { Check, Coins, Copy, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import type { ShadowTokenSearchResponse } from "@repo/de-agent";
@@ -9,12 +9,24 @@ interface TokenSearchSuccessProps {
 }
 
 export function TokenSearchSuccess({ data }: TokenSearchSuccessProps) {
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+
   const getExplorerUrl = (address: string) => {
     try {
       return `https://sonicscan.org/token/${address}`;
     } catch (error) {
       console.error("Error constructing explorer URL:", error);
       return "#";
+    }
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedAddress(text);
+      setTimeout(() => setCopiedAddress(null), 2000); // Reset after 2 seconds
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
     }
   };
 
@@ -73,6 +85,17 @@ export function TokenSearchSuccess({ data }: TokenSearchSuccessProps) {
                   <code className="text-sm font-mono bg-muted px-2 py-1 rounded truncate">
                     {token.address}
                   </code>
+                  <button
+                    onClick={() => copyToClipboard(token.address)}
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                    title="Copy address"
+                  >
+                    {copiedAddress === token.address ? (
+                      <Check className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </button>
                   <a
                     href={getExplorerUrl(token.address)}
                     target="_blank"
