@@ -16,6 +16,9 @@ import { startTokenSyncCron } from "./cron/tokenSync.js";
 const app: Express = express();
 const httpServer = createServer(app);
 
+// Trust proxy - needed for express-rate-limit when behind a reverse proxy
+app.set("trust proxy", 1);
+
 // Security middleware
 app.use(helmet());
 
