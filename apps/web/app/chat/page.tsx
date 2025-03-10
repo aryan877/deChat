@@ -346,7 +346,14 @@ const ChatContent = () => {
   // Add a ref to track if we've already handled the pending message
   const pendingMessageHandledRef = useRef(false);
   const [selectedModel, setSelectedModel] = useState<"openai" | "anthropic">(
-    "openai"
+    () => {
+      // Initialize from localStorage if available, otherwise default to "openai"
+      if (typeof window !== "undefined") {
+        const savedModel = localStorageUtils.getSelectedModel();
+        return (savedModel as "openai" | "anthropic") || "openai";
+      }
+      return "openai";
+    }
   );
 
   usePageLeaveWarning(isWaitingForResponse || hasActiveToolCall);
@@ -422,6 +429,11 @@ const ChatContent = () => {
     );
     setHasActiveToolCall(hasActiveTool);
   }, [messages]);
+
+  // Add an effect to save the selected model to localStorage when it changes
+  useEffect(() => {
+    localStorageUtils.saveSelectedModel(selectedModel);
+  }, [selectedModel]);
 
   // Improved message saving logic - save messages when they change and not loading
   useEffect(() => {
