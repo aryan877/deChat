@@ -3,8 +3,12 @@
 #
 FROM node:20-slim AS base
 
+# Create a custom temp directory with proper permissions
+RUN mkdir -p /var/tmp/apt-tmp && chmod 1777 /var/tmp/apt-tmp
+ENV TMPDIR=/var/tmp/apt-tmp
+
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update -o Dir::Etc::TmpDir=/var/tmp/apt-tmp && apt-get install -y \
     python3 \
     make \
     g++ \
