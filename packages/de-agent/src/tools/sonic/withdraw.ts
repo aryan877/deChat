@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { DeAgent } from "../../agent/index.js";
 import { Cluster } from "../../types/cluster.js";
 import {
@@ -51,19 +51,21 @@ export async function withdrawFromValidator(
     }
 
     // Format validator ID as uint256
-    const validatorIdHex = ethers
-      .zeroPadValue(ethers.toBeHex(validatorId), 32)
+    const validatorIdHex = ethers.utils
+      .hexZeroPad(ethers.utils.hexlify(BigNumber.from(validatorId)), 32)
       .slice(2);
 
     // Format withdrawal request ID as uint256
-    const wrIdHex = ethers.zeroPadValue(ethers.toBeHex(wrId), 32).slice(2);
+    const wrIdHex = ethers.utils
+      .hexZeroPad(ethers.utils.hexlify(BigNumber.from(wrId)), 32)
+      .slice(2);
 
     // Use raw transaction data with method ID for exact matching with explorer
     // Function: withdraw(uint256 toValidatorID, uint256 wrID)
     // MethodID: 0x441a3e70
     const data = `${WITHDRAW_METHOD_ID}${validatorIdHex}${wrIdHex}`;
 
-    const tx: ethers.TransactionRequest = {
+    const tx: ethers.providers.TransactionRequest = {
       to: SFC_CONTRACT_ADDRESS,
       data: data,
     };

@@ -1,39 +1,28 @@
-import React from "react";
-import { ACTION_NAMES } from "@repo/de-agent";
-import { SupportedChainsSuccess } from "./SupportedChainsSuccess";
 import type {
-  deBridgeSupportedChainsResponse,
-  ChainlinkPriceFeedInfo,
-  ChainlinkPriceFeedResponse,
-  SonicStakersResponse,
-  SonicDelegationsByAddressResponse,
-  SonicSearchResult,
-  SonicTradeQuoteResponse,
-  DuneBalancesResponse,
-  deBridgeEnhancedQuoteResponse,
-  ShadowTokenSearchResponse,
-  SonicDocsSearchResponse,
+  AaveUserDataResponse,
   AlloraInferenceResponse,
   AlloraSdkTopic,
+  ChainlinkPriceFeedInfo,
+  ChainlinkPriceFeedResponse,
+  deBridgeEnhancedQuoteResponse,
+  deBridgeSupportedChainsResponse,
+  DuneBalancesResponse,
+  ShadowTokenSearchResponse,
+  SonicDelegationsByAddressResponse,
+  SonicDocsSearchResponse,
+  SonicSearchResult,
+  SonicStakersResponse,
+  SonicTradeQuoteResponse,
 } from "@repo/de-agent";
-import { TransferSuccess } from "./TransferSuccess";
-import { ChainlinkPriceFeedsSuccess } from "./ChainlinkPriceFeedsSuccess";
-import { ChainlinkPriceDataSuccess } from "./ChainlinkPriceDataSuccess";
-import { StakersSuccess } from "./StakersSuccess";
-import { DelegateSuccess, type DelegateSuccessData } from "./DelegateSuccess";
-import { DelegationsSuccess } from "./DelegationsSuccess";
-import { UnstakeSuccess, type UnstakeSuccessData } from "./UnstakeSuccess";
-import { SearchSuccess } from "./SearchSuccess";
-import { TradeSuccess } from "./TradeSuccess";
-import { SwapSuccess, type SwapSuccessData } from "./SwapSuccess";
+import { ACTION_NAMES } from "@repo/de-agent";
+import { AaveUserDataSuccess } from "./AaveUserDataSuccess";
 import {
   AccountInfoSuccess,
   type AccountInfoSuccessData,
 } from "./AccountInfoSuccess";
-import {
-  TokenBalanceSuccess,
-  type TokenBalanceSuccessData,
-} from "./TokenBalanceSuccess";
+import { AlloraInferenceSuccess } from "./AlloraInferenceSuccess";
+import { AlloraPriceInferenceSuccess } from "./AlloraPriceInferenceSuccess";
+import { AlloraTopicsSuccess } from "./AlloraTopicsSuccess";
 import { BalancesSuccess } from "./BalancesSuccess";
 import { BridgeQuoteSuccess } from "./BridgeQuoteSuccess";
 import {
@@ -44,15 +33,27 @@ import {
   BridgeTransferSuccess,
   type BridgeTransferSuccessProps,
 } from "./BridgeTransferSuccess";
+import { ChainlinkPriceDataSuccess } from "./ChainlinkPriceDataSuccess";
+import { ChainlinkPriceFeedsSuccess } from "./ChainlinkPriceFeedsSuccess";
+import { DelegateSuccess, type DelegateSuccessData } from "./DelegateSuccess";
+import { DelegationsSuccess } from "./DelegationsSuccess";
+import { DocsSearchSuccess } from "./DocsSearchSuccess";
+import { SearchSuccess } from "./SearchSuccess";
 import {
   SonicPointsSuccess,
   type SonicPointsSuccessProps,
 } from "./SonicPointsSuccess";
+import { StakersSuccess } from "./StakersSuccess";
+import { SupportedChainsSuccess } from "./SupportedChainsSuccess";
+import { SwapSuccess, type SwapSuccessData } from "./SwapSuccess";
+import {
+  TokenBalanceSuccess,
+  type TokenBalanceSuccessData,
+} from "./TokenBalanceSuccess";
 import { TokenSearchSuccess } from "./TokenSearchSuccess";
-import { DocsSearchSuccess } from "./DocsSearchSuccess";
-import { AlloraTopicsSuccess } from "./AlloraTopicsSuccess";
-import { AlloraInferenceSuccess } from "./AlloraInferenceSuccess";
-import { AlloraPriceInferenceSuccess } from "./AlloraPriceInferenceSuccess";
+import { TradeSuccess } from "./TradeSuccess";
+import { TransferSuccess } from "./TransferSuccess";
+import { UnstakeSuccess, type UnstakeSuccessData } from "./UnstakeSuccess";
 
 // Define a mapping of tool names to their success result types
 export type SuccessResultsMap = {
@@ -87,6 +88,9 @@ export type SuccessResultsMap = {
   [ACTION_NAMES.ALLORA_FETCH_TOPICS]: AlloraSdkTopic[];
   [ACTION_NAMES.ALLORA_FETCH_INFERENCE]: AlloraInferenceResponse;
   [ACTION_NAMES.ALLORA_FETCH_PRICE_INFERENCE]: AlloraInferenceResponse;
+
+  // Aave types
+  [ACTION_NAMES.AAVE_GET_USER_DATA]: AaveUserDataResponse;
 };
 // Registry of tools that have success components
 export const SUCCESS_COMPONENTS_REGISTRY = {
@@ -113,6 +117,7 @@ export const SUCCESS_COMPONENTS_REGISTRY = {
   [ACTION_NAMES.ALLORA_FETCH_TOPICS]: true,
   [ACTION_NAMES.ALLORA_FETCH_INFERENCE]: true,
   [ACTION_NAMES.ALLORA_FETCH_PRICE_INFERENCE]: true,
+  [ACTION_NAMES.AAVE_GET_USER_DATA]: true,
 } as const;
 
 // Type guard to check if a tool has success results
@@ -216,6 +221,10 @@ export function SuccessResults<T extends keyof SuccessResultsMap>({
       return (
         <AlloraPriceInferenceSuccess data={data as AlloraInferenceResponse} />
       );
+
+    // Aave cases
+    case ACTION_NAMES.AAVE_GET_USER_DATA:
+      return <AaveUserDataSuccess data={data as AaveUserDataResponse} />;
 
     default:
       return null;

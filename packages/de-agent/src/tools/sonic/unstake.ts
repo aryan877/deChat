@@ -1,8 +1,8 @@
-import { ethers } from "ethers";
-import { validateAddress } from "./utils.js";
+import { BigNumber, ethers } from "ethers";
 import { DeAgent } from "../../agent/index.js";
 import { Cluster } from "../../types/cluster.js";
 import { SonicDelegationResponse } from "../../types/sonic.js";
+import { validateAddress } from "./utils.js";
 
 const SFC_CONTRACT_ADDRESS = "0xFC00FACE00000000000000000000000000000000";
 const UNDELEGATE_METHOD_ID = "0x4f864df4";
@@ -66,21 +66,21 @@ export async function undelegateFromValidator(
     const wrIdStr = `${currentTimestamp}${randomDigits}`;
     const wrId = BigInt(wrIdStr);
 
-    const amountWei = ethers.parseEther(params.amount);
+    const amountWei = ethers.utils.parseEther(params.amount);
 
     // Format validator ID as uint256
-    const validatorIdHex = ethers
-      .zeroPadValue(ethers.toBeHex(params.validatorId), 32)
+    const validatorIdHex = ethers.utils
+      .hexZeroPad(ethers.utils.hexlify(BigNumber.from(params.validatorId)), 32)
       .slice(2);
 
     // Format withdrawal request ID as uint256
-    const withdrawalRequestIdHex = ethers
-      .zeroPadValue(ethers.toBeHex(wrId), 32)
+    const withdrawalRequestIdHex = ethers.utils
+      .hexZeroPad(ethers.utils.hexlify(BigNumber.from(wrId)), 32)
       .slice(2);
 
     // Format amount as uint256
-    const amountHex = ethers
-      .zeroPadValue(ethers.toBeHex(amountWei), 32)
+    const amountHex = ethers.utils
+      .hexZeroPad(ethers.utils.hexlify(amountWei), 32)
       .slice(2);
 
     // Use raw transaction data with method ID for exact matching with explorer
@@ -88,7 +88,7 @@ export async function undelegateFromValidator(
     // MethodID: 0x4f864df4
     const data = `${UNDELEGATE_METHOD_ID}${validatorIdHex}${withdrawalRequestIdHex}${amountHex}`;
 
-    const tx: ethers.TransactionRequest = {
+    const tx: ethers.providers.TransactionRequest = {
       to: SFC_CONTRACT_ADDRESS,
       data: data,
     };

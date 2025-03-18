@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
-import { validateAddress } from "./utils.js";
 import { DeAgent } from "../../agent/index.js";
 import { Cluster } from "../../types/cluster.js";
 import { TransferResult } from "../../types/index.js";
+import { validateAddress } from "./utils.js";
 
 const ERC20_ABI = [
   "function transfer(address to, uint256 amount) returns (bool)",
@@ -44,9 +44,9 @@ export async function transferNative(
 ): Promise<TransferResult> {
   validateAddress(to);
 
-  const amountWei = ethers.parseEther(amount);
+  const amountWei = ethers.utils.parseEther(amount);
 
-  const tx: ethers.TransactionRequest = {
+  const tx: ethers.providers.TransactionRequest = {
     to,
     value: amountWei,
   };
@@ -98,9 +98,9 @@ export async function transferToken(
 
   try {
     const decimals = await tokenContract.decimals();
-    const amountBigInt = ethers.parseUnits(amount, decimals);
+    const amountBigInt = ethers.utils.parseUnits(amount, decimals);
 
-    const tx: ethers.TransactionRequest = {
+    const tx: ethers.providers.TransactionRequest = {
       to: tokenAddress,
       data: tokenContract.interface.encodeFunctionData("transfer", [
         to,

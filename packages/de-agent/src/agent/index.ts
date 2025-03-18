@@ -1,7 +1,7 @@
-import { ethers } from "ethers";
-import { Config } from "../types/index.js";
 import { PrivyClient } from "@privy-io/server-auth";
+import { ethers } from "ethers";
 import { Cluster } from "../types/cluster.js";
+import { Config } from "../types/index.js";
 
 interface PrivyConfig {
   privyClient: PrivyClient;
@@ -35,7 +35,7 @@ type PrivyTransactionRequest = {
 };
 
 export class DeAgent {
-  public provider: ethers.JsonRpcProvider;
+  public provider: ethers.providers.JsonRpcProvider;
   public wallet_address: string;
   public config: Config;
   public cluster: Cluster;
@@ -54,7 +54,7 @@ export class DeAgent {
       throw new Error("RPC URL is required");
     }
 
-    this.provider = new ethers.JsonRpcProvider(rpc_url);
+    this.provider = new ethers.providers.JsonRpcProvider(rpc_url);
 
     if (configOrKey === null) {
       throw new Error("Config is required");
@@ -80,19 +80,21 @@ export class DeAgent {
     this.cluster = cluster;
   }
 
-  private toHexQuantity(value: bigint | number | string): Quantity {
-    // Convert to string first to handle BigInt values properly
+  private toHexQuantity(value: ethers.BigNumberish): Quantity {
+    // Convert to string first to handle BigInt or BigNumber values properly
     const valueStr = value.toString();
     // Remove the 'n' suffix if present (from BigInt)
     const cleanValue = valueStr.endsWith("n")
       ? valueStr.slice(0, -1)
       : valueStr;
-    const hex = BigInt(cleanValue).toString(16);
-    return `0x${hex}` as Quantity;
+
+    // Use ethers utility to convert to hex
+    const hex = ethers.utils.hexlify(ethers.BigNumber.from(cleanValue));
+    return hex as Quantity;
   }
 
   private formatTransactionForPrivy(
-    tx: ethers.TransactionRequest,
+    tx: ethers.providers.TransactionRequest,
     chainId: bigint
   ): PrivyTransaction {
     // Ensure chainId is properly formatted
@@ -133,24 +135,25 @@ export class DeAgent {
     return formattedTx;
   }
 
-  async signTransaction(tx: ethers.TransactionRequest): Promise<string> {
+  async signTransaction(
+    tx: ethers.providers.TransactionRequest
+  ): Promise<string> {
     try {
-      const chainId = await this.provider.getNetwork().then((n) => n.chainId);
-      // Convert chainId to string and remove 'n' suffix if present
-      const chainIdStr = chainId.toString().replace(/n$/, "");
+      const network = await this.provider.getNetwork();
+      const chainId = network.chainId;
 
-      // Explicitly set the chainId in the transaction to match the CAIP2 format
-      tx.chainId = BigInt(chainIdStr);
+      // Explicitly set the chainId in the transaction
+      tx.chainId = chainId;
 
       const formattedTx = this.formatTransactionForPrivy(
         tx,
-        BigInt(chainIdStr)
+        BigInt(chainId.toString())
       );
 
       const request: PrivyTransactionRequest = {
         address: this.privyConfig.address,
         chainType: "ethereum",
-        caip2: `eip155:${chainIdStr}`,
+        caip2: `eip155:${chainId.toString()}`,
         transaction: formattedTx,
       };
 
@@ -167,7 +170,7 @@ export class DeAgent {
   }
 
   async signAllTransactions(
-    txs: ethers.TransactionRequest[]
+    txs: ethers.providers.TransactionRequest[]
   ): Promise<string[]> {
     try {
       return Promise.all(txs.map((tx) => this.signTransaction(tx)));
@@ -190,7 +193,7 @@ export class DeAgent {
   }
 
   async sendTransaction(
-    tx: ethers.TransactionRequest,
+    tx: ethers.providers.TransactionRequest,
     options: {
       confirmations?: number;
       customRpcUrl?: string;
@@ -199,20 +202,19 @@ export class DeAgent {
   ): Promise<string> {
     try {
       const provider = options.customRpcUrl
-        ? new ethers.JsonRpcProvider(options.customRpcUrl)
+        ? new ethers.providers.JsonRpcProvider(options.customRpcUrl)
         : this.provider;
 
-      const chainId = await provider.getNetwork().then((n) => n.chainId);
+      const network = await provider.getNetwork();
+      const chainId = network.chainId;
 
-      const chainIdStr = chainId.toString().replace(/n$/, "");
-
-      tx.chainId = BigInt(chainIdStr);
+      tx.chainId = chainId;
 
       if (tx.value) {
         const balance = await provider.getBalance(this.wallet_address);
-        if (balance < BigInt(tx.value.toString())) {
+        if (balance.lt(tx.value)) {
           throw new Error(
-            `Insufficient balance. You have ${ethers.formatEther(balance)} ETH but need ${ethers.formatEther(tx.value)} ETH`
+            `Insufficient balance. You have ${ethers.utils.formatEther(balance)} ETH but need ${ethers.utils.formatEther(tx.value)} ETH`
           );
         }
       }
@@ -221,7 +223,7 @@ export class DeAgent {
 
       const gasMultiplier = options.gasMultiplier || 1.2;
 
-      const preparedTx: ethers.TransactionRequest = {
+      const preparedTx: ethers.providers.TransactionRequest = {
         ...tx,
         nonce:
           tx.nonce || (await provider.getTransactionCount(this.wallet_address)),
@@ -237,39 +239,39 @@ export class DeAgent {
             error
           );
           // Use a safe default gas limit for unstaking (300,000 gas)
-          preparedTx.gasLimit = BigInt(300000);
+          preparedTx.gasLimit = ethers.BigNumber.from(300000);
         }
       }
 
       if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
         preparedTx.maxFeePerGas =
           preparedTx.maxFeePerGas ||
-          BigInt(Math.floor(Number(feeData.maxFeePerGas) * gasMultiplier));
+          ethers.BigNumber.from(
+            Math.floor(feeData.maxFeePerGas.toNumber() * gasMultiplier)
+          );
         preparedTx.maxPriorityFeePerGas =
           preparedTx.maxPriorityFeePerGas ||
-          BigInt(
-            Math.floor(Number(feeData.maxPriorityFeePerGas) * gasMultiplier)
+          ethers.BigNumber.from(
+            Math.floor(feeData.maxPriorityFeePerGas.toNumber() * gasMultiplier)
           );
-
-        delete preparedTx.gasPrice;
-      } else {
+      } else if (feeData.gasPrice) {
         preparedTx.gasPrice =
           preparedTx.gasPrice ||
-          (feeData.gasPrice
-            ? BigInt(Math.floor(Number(feeData.gasPrice) * gasMultiplier))
-            : undefined);
+          ethers.BigNumber.from(
+            Math.floor(feeData.gasPrice.toNumber() * gasMultiplier)
+          );
       }
 
       const signedTx = await this.signTransaction(preparedTx);
 
-      const txResponse = await provider.broadcastTransaction(signedTx);
-      const hash = txResponse.hash;
+      const txResponse = await provider.sendTransaction(signedTx);
+      const txHash = txResponse.hash;
 
       if (options.confirmations && options.confirmations > 0) {
-        await provider.waitForTransaction(hash, options.confirmations);
+        await provider.waitForTransaction(txHash, options.confirmations);
       }
 
-      return hash;
+      return txHash;
     } catch (error) {
       console.error("Error sending transaction", {
         error: error instanceof Error ? error.message : error,

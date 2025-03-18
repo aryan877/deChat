@@ -1,8 +1,8 @@
-import { DeAgent } from "../../agent/index.js";
 import { ethers } from "ethers";
+import { DeAgent } from "../../agent/index.js";
+import { Cluster } from "../../types/cluster.js";
 import { ChainlinkPriceFeedResponse } from "../../types/index.js";
 import { CHAINLINK_PRICE_FEED_ABI } from "./chainlinkPriceFeedABI.js";
-import { Cluster } from "../../types/cluster.js";
 
 /**
  * Get price data from a Chainlink price feed
@@ -19,7 +19,7 @@ export async function getChainlinkPriceData(
 ): Promise<ChainlinkPriceFeedResponse> {
   try {
     // Validate the address format
-    if (!ethers.isAddress(feedAddress)) {
+    if (!ethers.utils.isAddress(feedAddress)) {
       throw new Error(`Invalid feed address format: ${feedAddress}`);
     }
 

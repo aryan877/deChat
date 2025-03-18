@@ -1,27 +1,28 @@
-import { ACTION_NAMES } from "./actionNames.js";
 import type { Action, ActionExample, Handler } from "../types/action.js";
-import {
-  getSupportedChainsAction,
-  verifyTxStatusAction,
-  fetchBridgeQuoteAction,
-  fetchTokenDataAction,
-  processTransferAction,
-} from "./debridge/index.js";
-import { sonicActions } from "./sonic/index.js";
-import { duneActions } from "./dune/index.js";
-import askForConfirmationAction from "./confirmation/askForConfirmation.js";
+import { aaveActions } from "./aave/index.js";
+import { ACTION_NAMES } from "./actionNames.js";
+import { alloraActions } from "./allora/index.js";
 import { getPriceDataAction } from "./chainlink/getPriceData.js";
 import { getPriceFeedsAction } from "./chainlink/getPriceFeeds.js";
-import { delegateAction } from "./sonic/stake.js";
-import { getDelegationsAction } from "./sonic/getDelegations.js";
-import { unstakeAction } from "./sonic/unstake.js";
-import { withdrawAction } from "./sonic/withdraw.js";
-import { tradeQuoteAction } from "./sonic/trade.js";
-import { swapAction } from "./sonic/swap.js";
-import { searchAction } from "./sonic/search.js";
+import askForConfirmationAction from "./confirmation/askForConfirmation.js";
+import {
+  fetchBridgeQuoteAction,
+  fetchTokenDataAction,
+  getSupportedChainsAction,
+  processTransferAction,
+  verifyTxStatusAction,
+} from "./debridge/index.js";
+import { duneActions } from "./dune/index.js";
 import { shadowTokenSearchAction } from "./knowledge/shadowTokenSearch.js";
 import { sonicDocsSearchAction } from "./knowledge/sonicDocsSearch.js";
-import { alloraActions } from "./allora/index.js";
+import { getDelegationsAction } from "./sonic/getDelegations.js";
+import { sonicActions } from "./sonic/index.js";
+import { searchAction } from "./sonic/search.js";
+import { delegateAction } from "./sonic/stake.js";
+import { swapAction } from "./sonic/swap.js";
+import { tradeQuoteAction } from "./sonic/trade.js";
+import { unstakeAction } from "./sonic/unstake.js";
+import { withdrawAction } from "./sonic/withdraw.js";
 
 export { ACTION_NAMES };
 
@@ -32,6 +33,7 @@ export const ACTIONS: Record<string, Action> = {
   ...sonicActions,
   ...duneActions,
   ...alloraActions,
+  ...aaveActions,
 
   // Chainlink actions
   [ACTION_NAMES.CHAINLINK_GET_PRICE_DATA]: getPriceDataAction,

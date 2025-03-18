@@ -2,17 +2,17 @@ import { cn } from "@/lib/utils";
 import { ACTION_NAMES } from "@repo/de-agent";
 import {
   AlertCircle,
-  Wallet,
-  ArrowUpRight,
-  FileSearch,
-  Coins,
-  BarChart,
-  Users,
-  Search,
   ArrowRightLeft,
-  ListChecks,
-  Info,
+  ArrowUpRight,
+  BarChart,
   Book,
+  Coins,
+  FileSearch,
+  Info,
+  ListChecks,
+  Search,
+  Users,
+  Wallet,
 } from "lucide-react";
 import React from "react";
 
@@ -118,6 +118,10 @@ const TOOL_DISPLAY_CONFIG: Record<
   [ACTION_NAMES.ALLORA_FETCH_PRICE_INFERENCE]: {
     icon: <Info className="w-3 h-3" />,
     label: "Allora Price Inference",
+  },
+  [ACTION_NAMES.AAVE_GET_USER_DATA]: {
+    icon: <Info className="w-3 h-3" />,
+    label: "AAVE User Data",
   },
 };
 

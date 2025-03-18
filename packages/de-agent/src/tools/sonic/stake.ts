@@ -1,11 +1,11 @@
-import { ethers } from "ethers";
-import { validateAddress } from "./utils.js";
+import { BigNumber, ethers } from "ethers";
 import { DeAgent } from "../../agent/index.js";
 import { Cluster } from "../../types/cluster.js";
 import {
   SonicDelegationParams,
   SonicDelegationResponse,
 } from "../../types/sonic.js";
+import { validateAddress } from "./utils.js";
 
 const SFC_CONTRACT_ADDRESS = "0xFC00FACE00000000000000000000000000000000";
 const DELEGATE_METHOD_ID = "0x9fa6dd35";
@@ -48,17 +48,17 @@ export async function delegateToValidator(
 
     validateAddress(SFC_CONTRACT_ADDRESS);
 
-    const amountWei = ethers.parseEther(params.amount);
+    const amountWei = ethers.utils.parseEther(params.amount);
 
     // Format validator ID as uint256
-    const validatorIdHex = ethers
-      .zeroPadValue(ethers.toBeHex(params.validatorId), 32)
+    const validatorIdHex = ethers.utils
+      .hexZeroPad(ethers.utils.hexlify(BigNumber.from(params.validatorId)), 32)
       .slice(2);
 
     // Use raw transaction data with method ID for exact matching with explorer
     const data = `${DELEGATE_METHOD_ID}${validatorIdHex}`;
 
-    const tx: ethers.TransactionRequest = {
+    const tx: ethers.providers.TransactionRequest = {
       to: SFC_CONTRACT_ADDRESS,
       value: amountWei,
       data: data,

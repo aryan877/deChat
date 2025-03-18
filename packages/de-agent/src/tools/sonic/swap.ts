@@ -1,5 +1,5 @@
-import { DeAgent } from "../../agent/index.js";
 import { ethers } from "ethers";
+import { DeAgent } from "../../agent/index.js";
 import { TransferResult } from "../../types/index.js";
 
 const ODOS_API_URL = "https://api.odos.xyz/sor/assemble";
@@ -7,7 +7,7 @@ const EXPLORER_URL = "https://sonicscan.org";
 const ODOS_ROUTER = "0xaC041Df48dF9791B0654f1Dbbf2CC8450C5f2e9D";
 
 // Maximum uint256 value for unlimited token approvals
-const MAX_UINT256 = ethers.MaxUint256;
+const MAX_UINT256 = ethers.constants.MaxUint256;
 
 const ERC20_ABI = [
   "function approve(address spender, uint256 amount) external returns (bool)",
@@ -56,13 +56,11 @@ async function checkAndApproveIfNeeded(
     }
 
     // Encode the approve function call
-    const approveData = ethers.Interface.from(ERC20_ABI).encodeFunctionData(
-      "approve",
-      [
-        ODOS_ROUTER,
-        MAX_UINT256, // Always approve max to avoid future approvals
-      ]
-    );
+    const tokenInterface = new ethers.utils.Interface(ERC20_ABI);
+    const approveData = tokenInterface.encodeFunctionData("approve", [
+      ODOS_ROUTER,
+      MAX_UINT256, // Always approve max to avoid future approvals
+    ]);
 
     // Send approval transaction
     const tx = await agent.sendTransaction(
@@ -127,7 +125,7 @@ export async function executeSwap(
     // Check if we need to approve input tokens
     if (data.inputTokens && data.inputTokens.length > 0) {
       for (const inputToken of data.inputTokens) {
-        if (inputToken.tokenAddress !== ethers.ZeroAddress) {
+        if (inputToken.tokenAddress !== ethers.constants.AddressZero) {
           try {
             await checkAndApproveIfNeeded(
               agent,
@@ -144,7 +142,7 @@ export async function executeSwap(
     }
 
     // Extract transaction details from the response
-    const tx: ethers.TransactionRequest = {
+    const tx: ethers.providers.TransactionRequest = {
       to: data.transaction.to,
       data: data.transaction.data,
       value: data.transaction.value,

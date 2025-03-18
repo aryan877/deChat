@@ -1,8 +1,8 @@
-import { DEBRIDGE_API } from "../../constants/index.js";
 import axios from "axios";
-import { deBridgeOrderInput } from "../../types/index.js";
-import { DeAgent } from "../../agent/index.js";
 import { ethers } from "ethers";
+import { DeAgent } from "../../agent/index.js";
+import { DEBRIDGE_API } from "../../constants/index.js";
+import { deBridgeOrderInput } from "../../types/index.js";
 
 const REFERRAL_CODE = "21064";
 
@@ -105,7 +105,7 @@ async function checkAndApproveIfNeeded(
   }
 
   // Skip approval for native token
-  if (tokenAddress === ethers.ZeroAddress) {
+  if (tokenAddress === ethers.constants.AddressZero) {
     return null;
   }
 
@@ -140,10 +140,11 @@ async function checkAndApproveIfNeeded(
     );
 
     // Encode the approve function call with unlimited amount
-    const approveData = ethers.Interface.from(ERC20_ABI).encodeFunctionData(
-      "approve",
-      [routerAddress, MAX_UINT256]
-    );
+    const tokenInterface = new ethers.utils.Interface(ERC20_ABI);
+    const approveData = tokenInterface.encodeFunctionData("approve", [
+      routerAddress,
+      MAX_UINT256,
+    ]);
 
     // Send approval transaction with higher confirmations to ensure it's processed
     const tx = await agent.sendTransaction(
@@ -151,7 +152,7 @@ async function checkAndApproveIfNeeded(
         to: tokenAddress,
         data: approveData,
         // Add a slightly higher gas limit to ensure the transaction goes through
-        gasLimit: ethers.toBigInt(100000),
+        gasLimit: ethers.BigNumber.from(100000),
       },
       { confirmations: 2 } // Wait for more confirmations to ensure it's properly mined
     );
@@ -264,7 +265,7 @@ export async function processTransfer(
     }
 
     // Check and approve token if needed (only for non-native tokens)
-    if (params.srcChainTokenIn !== ethers.ZeroAddress) {
+    if (params.srcChainTokenIn !== ethers.constants.AddressZero) {
       try {
         // Wait for the approval transaction to be confirmed
         const approvalTx = await checkAndApproveIfNeeded(
@@ -289,7 +290,7 @@ export async function processTransfer(
     }
 
     // Create transaction object
-    const transaction: ethers.TransactionRequest = {
+    const transaction: ethers.providers.TransactionRequest = {
       data: data.tx.data,
       to: data.tx.to,
       value: data.tx.value,

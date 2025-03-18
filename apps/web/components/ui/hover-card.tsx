@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { cn } from "@/lib/utils";
+import * as React from "react";
 
 interface HoverCardProps {
   children: React.ReactNode;
@@ -75,4 +75,4 @@ const HoverCardContent = ({
   );
 };
 
-export { HoverCard, HoverCardTrigger, HoverCardContent };
+export { HoverCard, HoverCardContent, HoverCardTrigger };

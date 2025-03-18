@@ -1,6 +1,6 @@
+import { ethers } from "ethers";
 import { DeAgent } from "../../agent/index.js";
 import { Cluster } from "../../types/cluster.js";
-import { ethers } from "ethers";
 import {
   SonicTradeQuoteRequest,
   SonicTradeQuoteResult,
@@ -171,7 +171,7 @@ async function getTokenInfo(
  */
 function formatAmount(amount: string, decimals: number): string {
   // Convert to BigNumber first to handle scientific notation
-  const amountBN = ethers.parseUnits(amount, decimals);
+  const amountBN = ethers.utils.parseUnits(amount, decimals);
   return amountBN.toString();
 }
 

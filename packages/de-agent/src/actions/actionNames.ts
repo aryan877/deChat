@@ -62,4 +62,7 @@ export const ACTION_NAMES = {
   ALLORA_FETCH_TOPICS: "alloraFetchTopics",
   ALLORA_FETCH_INFERENCE: "alloraFetchInference",
   ALLORA_FETCH_PRICE_INFERENCE: "alloraFetchPriceInference",
+
+  // Aave Actions
+  AAVE_GET_USER_DATA: "aaveGetUserData",
 } as const;

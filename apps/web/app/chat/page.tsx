@@ -1,31 +1,14 @@
 "use client";
 
-import { useChat } from "@ai-sdk/react";
-import { useEffect, useRef, useState, FormEvent, useCallback } from "react";
-import React, { Suspense } from "react";
-import Sidebar from "@/components/chat/Sidebar";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { nanoid } from "nanoid";
-import { ThreadPreview } from "@/app/types";
-import { usePrivy } from "@privy-io/react-auth";
-import { useClusterStore } from "@/app/store/clusterStore";
-import {
-  useCreateThread,
-  useDeleteThread,
-  useSaveAllMessages,
-  chatKeys,
-  useThreadMessages,
-} from "@/hooks/chat";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { chatClient } from "@/app/clients/chat";
+import { useClusterStore } from "@/app/store/clusterStore";
+import { ThreadPreview } from "@/app/types";
 import { GetThreadsResponse } from "@/app/types/api/chat";
-import { localStorageUtils } from "@/utils/localStorage";
-import { RefreshCcw, AlertCircle, Loader2 } from "lucide-react";
 import ChatMessage from "@/components/chat/ChatMessage";
+import Sidebar from "@/components/chat/Sidebar";
 import { ScrollDownIcon } from "@/components/ScrollDownIcon";
 import { SendIcon } from "@/components/SendIcon";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -33,6 +16,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  chatKeys,
+  useCreateThread,
+  useDeleteThread,
+  useSaveAllMessages,
+  useThreadMessages,
+} from "@/hooks/chat";
+import { localStorageUtils } from "@/utils/localStorage";
+import { useChat } from "@ai-sdk/react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { AlertCircle, Loader2, RefreshCcw } from "lucide-react";
+import { nanoid } from "nanoid";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, {
+  FormEvent,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 // Action Guide component to display available actions
 const ActionGuide = () => {
@@ -144,6 +150,94 @@ const ActionGuide = () => {
           </ul>
         </div>
 
+        {/* Cross-Chain Bridge Section */}
+        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-3 pt-7 rounded-lg border border-primary/20 relative col-span-1 md:col-span-2">
+          <div className="absolute top-0 right-0 bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-bl-md">
+            Powered by deBridge
+          </div>
+          <h2 className="text-base font-semibold text-primary mb-2">
+            🌉 Cross-Chain Bridge
+          </h2>
+          <p className="text-xs text-muted-foreground mb-3">
+            DeChat integrates with deBridge protocol to enable seamless
+            cross-chain transfers between Sonic and other major blockchains.
+          </p>
+          <ul className="space-y-2">
+            <li>
+              <p className="text-sm font-medium">View Supported Chains</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;What chains can I bridge to?&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="text-sm font-medium">Get Bridge Quote</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;Get a quote to bridge 10 USDC from Sonic to
+                  Ethereum&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="text-sm font-medium">Execute Bridge Transfer</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;Bridge 5 USDC from Sonic to Ethereum&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="text-sm font-medium">Verify Transaction Status</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;Check the status of my bridge transaction
+                  0xae10b8...&quot;
+                </span>
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        {/* AAVE Protocol Section */}
+        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-3 pt-7 rounded-lg border border-primary/20 relative">
+          <div className="absolute top-0 right-0 bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-bl-md">
+            Powered by AAVE
+          </div>
+          <h2 className="text-base font-semibold text-primary mb-2">
+            💰 AAVE v3 on Sonic
+          </h2>
+          <ul className="space-y-2">
+            <li>
+              <p className="text-sm font-medium">Check AAVE Positions</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;Show my AAVE positions&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="text-sm font-medium">
+                Get Lending & Borrowing Rates
+              </p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;What are my current AAVE rates?&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="text-sm font-medium">Check Health Factor</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;What is my AAVE health factor?&quot;
+                </span>
+              </p>
+            </li>
+          </ul>
+        </div>
+
         {/* Allora Oracle Section */}
         <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-3 pt-7 rounded-lg border border-primary/20 relative">
           <div className="absolute top-0 right-0 bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-bl-md">
@@ -224,56 +318,6 @@ const ActionGuide = () => {
               <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;What&apos;s the current BTC/USD price?&quot;
-                </span>
-              </p>
-            </li>
-          </ul>
-        </div>
-
-        {/* Cross-Chain Bridge Section */}
-        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-3 pt-7 rounded-lg border border-primary/20 relative col-span-1 md:col-span-2">
-          <div className="absolute top-0 right-0 bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-bl-md">
-            Powered by deBridge
-          </div>
-          <h2 className="text-base font-semibold text-primary mb-2">
-            🌉 Cross-Chain Bridge
-          </h2>
-          <p className="text-xs text-muted-foreground mb-3">
-            DeChat integrates with deBridge protocol to enable seamless
-            cross-chain transfers between Sonic and other major blockchains.
-          </p>
-          <ul className="space-y-2">
-            <li>
-              <p className="text-sm font-medium">View Supported Chains</p>
-              <p className="text-xs text-muted-foreground">
-                <span className="italic">
-                  &quot;What chains can I bridge to?&quot;
-                </span>
-              </p>
-            </li>
-            <li>
-              <p className="text-sm font-medium">Get Bridge Quote</p>
-              <p className="text-xs text-muted-foreground">
-                <span className="italic">
-                  &quot;Get a quote to bridge 10 USDC from Sonic to
-                  Ethereum&quot;
-                </span>
-              </p>
-            </li>
-            <li>
-              <p className="text-sm font-medium">Execute Bridge Transfer</p>
-              <p className="text-xs text-muted-foreground">
-                <span className="italic">
-                  &quot;Bridge 5 USDC from Sonic to Ethereum&quot;
-                </span>
-              </p>
-            </li>
-            <li>
-              <p className="text-sm font-medium">Verify Transaction Status</p>
-              <p className="text-xs text-muted-foreground">
-                <span className="italic">
-                  &quot;Check the status of my bridge transaction
-                  0xae10b8...&quot;
                 </span>
               </p>
             </li>
