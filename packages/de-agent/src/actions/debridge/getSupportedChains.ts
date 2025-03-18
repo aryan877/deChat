@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { Action } from "../../types/action.js";
 import { getDebridgeSupportedChains } from "../../tools/debridge/getSupportedChains.js";
+import type { Action } from "../../types/action.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
 export const getSupportedChainsAction: Action = {

@@ -1,5 +1,5 @@
-import { DEBRIDGE_API } from "../../constants/index.js";
 import axios from "axios";
+import { DEBRIDGE_API } from "../../constants/index.js";
 import {
   deBridgeOrderInput,
   deBridgeOrderResponse,
@@ -83,11 +83,23 @@ export async function fetchBridgeQuote(
 
     return data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw new Error(
-        `Failed to get bridge quote: ${error.response?.status} - ${error.response?.data}`
-      );
+    if (axios.isAxiosError(error) && error.response?.data) {
+      const apiError = error.response.data;
+      const errorDetails = {
+        errorCode: apiError.errorCode,
+        errorId: apiError.errorId,
+        errorMessage: apiError.errorMessage,
+        ...(apiError.reqId && { reqId: apiError.reqId }),
+      };
+
+      // Throw a structured error object
+      throw {
+        code: apiError.errorId || "API_ERROR",
+        message: apiError.errorMessage || "Failed to get bridge quote",
+        details: errorDetails,
+      };
     }
+    // Re-throw non-axios errors or generic errors
     throw error;
   }
 }

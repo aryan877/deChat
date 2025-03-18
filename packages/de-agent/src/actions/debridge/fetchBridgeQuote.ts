@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { Action } from "../../types/action.js";
 import { fetchBridgeQuote } from "../../tools/debridge/fetchBridgeQuote.js";
+import type { Action } from "../../types/action.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
 const fetchBridgeQuoteSchema = z.object({
@@ -78,15 +78,14 @@ export const fetchBridgeQuoteAction: Action = {
         message: "Successfully retrieved bridge quote",
         data: quote,
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         status: "error",
-        message: "Failed to get bridge quote",
+        message: error.message || "Failed to get bridge quote",
         error: {
-          code: "QUOTE_ERROR",
-          message:
-            error instanceof Error ? error.message : "Unknown error occurred",
-          details: error,
+          code: error.code || "UNKNOWN_ERROR",
+          message: error.message || "An unknown error occurred",
+          details: error.details || {},
         },
       };
     }
