@@ -180,7 +180,7 @@ export function AaveUserDataSuccess({ data }: AaveUserDataSuccessProps) {
 
           {/* Info box */}
           <div className="mt-6 bg-blue-50 dark:bg-blue-950 rounded-md p-4 text-sm text-muted-foreground border border-blue-200 dark:border-blue-800">
-            <p className="flex items-start gap-2">
+            <p className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-blue-500" />
               <span>
                 Health Factor: A health factor below 1.0 puts your position at

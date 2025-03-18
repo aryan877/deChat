@@ -1,4 +1,3 @@
-import React from "react";
 import { Check, ExternalLink } from "lucide-react";
 
 export interface BridgeStatusSuccessProps {
@@ -6,10 +5,12 @@ export interface BridgeStatusSuccessProps {
     status: string;
     orderId: string;
     orderLink: string;
-  };
+  }[];
 }
 
 export function BridgeStatusSuccess({ data }: BridgeStatusSuccessProps) {
+  const orderData = data[0];
+
   return (
     <div className="flex flex-col gap-4 max-w-full">
       <div className="bg-card rounded-lg border border-border p-6">
@@ -17,7 +18,9 @@ export function BridgeStatusSuccess({ data }: BridgeStatusSuccessProps) {
           <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
             <Check className="w-6 h-6 text-green-500" />
           </div>
-          <h3 className="text-xl font-semibold">Bridge Order {data.status}</h3>
+          <h3 className="text-xl font-semibold">
+            Bridge Order {orderData?.status}
+          </h3>
         </div>
 
         <div className="flex flex-col items-center gap-4">
@@ -27,10 +30,18 @@ export function BridgeStatusSuccess({ data }: BridgeStatusSuccessProps) {
           </p>
 
           <a
-            href={data.orderLink}
+            href={orderData?.orderLink}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+            onClick={(event) => {
+              event.preventDefault(); // Prevent default behavior of opening about:blank
+              window.open(
+                orderData?.orderLink,
+                "_blank",
+                "noopener,noreferrer"
+              ); // Open in new tab with security measures
+            }}
           >
             View on deBridge
             <ExternalLink className="w-4 h-4" />
