@@ -1,10 +1,10 @@
+import { Cluster } from "@repo/de-agent";
+import axios from "axios";
+import { ethers } from "ethers";
 import { Response } from "express";
 import { AuthenticatedRequest } from "../middleware/auth/index.js";
 import { BadRequestError } from "../middleware/errors/types.js";
-import axios from "axios";
 import { generateDeChatAgent } from "../utils/generateDeChatAgent.js";
-import { ethers } from "ethers";
-import { Cluster } from "@repo/de-agent";
 
 // Dune API key
 const DUNE_API_KEY =
@@ -145,11 +145,6 @@ export const transferTokens = async (
 
       try {
         // Create contract instance
-        const tokenContract = new ethers.Contract(
-          tokenAddress,
-          ERC20_ABI,
-          agent.provider
-        );
 
         // Get token decimals (default to 18 if we can't get it)
         let decimals = 18;

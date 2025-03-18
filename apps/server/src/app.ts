@@ -1,18 +1,18 @@
-import express, { Express } from "express";
-import { createServer } from "http";
-import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
 import cors from "cors";
+import express, { Express } from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import { setupChatRoutes } from "./routes/chatRoutes.js";
+import { createServer } from "http";
+import mongoose from "mongoose";
+import { startDocsSyncCron } from "./cron/docsSync.js";
+import { startTokenSyncCron } from "./cron/tokenSync.js";
 import { errorHandler } from "./middleware/errors/errorHandler.js";
 import { notFoundHandler } from "./middleware/errors/notFoundHandler.js";
 import { ErrorCode, ErrorResponse } from "./middleware/errors/types.js";
-import cookieParser from "cookie-parser";
-import { setupWalletRoutes } from "./routes/walletRoutes.js";
+import { setupChatRoutes } from "./routes/chatRoutes.js";
 import { setupSonicRoutes } from "./routes/sonicRoutes.js";
-import { startTokenSyncCron } from "./cron/tokenSync.js";
-import { startDocsSyncCron } from "./cron/docsSync.js";
+import { setupWalletRoutes } from "./routes/walletRoutes.js";
 
 const app: Express = express();
 const httpServer = createServer(app);

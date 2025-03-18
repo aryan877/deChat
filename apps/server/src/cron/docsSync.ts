@@ -1,8 +1,8 @@
-import cron from "node-cron";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-import FirecrawlApp from "@mendable/firecrawl-js";
 import { DataAPIClient } from "@datastax/astra-db-ts";
+import FirecrawlApp from "@mendable/firecrawl-js";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import cron from "node-cron";
 import OpenAI from "openai";
 import {
   getLastSuccessfulDocsSync,
@@ -15,6 +15,14 @@ dotenv.config();
 // Constants
 const COLLECTION_NAME = "docs_embeddings";
 const MINIMUM_SYNC_INTERVAL = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
+const FIRECRAWL_TIMEOUT = parseInt(
+  process.env.FIRECRAWL_TIMEOUT || "60000",
+  10
+); // 60 seconds default timeout
+const MAX_FIRECRAWL_RETRIES = parseInt(
+  process.env.MAX_FIRECRAWL_RETRIES || "3",
+  10
+); // Default 3 retries
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -70,20 +78,64 @@ async function crawlAndSaveData() {
     console.log("🔍 Starting Sonic docs crawl process...");
 
     const app = initializeFirecrawl();
-    const crawlResponse = await app.crawlUrl("https://docs.soniclabs.com", {
-      limit: 100,
-      scrapeOptions: {
-        formats: ["markdown", "html"],
-      },
-    });
 
-    if (!crawlResponse.success) {
-      throw new Error(`Failed to crawl: ${crawlResponse.error}`);
+    // Track retry attempts
+    let retryCount = 0;
+    let crawlResponse = null;
+    let lastError = null;
+
+    // Retry logic for the crawl operation
+    while (retryCount < MAX_FIRECRAWL_RETRIES) {
+      try {
+        console.log(
+          `🔄 Attempt ${retryCount + 1}/${MAX_FIRECRAWL_RETRIES} to crawl docs...`
+        );
+
+        // Use the timeout parameter as specified in the Firecrawl documentation
+        crawlResponse = await app.crawlUrl("https://docs.soniclabs.com", {
+          limit: 100,
+          scrapeOptions: {
+            formats: ["markdown", "html"],
+            timeout: FIRECRAWL_TIMEOUT, // Add timeout from configuration
+          },
+        });
+
+        // Check if the crawl was successful
+        if (crawlResponse && crawlResponse.success) {
+          console.log(
+            `✅ Crawl completed successfully on attempt ${retryCount + 1}`
+          );
+          return crawlResponse;
+        } else {
+          lastError = new Error(
+            `Failed to crawl: ${crawlResponse?.error || "Unknown error"}`
+          );
+          console.warn(
+            `⚠️ Crawl attempt ${retryCount + 1} failed: ${lastError.message}`
+          );
+        }
+      } catch (error) {
+        lastError = error;
+        console.warn(
+          `⚠️ Exception during crawl attempt ${retryCount + 1}:`,
+          error
+        );
+      }
+
+      // Increment retry counter and wait before retrying
+      retryCount++;
+      if (retryCount < MAX_FIRECRAWL_RETRIES) {
+        const waitTime = retryCount * 3000; // Exponential backoff (3s, 6s, 9s, etc.)
+        console.log(`⏳ Waiting ${waitTime / 1000}s before retry...`);
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      }
     }
 
-    console.log(`✅ Crawl completed successfully`);
-
-    return crawlResponse;
+    // If we got here, all retries failed
+    throw (
+      lastError ||
+      new Error("All Firecrawl crawl attempts failed with unknown errors")
+    );
   } catch (error) {
     console.error("❌ Error during crawl:", error);
     throw error;
@@ -296,9 +348,15 @@ const performDocsSync = async () => {
       crawlData = await crawlAndSaveData();
     } catch (error) {
       console.error("❌ Firecrawl failed:", error);
-      throw new Error(
-        `Failed to crawl: ${error instanceof Error ? error.message : String(error)}`
+      // Record failed sync with specific error
+      await recordDocsSync(
+        0,
+        "failed",
+        false,
+        `Firecrawl API error: ${error instanceof Error ? error.message : String(error)}`
       );
+      console.log("⚠️ Skipping docs sync due to Firecrawl API failure");
+      return { success: false, error, skipped: true };
     }
 
     // Only proceed with deletion if crawl was successful
@@ -306,18 +364,42 @@ const performDocsSync = async () => {
 
     // Step 2: Delete existing documents (only after successful crawl)
     console.log("🗑️ Deleting existing documents...");
-    await deleteAllDocuments();
+    try {
+      await deleteAllDocuments();
+    } catch (error) {
+      console.error("❌ Error deleting documents:", error);
+      // If deletion fails, record a failed sync but don't throw - we still want to try processing the crawled data
+      await recordDocsSync(
+        0,
+        "failed",
+        usedCachedData,
+        `Failed to delete existing documents: ${error instanceof Error ? error.message : String(error)}`
+      );
+      return { success: false, error };
+    }
 
     // Step 3: Store new data in AstraDB
     console.log("💾 Storing data in AstraDB...");
-    const result = await storeInAstraDB(crawlData);
-    documentsProcessed = result.successCount;
+    try {
+      const result = await storeInAstraDB(crawlData);
+      documentsProcessed = result.successCount;
 
-    // Record successful sync
-    await recordDocsSync(documentsProcessed, "success", usedCachedData);
+      // Record successful sync
+      await recordDocsSync(documentsProcessed, "success", usedCachedData);
 
-    console.log("✅ Sonic docs sync completed successfully");
-    return { success: true, documentsProcessed, usedCachedData };
+      console.log("✅ Sonic docs sync completed successfully");
+      return { success: true, documentsProcessed, usedCachedData };
+    } catch (error) {
+      console.error("❌ Error storing data in AstraDB:", error);
+      // Record failed sync
+      await recordDocsSync(
+        documentsProcessed,
+        "failed",
+        usedCachedData,
+        `Failed to store data: ${error instanceof Error ? error.message : String(error)}`
+      );
+      return { success: false, error };
+    }
   } catch (error) {
     console.error("❌ Error in Sonic docs sync:", error);
     // Record failed sync
