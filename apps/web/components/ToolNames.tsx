@@ -123,6 +123,10 @@ const TOOL_DISPLAY_CONFIG: Record<
     icon: <Info className="w-3 h-3" />,
     label: "AAVE User Data",
   },
+  [ACTION_NAMES.SILO_FINANCE]: {
+    icon: <Info className="w-3 h-3" />,
+    label: "Silo Finance",
+  },
 };
 
 export function ToolNames({ toolNames, className }: ToolNamesProps) {
