@@ -14,6 +14,7 @@ import {
   ToolResultTypes,
 } from "../../app/types/tools";
 import { ConfirmationTool } from "./ConfirmationTool";
+import { SiloFinanceTool } from "./silo/SiloFinanceTool";
 
 interface ToolConfig<T extends keyof ToolResultTypes> {
   component: React.ComponentType<{
@@ -21,6 +22,7 @@ interface ToolConfig<T extends keyof ToolResultTypes> {
     onSubmit: (result: ToolResultType<T>) => void;
   }>;
   preprocess?: (result: unknown) => ToolResultType<T>;
+  isExpandable?: boolean;
 }
 
 type ToolRegistry = {
@@ -30,6 +32,11 @@ type ToolRegistry = {
 export const toolRegistry: ToolRegistry = {
   [ACTION_NAMES.ASK_FOR_CONFIRMATION]: {
     component: ConfirmationTool,
+    isExpandable: false,
+  },
+  [ACTION_NAMES.SILO_FINANCE]: {
+    component: SiloFinanceTool,
+    isExpandable: true,
   },
 };
 
@@ -40,6 +47,13 @@ export function getToolComponent(toolInvocation: ToolInvocation) {
   const { toolName } = toolInvocation;
   const config = toolRegistry[toolName as ValidToolName];
   return config?.component;
+}
+
+/**
+ * Checks if a tool is expandable
+ */
+export function isToolExpandable(toolName: string): boolean {
+  return !!toolRegistry[toolName as ValidToolName]?.isExpandable;
 }
 
 export function preprocessToolResult<T extends keyof ToolResultTypes>(

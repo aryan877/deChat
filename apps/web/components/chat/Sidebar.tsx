@@ -1,17 +1,6 @@
 "use client";
 
-import {
-  Loader2,
-  MessageSquarePlus,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Trash2,
-  Menu,
-  X,
-} from "lucide-react";
-import { useState, useEffect } from "react";
 import { ThreadPreview } from "@/app/types";
-import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,10 +9,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { WalletSetupButton } from "./WalletSetupButton";
-import { WalletInfo } from "./WalletInfo";
 import { cn } from "@/lib/utils";
+import { usePrivy } from "@privy-io/react-auth";
+import {
+  Loader2,
+  Menu,
+  MessageSquarePlus,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { WalletInfo } from "./WalletInfo";
+import { WalletSetupButton } from "./WalletSetupButton";
 
 export interface SidebarProps {
   threads: ThreadPreview[];

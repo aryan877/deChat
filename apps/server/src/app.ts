@@ -11,6 +11,7 @@ import { errorHandler } from "./middleware/errors/errorHandler.js";
 import { notFoundHandler } from "./middleware/errors/notFoundHandler.js";
 import { ErrorCode, ErrorResponse } from "./middleware/errors/types.js";
 import { setupChatRoutes } from "./routes/chatRoutes.js";
+import { setupSiloRoutes } from "./routes/services/siloRoutes.js";
 import { setupSonicRoutes } from "./routes/sonicRoutes.js";
 import { setupWalletRoutes } from "./routes/walletRoutes.js";
 
@@ -84,11 +85,13 @@ export const initializeRoutes = async () => {
   const chatRouter = express.Router();
   const walletRouter = express.Router();
   const sonicRouter = express.Router();
+  const siloRouter = express.Router();
 
   // Setup routes with their own router instances
   app.use("/api/chat", setupChatRoutes(chatRouter));
   app.use("/api/wallet", setupWalletRoutes(walletRouter));
   app.use("/api/sonic", setupSonicRoutes(sonicRouter));
+  app.use("/api/silo", setupSiloRoutes(siloRouter));
   console.log("🛠️ Routes configured");
 
   // Handle 404 for undefined routes

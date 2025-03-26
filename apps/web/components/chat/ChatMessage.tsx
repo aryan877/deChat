@@ -10,6 +10,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import {
   getToolComponent,
+  isToolExpandable,
   preprocessToolResult,
   ValidToolName,
 } from "../tools/registery";
@@ -21,6 +22,7 @@ import {
 
 import { useState } from "react";
 import { ToolNames } from "../ToolNames";
+import { ExpandableTool } from "../tools/ExpandableTool";
 
 interface ChatMessageProps {
   message: Message;
@@ -161,9 +163,8 @@ export default function ChatMessage({
       if (!ToolComponent) return null;
 
       try {
-        return (
+        const toolContent = (
           <ToolComponent
-            key={toolCallId}
             args={toolInvocation.args}
             onSubmit={(toolResult) => {
               const processedResult = preprocessToolResult(
@@ -177,6 +178,16 @@ export default function ChatMessage({
             }}
           />
         );
+
+        // Check if this tool should be expandable
+        if (isToolExpandable(toolName)) {
+          return (
+            <ExpandableTool key={toolCallId}>{toolContent}</ExpandableTool>
+          );
+        }
+
+        // Apply key to the non-expandable tool
+        return <div key={toolCallId}>{toolContent}</div>;
       } catch (error) {
         console.error("Error rendering tool invocation:", error);
         return (
@@ -229,7 +240,13 @@ export default function ChatMessage({
                   const result = renderToolInvocation(toolInvocation);
                   // Only render the div with margin if there's actual content
                   return result ? (
-                    <div key={toolInvocation.toolCallId} className="mb-6">
+                    <div
+                      key={toolInvocation.toolCallId}
+                      className={cn(
+                        // Only add mb-6 if there's content afterward
+                        message.content?.trim() ? "mb-6" : ""
+                      )}
+                    >
                       {result}
                     </div>
                   ) : null;

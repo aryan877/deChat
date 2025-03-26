@@ -150,6 +150,119 @@ const ActionGuide = () => {
           </ul>
         </div>
 
+        {/* AAVE Protocol Section */}
+        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-3 pt-7 rounded-lg border border-primary/20 relative">
+          <div className="absolute top-0 right-0 bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-bl-md">
+            Powered by AAVE
+          </div>
+          <h2 className="text-base font-semibold text-primary mb-2">
+            💰 AAVE v3 on Sonic
+          </h2>
+          <ul className="space-y-2">
+            <li>
+              <p className="text-sm font-medium">Check AAVE Positions</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;Show my AAVE positions&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="text-sm font-medium">
+                Get Lending & Borrowing Rates
+              </p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;What are my current AAVE rates?&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="text-sm font-medium">Check Health Factor</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;What is my AAVE health factor?&quot;
+                </span>
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        {/* Silo Finance Section */}
+        <div className="bg-gradient-to-r from-rose-500/10 to-rose-600/10 p-3 pt-7 rounded-lg border border-rose-500/20 relative">
+          <div className="absolute top-0 right-0 bg-rose-500/20 text-rose-600/90 text-[10px] px-2 py-0.5 rounded-bl-md">
+            NEW
+          </div>
+          <h2 className="text-base font-semibold text-rose-600/90 mb-2">
+            🏦 Silo Finance on Sonic
+          </h2>
+          <ul className="space-y-2">
+            <li>
+              <p className="text-sm font-medium">View Silo Markets</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;Show me Silo Finance markets&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="text-sm font-medium">Get Silo Stats</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;What's the TVL in Silo Finance?&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="text-sm font-medium">Search Specific Tokens</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;Find SONIC markets in Silo Finance&quot;
+                </span>
+                <span className="ml-1.5 text-rose-600/80 text-[10px]">
+                  Coming soon: deposit, borrow, repay
+                </span>
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        {/* Allora Oracle Section */}
+        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-3 pt-7 rounded-lg border border-primary/20 relative">
+          <div className="absolute top-0 right-0 bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-bl-md">
+            Powered by Allora
+          </div>
+          <h2 className="text-base font-semibold text-primary mb-2">
+            🔮 Price Predictions
+          </h2>
+          <ul className="space-y-2">
+            <li>
+              <p className="text-sm font-medium">View Topics</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;Show me available Allora topics&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="text-sm font-medium">Get Price Inference</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;Get price prediction for BTC&quot;
+                </span>
+              </p>
+            </li>
+            <li>
+              <p className="text-sm font-medium">Topic Inference</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;Get inference for topic 18&quot;
+                </span>
+              </p>
+            </li>
+          </ul>
+        </div>
+
         {/* Cross-Chain Bridge Section */}
         <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-3 pt-7 rounded-lg border border-primary/20 relative col-span-1 md:col-span-2">
           <div className="absolute top-0 right-0 bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-bl-md">
@@ -194,80 +307,6 @@ const ActionGuide = () => {
                 <span className="italic">
                   &quot;Check the status of my bridge transaction
                   0xae10b8...&quot;
-                </span>
-              </p>
-            </li>
-          </ul>
-        </div>
-
-        {/* AAVE Protocol Section */}
-        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-3 pt-7 rounded-lg border border-primary/20 relative">
-          <div className="absolute top-0 right-0 bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-bl-md">
-            Powered by AAVE
-          </div>
-          <h2 className="text-base font-semibold text-primary mb-2">
-            💰 AAVE v3 on Sonic
-          </h2>
-          <ul className="space-y-2">
-            <li>
-              <p className="text-sm font-medium">Check AAVE Positions</p>
-              <p className="text-xs text-muted-foreground">
-                <span className="italic">
-                  &quot;Show my AAVE positions&quot;
-                </span>
-              </p>
-            </li>
-            <li>
-              <p className="text-sm font-medium">
-                Get Lending & Borrowing Rates
-              </p>
-              <p className="text-xs text-muted-foreground">
-                <span className="italic">
-                  &quot;What are my current AAVE rates?&quot;
-                </span>
-              </p>
-            </li>
-            <li>
-              <p className="text-sm font-medium">Check Health Factor</p>
-              <p className="text-xs text-muted-foreground">
-                <span className="italic">
-                  &quot;What is my AAVE health factor?&quot;
-                </span>
-              </p>
-            </li>
-          </ul>
-        </div>
-
-        {/* Allora Oracle Section */}
-        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-3 pt-7 rounded-lg border border-primary/20 relative">
-          <div className="absolute top-0 right-0 bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-bl-md">
-            Powered by Allora
-          </div>
-          <h2 className="text-base font-semibold text-primary mb-2">
-            🔮 Price Predictions
-          </h2>
-          <ul className="space-y-2">
-            <li>
-              <p className="text-sm font-medium">View Topics</p>
-              <p className="text-xs text-muted-foreground">
-                <span className="italic">
-                  &quot;Show me available Allora topics&quot;
-                </span>
-              </p>
-            </li>
-            <li>
-              <p className="text-sm font-medium">Get Price Inference</p>
-              <p className="text-xs text-muted-foreground">
-                <span className="italic">
-                  &quot;Get price prediction for BTC&quot;
-                </span>
-              </p>
-            </li>
-            <li>
-              <p className="text-sm font-medium">Topic Inference</p>
-              <p className="text-xs text-muted-foreground">
-                <span className="italic">
-                  &quot;Get inference for topic 18&quot;
                 </span>
               </p>
             </li>

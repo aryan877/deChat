@@ -7,6 +7,7 @@ const nextConfig = {
       "repository.sonic.soniclabs.com",
       "sonicscan.org",
       "raw.githubusercontent.com",
+      "coin-images.coingecko.com",
     ],
   },
   async headers() {

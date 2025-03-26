@@ -1,5 +1,5 @@
-import { Action } from "../../types/action.js";
 import { z } from "zod";
+import { Action } from "../../types/action.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
 export type AskForConfirmationInput = z.infer<typeof askForConfirmationSchema>;

@@ -15,6 +15,7 @@ import {
 import { duneActions } from "./dune/index.js";
 import { shadowTokenSearchAction } from "./knowledge/shadowTokenSearch.js";
 import { sonicDocsSearchAction } from "./knowledge/sonicDocsSearch.js";
+import siloFinanceAction from "./silo/siloFinance.js";
 import { getDelegationsAction } from "./sonic/getDelegations.js";
 import { sonicActions } from "./sonic/index.js";
 import { searchAction } from "./sonic/search.js";
@@ -34,6 +35,9 @@ export const ACTIONS: Record<string, Action> = {
   ...duneActions,
   ...alloraActions,
   ...aaveActions,
+
+  // Silo Finance action
+  [ACTION_NAMES.SILO_FINANCE]: siloFinanceAction,
 
   // Chainlink actions
   [ACTION_NAMES.CHAINLINK_GET_PRICE_DATA]: getPriceDataAction,

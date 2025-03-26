@@ -1,9 +1,8 @@
-import React from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { AlertCircle, Check, X } from "lucide-react";
 import { ConfirmationToolResult } from "@/app/types/tools";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { AskForConfirmationInput } from "@repo/de-agent";
+import { AlertCircle, Check, X } from "lucide-react";
 
 interface ConfirmationToolProps {
   args: AskForConfirmationInput;

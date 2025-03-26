@@ -5,8 +5,9 @@
  * Focused on Ethereum/Sonic blockchain tools.
  */
 
+import { SiloMarket, SiloStats } from "@/components/tools/silo/types";
+import type { AskForConfirmationInput, SiloFinanceInput } from "@repo/de-agent";
 import { ACTION_NAMES } from "@repo/de-agent";
-import type { AskForConfirmationInput } from "@repo/de-agent";
 /**
  * Possible status values for a tool execution result
  * - success: The tool executed successfully
@@ -48,7 +49,14 @@ export interface ConfirmationData {
   confirmed: boolean;
 }
 
+export interface SiloFinanceData {
+  markets: SiloMarket[];
+  stats: SiloStats;
+}
+
 export type ConfirmationToolResult = ToolResultBase<ConfirmationData>;
+
+export type SiloFinanceToolResult = ToolResultBase<SiloFinanceData>;
 
 /**
  * Registry that maps tool names to their corresponding result types
@@ -58,6 +66,7 @@ export interface ToolResultTypes {
   // [ACTION_NAMES.SONIC_SWAP]: SonicSwapToolResult;
   // TODO: Add additional Sonic/Ethereum tool result types as needed
   [ACTION_NAMES.ASK_FOR_CONFIRMATION]: ConfirmationToolResult;
+  [ACTION_NAMES.SILO_FINANCE]: SiloFinanceToolResult;
 }
 
 /**
@@ -102,6 +111,7 @@ export interface ToolInputTypes {
   // [ACTION_NAMES.SONIC_SWAP]: SonicSwapInput;
   // TODO: Add additional Sonic/Ethereum tool input types as needed
   [ACTION_NAMES.ASK_FOR_CONFIRMATION]: AskForConfirmationInput;
+  [ACTION_NAMES.SILO_FINANCE]: SiloFinanceInput;
 }
 
 /**

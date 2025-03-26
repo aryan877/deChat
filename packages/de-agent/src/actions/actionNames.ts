@@ -65,4 +65,7 @@ export const ACTION_NAMES = {
 
   // Aave Actions
   AAVE_GET_USER_DATA: "aaveGetUserData",
+
+  // Silo Finance Actions
+  SILO_FINANCE: "siloFinance",
 } as const;

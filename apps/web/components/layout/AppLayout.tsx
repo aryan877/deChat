@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
-import { useRouter } from "next/navigation";
-import Sidebar from "@/components/chat/Sidebar";
-import { Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { chatClient } from "@/app/clients/chat";
-import { chatKeys } from "@/hooks/chat";
-import { GetThreadsResponse } from "@/app/types/api/chat";
 import { ThreadPreview } from "@/app/types";
+import { GetThreadsResponse } from "@/app/types/api/chat";
+import Sidebar from "@/components/chat/Sidebar";
+import { Button } from "@/components/ui/button";
+import { chatKeys } from "@/hooks/chat";
+import { usePrivy } from "@privy-io/react-auth";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface AppLayoutProps {
   children: React.ReactNode;
