@@ -10,6 +10,7 @@ import {
 import { Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { SiloMarket } from "../types";
+import { MarketDetailsPage } from "./MarketDetailsPage";
 import { SiloCard } from "./SiloCard";
 import { SiloRow } from "./SiloRow";
 
@@ -27,6 +28,8 @@ export const MarketTable = ({
   isExpanded = false,
 }: MarketTableProps) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [hoveredMarketId, setHoveredMarketId] = useState<string | null>(null);
+  const [selectedMarket, setSelectedMarket] = useState<SiloMarket | null>(null);
 
   // Check if we're on a mobile device using window width
   useEffect(() => {
@@ -43,6 +46,28 @@ export const MarketTable = ({
     // Cleanup
     return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
+
+  // Handle market hover for desktop view
+  const handleMarketHover = (marketId: string, isHovered: boolean) => {
+    setHoveredMarketId(isHovered ? marketId : null);
+  };
+
+  // Handle market click
+  const handleMarketClick = (market: SiloMarket) => {
+    setSelectedMarket(market);
+  };
+
+  // Handle back button click
+  const handleBackClick = () => {
+    setSelectedMarket(null);
+  };
+
+  // If a market is selected, show market details page
+  if (selectedMarket) {
+    return (
+      <MarketDetailsPage market={selectedMarket} onBack={handleBackClick} />
+    );
+  }
 
   if (loading) {
     return (
@@ -67,11 +92,18 @@ export const MarketTable = ({
   // Mobile view - compact cards
   if (isMobile) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3 px-0.5">
         {filteredMarkets.map((market) => (
-          <div key={market.id} className="border rounded-md overflow-hidden">
-            <div className="bg-muted/50 px-2 py-1 text-xs font-medium border-b">
-              {market.id}
+          <div
+            key={market.id}
+            className="border rounded-md overflow-hidden shadow-sm hover:border-primary/50 hover:shadow-md transition-all cursor-pointer"
+            onClick={() => handleMarketClick(market)}
+          >
+            <div className="bg-muted/50 px-2 py-1 text-xs font-medium border-b flex items-center justify-between">
+              <span>{market.id}</span>
+              <span className="text-xs text-muted-foreground">
+                Tap for details
+              </span>
             </div>
             <div>
               {market.silo0 && (
@@ -122,6 +154,11 @@ export const MarketTable = ({
                 silo={market.silo0}
                 showId={true}
                 isFirstInMarket={true}
+                isMarketHovered={hoveredMarketId === market.id}
+                onMarketHover={(isHovered) =>
+                  handleMarketHover(market.id, isHovered)
+                }
+                onMarketClick={() => handleMarketClick(market)}
               />
             )}
             {/* If we have both silos, silo0 is first but not last */}
@@ -131,6 +168,11 @@ export const MarketTable = ({
                 silo={market.silo0}
                 showId={true}
                 isFirstInMarket={true}
+                isMarketHovered={hoveredMarketId === market.id}
+                onMarketHover={(isHovered) =>
+                  handleMarketHover(market.id, isHovered)
+                }
+                onMarketClick={() => handleMarketClick(market)}
               />
             )}
             {/* silo1 is never first, but is last if it exists */}
@@ -140,6 +182,11 @@ export const MarketTable = ({
                 silo={market.silo1}
                 showId={false}
                 isFirstInMarket={false}
+                isMarketHovered={hoveredMarketId === market.id}
+                onMarketHover={(isHovered) =>
+                  handleMarketHover(market.id, isHovered)
+                }
+                onMarketClick={() => handleMarketClick(market)}
               />
             )}
           </React.Fragment>

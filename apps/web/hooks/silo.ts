@@ -6,6 +6,20 @@ export const siloKeys = {
   markets: () => [...siloKeys.all, "markets"] as const,
   stats: () => [...siloKeys.all, "stats"] as const,
   data: () => [...siloKeys.all, "data"] as const,
+  market: (chainKey: string, marketId: string) =>
+    [...siloKeys.all, "market", chainKey, marketId] as const,
+  userMarket: (chainKey: string, marketId: string, userAddress: string) =>
+    [...siloKeys.all, "userMarket", chainKey, marketId, userAddress] as const,
+  marketData: (chainKey: string, marketId: string) =>
+    [...siloKeys.all, "marketData", chainKey, marketId] as const,
+  userMarketData: (chainKey: string, marketId: string, userAddress: string) =>
+    [
+      ...siloKeys.all,
+      "userMarketData",
+      chainKey,
+      marketId,
+      userAddress,
+    ] as const,
 };
 
 export function useSiloMarkets(params?: {
@@ -34,5 +48,31 @@ export function useSiloData(params?: {
   return useQuery({
     queryKey: siloKeys.data(),
     queryFn: () => siloClient.getSiloData(params),
+  });
+}
+
+/**
+ * Hook to fetch detailed market data
+ */
+export function useSiloMarketDetail(chainKey: string, marketId: string) {
+  return useQuery({
+    queryKey: siloKeys.market(chainKey, marketId),
+    queryFn: () => siloClient.getMarketDetail(chainKey, marketId),
+  });
+}
+
+/**
+ * Hook to fetch detailed market data for a specific user
+ */
+export function useSiloMarketDetailForUser(
+  chainKey: string,
+  marketId: string,
+  userAddress: string
+) {
+  return useQuery({
+    queryKey: siloKeys.userMarket(chainKey, marketId, userAddress),
+    queryFn: () =>
+      siloClient.getMarketDetailForUser(chainKey, marketId, userAddress),
+    enabled: Boolean(userAddress),
   });
 }

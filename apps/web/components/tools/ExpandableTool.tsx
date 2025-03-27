@@ -10,6 +10,12 @@ interface ExpandableToolProps {
   className?: string;
 }
 
+// Create a generic type for child props that may include isExpanded
+type ChildProps = {
+  className?: string;
+  isExpanded?: boolean;
+};
+
 export const ExpandableTool = ({
   children,
   className,
@@ -32,7 +38,14 @@ export const ExpandableTool = ({
   // Pass isExpanded prop to children if they are React elements
   const childrenWithProps = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
-      return React.cloneElement(child, { isExpanded } as any);
+      const elementChild = child as React.ReactElement<ChildProps>;
+      return React.cloneElement(elementChild, {
+        isExpanded,
+        className: cn(
+          elementChild.props.className,
+          !isExpanded && "pr-[5.5rem]" // Add right padding to prevent content overlap with button
+        ),
+      });
     }
     return child;
   });
@@ -41,7 +54,8 @@ export const ExpandableTool = ({
   if (!isExpanded) {
     return (
       <div className={cn("relative group", className)}>
-        <div className="absolute top-2 right-2 z-10">
+        {childrenWithProps}
+        <div className="absolute top-3 right-3 z-10">
           <Button
             variant="ghost"
             size="sm"
@@ -52,7 +66,6 @@ export const ExpandableTool = ({
             <Expand className="h-3 w-3" />
           </Button>
         </div>
-        {childrenWithProps}
       </div>
     );
   }

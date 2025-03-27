@@ -52,7 +52,82 @@ export const getSiloMarkets = async (
 };
 
 /**
- * Gets TVL and other metrics from Silo Finance
+ * Fetches specific lending market data from Silo Finance API
+ */
+export const getSiloMarket = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const chainKey = (req.params.chainKey as string) || "sonic";
+    const marketId = req.params.marketId;
+
+    const url = `https://v2.silo.finance/api/lending-market-v2/${chainKey}/${marketId}`;
+
+    const response = await axios.get(url, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "SiloFinance-API-Client/1.0",
+      },
+      timeout: 10000,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching Silo Finance market data:", error);
+    throw new APIError(
+      500,
+      ErrorCode.INTERNAL_SERVER_ERROR,
+      "Failed to fetch market data from Silo Finance API",
+      error instanceof Error ? error.message : undefined
+    );
+  }
+};
+
+/**
+ * Fetches specific lending market data with user info from Silo Finance API
+ */
+export const getSiloMarketForUser = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const chainKey = (req.params.chainKey as string) || "sonic";
+    const marketId = req.params.marketId;
+    const userAddress = req.query.userAddress as string;
+
+    if (!userAddress) {
+      throw new APIError(
+        400,
+        ErrorCode.BAD_REQUEST,
+        "User address is required"
+      );
+    }
+
+    const url = `https://v2.silo.finance/api/lending-market-v2/${chainKey}/${marketId}?user=${userAddress}`;
+
+    const response = await axios.get(url, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "SiloFinance-API-Client/1.0",
+      },
+      timeout: 10000,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching Silo Finance market data for user:", error);
+    throw new APIError(
+      500,
+      ErrorCode.INTERNAL_SERVER_ERROR,
+      "Failed to fetch market data from Silo Finance API",
+      error instanceof Error ? error.message : undefined
+    );
+  }
+};
+
+/**
+ * Gets TVL from Silo Finance
  */
 export const getSiloStats = async (
   req: AuthenticatedRequest,
@@ -69,14 +144,9 @@ export const getSiloStats = async (
       timeout: 5000,
     });
 
-    // Parse the TVL value - the API returns it with 6 extra decimals
-    const tvlUsd = response.data.tvlUsd;
-    const formattedTvl = tvlUsd ? parseFloat(tvlUsd) / 1000000 : 0;
-
+    // Return raw TVL value
     return {
-      tvlUsd: formattedTvl,
-      formattedTvl: formatUSD(formattedTvl),
-      deploymentDays: calculateDeploymentDays(),
+      tvlUsd: response.data.tvlUsd,
     };
   } catch (error) {
     console.error("Error fetching Silo Finance metrics:", error);
@@ -88,24 +158,3 @@ export const getSiloStats = async (
     );
   }
 };
-
-// Helper to calculate days since deployment
-function calculateDeploymentDays(): number {
-  const deployedDate = new Date("2024-02-01");
-  return Math.floor(
-    (new Date().getTime() - deployedDate.getTime()) / (1000 * 60 * 60 * 24)
-  );
-}
-
-// Helper to format USD values
-function formatUSD(value: number): string {
-  if (value >= 1e9) {
-    return `$${(value / 1e9).toFixed(1)}B`;
-  } else if (value >= 1e6) {
-    return `$${(value / 1e6).toFixed(1)}M`;
-  } else if (value >= 1e3) {
-    return `$${(value / 1e3).toFixed(1)}K`;
-  } else {
-    return `$${value.toFixed(2)}`;
-  }
-}

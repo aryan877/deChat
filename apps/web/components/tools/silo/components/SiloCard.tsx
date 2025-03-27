@@ -29,9 +29,14 @@ const getTokenIcon = (logos?: SiloToken["logos"]) => {
 interface SiloCardProps {
   silo?: SiloToken;
   isFirstInMarket: boolean;
+  onClick?: () => void;
 }
 
-export const SiloCard = ({ silo, isFirstInMarket = true }: SiloCardProps) => {
+export const SiloCard = ({
+  silo,
+  isFirstInMarket = true,
+  onClick,
+}: SiloCardProps) => {
   if (!silo) return null;
 
   const depositApr = calculateDepositAPR(silo);
@@ -55,9 +60,11 @@ export const SiloCard = ({ silo, isFirstInMarket = true }: SiloCardProps) => {
 
   return (
     <div
+      onClick={onClick}
       className={cn(
-        "p-3 flex flex-col",
-        !isFirstInMarket && "border-t border-border/40"
+        "p-2 sm:p-3 flex flex-col",
+        !isFirstInMarket && "border-t border-border/40",
+        onClick && "cursor-pointer transition-colors hover:bg-muted/50"
       )}
     >
       {/* Token info and basic stats */}
@@ -76,8 +83,10 @@ export const SiloCard = ({ silo, isFirstInMarket = true }: SiloCardProps) => {
             </div>
           )}
           <div>
-            <div className="font-medium">{silo.symbol || "Unknown"}</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="font-medium text-sm sm:text-base">
+              {silo.symbol || "Unknown"}
+            </div>
+            <div className="text-xs text-muted-foreground truncate max-w-[120px] sm:max-w-none">
               {silo.name || "Unknown"}
             </div>
           </div>
@@ -86,14 +95,14 @@ export const SiloCard = ({ silo, isFirstInMarket = true }: SiloCardProps) => {
         {/* TVL */}
         <div className="text-right">
           <div className="text-xs text-muted-foreground">TVL</div>
-          <div>{formatUSD(tvlUsd)}</div>
+          <div className="text-sm sm:text-base">{formatUSD(tvlUsd)}</div>
         </div>
       </div>
 
       {/* APRs, liquidity and other stats */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mt-3 flex-grow">
+      <div className="grid grid-cols-1 xs:grid-cols-2 gap-x-3 gap-y-2 text-sm mt-2 sm:mt-3 flex-grow">
         {/* Deposit APR */}
-        <div>
+        <div className="mb-1 xs:mb-0">
           <div className="text-xs text-muted-foreground">Deposit APR</div>
           <APRDisplay
             apr={depositApr}
@@ -106,29 +115,29 @@ export const SiloCard = ({ silo, isFirstInMarket = true }: SiloCardProps) => {
         </div>
 
         {/* Borrow APR */}
-        <div>
+        <div className="mb-1 xs:mb-0">
           <div className="text-xs text-muted-foreground">Borrow APR</div>
           {silo.isNonBorrowable ? (
-            <div className="text-muted-foreground">--</div>
+            <div className="text-muted-foreground text-xs sm:text-sm">--</div>
           ) : (
             <APRDisplay apr={borrowApr} points={silo.debtPoints} />
           )}
         </div>
 
         {/* Available to borrow */}
-        <div>
+        <div className="mb-1 xs:mb-0">
           <div className="text-xs text-muted-foreground">Available</div>
           {silo.isNonBorrowable ? (
             <div className="text-xs text-muted-foreground">Non-borrowable</div>
           ) : (
-            <div>{formatUSD(liquidity)}</div>
+            <div className="text-xs sm:text-sm">{formatUSD(liquidity)}</div>
           )}
         </div>
 
         {/* LTV/LT */}
         <div>
           <div className="text-xs text-muted-foreground">mLTV/LT</div>
-          <div>
+          <div className="text-xs sm:text-sm">
             {formatPercent(parseInt(silo.maxLtv) / 1e18)}
             <span className="text-muted-foreground mx-1">/</span>
             {formatPercent(parseInt(silo.lt) / 1e18)}

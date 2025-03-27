@@ -33,6 +33,9 @@ interface SiloRowProps {
   silo?: SiloToken;
   showId?: boolean;
   isFirstInMarket: boolean;
+  isMarketHovered?: boolean;
+  onMarketHover?: (isHovered: boolean) => void;
+  onMarketClick?: () => void;
 }
 
 export const SiloRow = ({
@@ -40,6 +43,9 @@ export const SiloRow = ({
   silo,
   showId = true,
   isFirstInMarket = true,
+  isMarketHovered = false,
+  onMarketHover,
+  onMarketClick,
 }: SiloRowProps) => {
   if (!silo) return null;
 
@@ -56,13 +62,26 @@ export const SiloRow = ({
     (hasCollateralPrograms && silo.collateralPrograms[0]?.rewardTokenSymbol) ||
     undefined;
 
+  const handleMouseEnter = () => {
+    onMarketHover && onMarketHover(true);
+  };
+
+  const handleMouseLeave = () => {
+    onMarketHover && onMarketHover(false);
+  };
+
   return (
     <TableRow
       className={cn(
-        "hover:bg-muted/50 h-14",
+        "h-14",
         "border-0",
-        isFirstInMarket && "border-t border-border/50"
+        isFirstInMarket && "border-t border-border/50",
+        isMarketHovered && "bg-muted/50",
+        onMarketClick && "cursor-pointer"
       )}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={onMarketClick}
     >
       {showId && (
         <TableCell className="font-medium">
