@@ -237,7 +237,7 @@ export async function getTradeQuote(
         },
       ],
       userAddr: agent.wallet_address,
-      slippageLimitPercent: params.slippageLimitPercent || 1, // Default to 1% slippage
+      slippageLimitPercent: params.slippageLimitPercent || 10, // Default to 10% slippage
       sourceBlacklist: [],
       simulate: true,
       pathId: true,
