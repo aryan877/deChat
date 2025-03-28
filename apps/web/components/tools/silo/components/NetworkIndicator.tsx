@@ -5,9 +5,13 @@ import { cn } from "@/lib/utils";
 
 interface NetworkIndicatorProps {
   chainKey: string;
+  className?: string;
 }
 
-export const NetworkIndicator = ({ chainKey }: NetworkIndicatorProps) => {
+export const NetworkIndicator = ({
+  chainKey,
+  className,
+}: NetworkIndicatorProps) => {
   const getNetworkAbbreviation = (chainKey: string) => {
     if (chainKey.toLowerCase() === "sonic") {
       return "S";
@@ -42,7 +46,8 @@ export const NetworkIndicator = ({ chainKey }: NetworkIndicatorProps) => {
       variant="outline"
       className={cn(
         "ml-2 text-xs px-1.5 font-semibold",
-        getNetworkColor(chainKey)
+        getNetworkColor(chainKey),
+        className
       )}
     >
       {getNetworkAbbreviation(chainKey)}

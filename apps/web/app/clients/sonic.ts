@@ -1,8 +1,8 @@
+import api from "@/lib/axios";
 import {
   SonicBalancesResponse,
   SonicTransactionsResponse,
 } from "../types/api/sonic";
-import api from "@/lib/axios";
 
 /**
  * Fetch token balances for a wallet on Sonic chain

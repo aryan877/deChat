@@ -16,6 +16,7 @@ import {
 import { formatPercent, formatUSD } from "../utils/formatters";
 import { APRDisplay } from "./APRDisplay";
 import { NetworkIndicator } from "./NetworkIndicator";
+import { PointsDisplay } from "./PointsDisplay";
 
 // Helper function to get token icon from multiple sources
 const getTokenIcon = (logos?: SiloToken["logos"]) => {
@@ -61,6 +62,9 @@ export const SiloRow = ({
   const rewardTokenSymbol =
     (hasCollateralPrograms && silo.collateralPrograms[0]?.rewardTokenSymbol) ||
     undefined;
+
+  const hasCollateralPoints = silo.collateralPoints !== undefined;
+  const hasDebtPoints = silo.debtPoints !== undefined;
 
   const handleMouseEnter = () => {
     onMarketHover && onMarketHover(true);
@@ -116,21 +120,38 @@ export const SiloRow = ({
       </TableCell>
 
       <TableCell className="px-2 sm:px-4">
-        <APRDisplay
-          apr={depositApr}
-          baseApr={baseDepositApr}
-          rewardsApr={rewardsApr}
-          rewardTokenSymbol={rewardTokenSymbol}
-          points={silo.collateralPoints}
-          hasPrograms={hasCollateralPrograms}
-        />
+        <div className="flex items-center gap-2">
+          <APRDisplay
+            apr={depositApr}
+            baseApr={baseDepositApr}
+            rewardsApr={rewardsApr}
+            rewardTokenSymbol={rewardTokenSymbol}
+            hasPrograms={hasCollateralPrograms}
+          />
+          {hasCollateralPoints && (
+            <PointsDisplay
+              points={silo.collateralPoints}
+              compact
+              title="Deposit Points"
+            />
+          )}
+        </div>
       </TableCell>
 
       <TableCell className="px-2 sm:px-4">
         {silo.isNonBorrowable ? (
           <span className="text-muted-foreground">--</span>
         ) : (
-          <APRDisplay apr={borrowApr} points={silo.debtPoints} />
+          <div className="flex items-center gap-2">
+            <APRDisplay apr={borrowApr} />
+            {hasDebtPoints && (
+              <PointsDisplay
+                points={silo.debtPoints}
+                compact
+                title="Borrow Points"
+              />
+            )}
+          </div>
         )}
       </TableCell>
 

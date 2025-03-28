@@ -1,5 +1,6 @@
 import { siloClient } from "@/app/clients/silo";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { SiloDepositTransactionData } from "../components/tools/silo/types";
 
 export const siloKeys = {
   all: ["silo"] as const,
@@ -19,6 +20,18 @@ export const siloKeys = {
       chainKey,
       marketId,
       userAddress,
+    ] as const,
+  tokenBalance: (
+    walletAddress: string,
+    tokenAddress: string,
+    cluster: string
+  ) =>
+    [
+      ...siloKeys.all,
+      "tokenBalance",
+      walletAddress,
+      tokenAddress,
+      cluster,
     ] as const,
 };
 
@@ -74,5 +87,31 @@ export function useSiloMarketDetailForUser(
     queryFn: () =>
       siloClient.getMarketDetailForUser(chainKey, marketId, userAddress),
     enabled: Boolean(userAddress),
+  });
+}
+
+/**
+ * Hook to execute Silo deposit transaction
+ */
+export function useExecuteDeposit() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    SiloDepositTransactionData,
+    Error,
+    {
+      siloAddress: string;
+      tokenAddress: string;
+      amount: string;
+      userAddress: string;
+      assetType?: number;
+      isNative?: boolean;
+    }
+  >({
+    mutationFn: (params) => siloClient.executeDeposit(params),
+    onSuccess: () => {
+      // Invalidate all user-related market queries to force a refresh
+      queryClient.invalidateQueries({ queryKey: siloKeys.all });
+    },
   });
 }

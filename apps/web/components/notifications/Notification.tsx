@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import {
-  CheckCircle,
-  XCircle,
   AlertCircle,
   AlertTriangle,
+  CheckCircle,
   X,
+  XCircle,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import React, { useEffect } from "react";
 
 export type NotificationType = "success" | "error" | "info" | "warning";
 
@@ -22,6 +22,8 @@ export interface NotificationProps {
   onClose: () => void;
   autoClose?: boolean;
   duration?: number;
+  txHash?: string;
+  txExplorerUrl?: string;
 }
 
 const icons = {
@@ -75,6 +77,47 @@ const formatDetails = (details: unknown): string => {
     .trim();
 };
 
+// Process message text for Markdown-style links
+const processMessage = (message: string): React.ReactNode => {
+  if (!message.includes("[") || !message.includes("]")) {
+    return message;
+  }
+
+  const parts: Array<string | React.ReactElement> = [];
+  const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(message)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      parts.push(message.slice(lastIndex, match.index));
+    }
+
+    // Add the link
+    parts.push(
+      <a
+        key={match.index}
+        href={match[2]}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-foreground underline hover:opacity-80"
+      >
+        {match[1]}
+      </a>
+    );
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add any remaining text
+  if (lastIndex < message.length) {
+    parts.push(message.slice(lastIndex));
+  }
+
+  return parts;
+};
+
 export const Notification = ({
   type,
   message,
@@ -83,6 +126,8 @@ export const Notification = ({
   onClose,
   autoClose = true,
   duration = 5000,
+  txHash,
+  txExplorerUrl,
 }: NotificationProps) => {
   useEffect(() => {
     if (autoClose && isVisible) {
@@ -97,6 +142,7 @@ export const Notification = ({
   if (!isVisible) return null;
 
   const formattedDetails = details ? formatDetails(details) : null;
+  const processedMessage = processMessage(message);
 
   return (
     <div
@@ -128,8 +174,43 @@ export const Notification = ({
         </div>
         <div className="flex-1 mr-2 min-w-0">
           <p className={cn("text-sm font-medium leading-5", textStyles[type])}>
-            {message}
+            {processedMessage}
           </p>
+
+          {/* Transaction link section */}
+          {txHash && txExplorerUrl && (
+            <div className="mt-2 flex items-center space-x-2">
+              <a
+                href={txExplorerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  "text-xs px-2 py-1 rounded-md",
+                  "bg-foreground/10 hover:bg-foreground/20",
+                  "flex items-center gap-1 transition-colors",
+                  "text-foreground/90"
+                )}
+              >
+                <span>View on Explorer</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+              </a>
+            </div>
+          )}
+
           {formattedDetails && (
             <pre
               className={cn(

@@ -232,14 +232,33 @@ export class DeAgent {
       // Try to estimate gas, but use a safe default if it fails
       if (!preparedTx.gasLimit) {
         try {
-          preparedTx.gasLimit = await provider.estimateGas(preparedTx);
-        } catch (error) {
-          console.warn(
-            "Gas estimation failed, using default gas limit:",
-            error
+          const estimatedGas = await provider.estimateGas(preparedTx);
+          // Apply a safety margin to the gas estimate (120% of the estimated value)
+          preparedTx.gasLimit = ethers.BigNumber.from(
+            Math.floor(estimatedGas.toNumber() * gasMultiplier)
           );
-          // Use a safe default gas limit for unstaking (300,000 gas)
-          preparedTx.gasLimit = ethers.BigNumber.from(300000);
+
+          // Ensure we don't exceed block gas limit
+          const block = await provider.getBlock("latest");
+          if (block && preparedTx.gasLimit.gt(block.gasLimit)) {
+            preparedTx.gasLimit = ethers.BigNumber.from(
+              Math.floor(block.gasLimit.toNumber() * 0.9) // 90% of block gas limit
+            );
+          }
+        } catch (error) {
+          // Get specific error message if available
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          console.warn(`Gas estimation failed: ${errorMessage}`);
+
+          // Use appropriate fallback gas limits based on transaction type
+          if (preparedTx.data && preparedTx.data !== "0x") {
+            // Contract interaction - higher gas limit
+            preparedTx.gasLimit = ethers.BigNumber.from(500000);
+          } else {
+            // Simple transfer - lower gas limit
+            preparedTx.gasLimit = ethers.BigNumber.from(21000);
+          }
         }
       }
 

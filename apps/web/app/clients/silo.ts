@@ -77,4 +77,31 @@ export const siloClient = {
     );
     return data;
   },
+
+  /**
+   * Execute a deposit transaction on Silo Finance protocol
+   */
+  executeDeposit: async (params: {
+    siloAddress: string;
+    tokenAddress: string;
+    amount: string;
+    userAddress: string;
+    assetType?: number;
+    isNative?: boolean;
+  }): Promise<{
+    success: boolean;
+    approvalTxHash: string | null;
+    approvalExplorerUrl: string | null;
+    depositTxHash: string;
+    depositExplorerUrl: string;
+  }> => {
+    const { data } = await api.post<{
+      success: boolean;
+      approvalTxHash: string | null;
+      approvalExplorerUrl: string | null;
+      depositTxHash: string;
+      depositExplorerUrl: string;
+    }>("/api/silo/deposit/execute", params);
+    return data;
+  },
 };

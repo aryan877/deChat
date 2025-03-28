@@ -13,9 +13,15 @@ export const formatUSD = (value: number | string, decimals = 2) => {
     return `$${(num / 1e3).toFixed(decimals)}K`;
   } else if (num >= 1) {
     return `$${num.toFixed(decimals)}`;
-  } else {
-    // For very small values (less than $1)
+  } else if (num >= 0.01) {
+    // For small values between $0.01 and $1
+    return `$${num.toFixed(4)}`;
+  } else if (num >= 0.0001) {
+    // For very small values between $0.0001 and $0.01
     return `$${num.toFixed(6)}`;
+  } else {
+    // For extremely small values
+    return `$${num.toExponential(4)}`;
   }
 };
 

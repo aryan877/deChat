@@ -180,3 +180,14 @@ export interface SiloMarketDetail {
   silo0: SiloTokenDetail;
   silo1: SiloTokenDetail;
 }
+
+// Silo deposit transaction data interface
+export interface SiloDepositTransactionData {
+  success: boolean;
+  approvalTxHash: string | null;
+  approvalExplorerUrl: string | null;
+  depositTxHash: string;
+  depositExplorerUrl: string;
+  assetType?: string;
+  message?: string;
+}

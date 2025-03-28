@@ -1,11 +1,13 @@
-import { create } from "zustand";
 import { NotificationType } from "@/components/notifications/Notification";
+import { create } from "zustand";
 
 interface Notification {
   id: string;
   type: NotificationType;
   message: string;
   details?: unknown;
+  txHash?: string;
+  txExplorerUrl?: string;
 }
 
 interface NotificationStore {
@@ -13,14 +15,16 @@ interface NotificationStore {
   addNotification: (
     type: NotificationType,
     message: string,
-    details?: unknown
+    details?: unknown,
+    txHash?: string,
+    txExplorerUrl?: string
   ) => void;
   removeNotification: (id: string) => void;
 }
 
 export const useNotificationStore = create<NotificationStore>((set) => ({
   notifications: [],
-  addNotification: (type, message, details) =>
+  addNotification: (type, message, details, txHash, txExplorerUrl) =>
     set((state) => ({
       notifications: [
         ...state.notifications,
@@ -29,6 +33,8 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
           type,
           message,
           details,
+          txHash,
+          txExplorerUrl,
         },
       ],
     })),

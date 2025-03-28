@@ -65,7 +65,11 @@ export const MarketTable = ({
   // If a market is selected, show market details page
   if (selectedMarket) {
     return (
-      <MarketDetailsPage market={selectedMarket} onBack={handleBackClick} />
+      <MarketDetailsPage
+        marketId={selectedMarket.id}
+        chainKey={selectedMarket.chainKey}
+        onBack={handleBackClick}
+      />
     );
   }
 

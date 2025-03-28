@@ -102,25 +102,37 @@ export const SiloCard = ({
       {/* APRs, liquidity and other stats */}
       <div className="grid grid-cols-1 xs:grid-cols-2 gap-x-3 gap-y-2 text-sm mt-2 sm:mt-3 flex-grow">
         {/* Deposit APR */}
-        <div className="mb-1 xs:mb-0">
-          <div className="text-xs text-muted-foreground">Deposit APR</div>
-          <APRDisplay
-            apr={depositApr}
-            baseApr={baseDepositApr}
-            rewardsApr={rewardsApr}
-            rewardTokenSymbol={rewardTokenSymbol}
-            points={silo.collateralPoints}
-            hasPrograms={hasCollateralPrograms}
-          />
+        <div className="mb-2 xs:mb-0">
+          <div className="text-xs text-muted-foreground mb-1">Deposit APR</div>
+          <div className="flex flex-col gap-2">
+            <APRDisplay
+              apr={depositApr}
+              baseApr={baseDepositApr}
+              rewardsApr={rewardsApr}
+              rewardTokenSymbol={rewardTokenSymbol}
+              hasPrograms={hasCollateralPrograms}
+            />
+            {hasCollateralPoints && (
+              <PointsDisplay
+                points={silo.collateralPoints}
+                title="Deposit Points"
+              />
+            )}
+          </div>
         </div>
 
         {/* Borrow APR */}
-        <div className="mb-1 xs:mb-0">
-          <div className="text-xs text-muted-foreground">Borrow APR</div>
+        <div className="mb-2 xs:mb-0">
+          <div className="text-xs text-muted-foreground mb-1">Borrow APR</div>
           {silo.isNonBorrowable ? (
             <div className="text-muted-foreground text-xs sm:text-sm">--</div>
           ) : (
-            <APRDisplay apr={borrowApr} points={silo.debtPoints} />
+            <div className="flex flex-col gap-2">
+              <APRDisplay apr={borrowApr} />
+              {hasDebtPoints && (
+                <PointsDisplay points={silo.debtPoints} title="Borrow Points" />
+              )}
+            </div>
           )}
         </div>
 
@@ -144,18 +156,6 @@ export const SiloCard = ({
           </div>
         </div>
       </div>
-
-      {/* Display points as badges if they exist */}
-      {(hasCollateralPoints || hasDebtPoints) && (
-        <div className="mt-2 flex flex-wrap gap-1">
-          {hasCollateralPoints && (
-            <div className="mr-1">
-              <PointsDisplay points={silo.collateralPoints} compact />
-            </div>
-          )}
-          {hasDebtPoints && <PointsDisplay points={silo.debtPoints} compact />}
-        </div>
-      )}
     </div>
   );
 };

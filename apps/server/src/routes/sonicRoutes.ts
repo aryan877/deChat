@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { asyncHandler } from "../middleware/errors/asyncHandler.js";
-import { authenticateUser } from "../middleware/auth/index.js";
 import {
   getSonicBalances,
   getSonicTransactions,
   transferTokens,
 } from "../controllers/sonicController.js";
+import { authenticateUser } from "../middleware/auth/index.js";
+import { asyncHandler } from "../middleware/errors/asyncHandler.js";
 import {
   validateGetSonicBalances,
   validateGetSonicTransactions,

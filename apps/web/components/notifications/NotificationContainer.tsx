@@ -1,8 +1,8 @@
 "use client";
 
-import { Notification } from "./Notification";
 import { useNotificationStore } from "@/app/store/notificationStore";
 import { cn } from "@/lib/utils";
+import { Notification } from "./Notification";
 
 export const NotificationContainer = () => {
   const { notifications, removeNotification } = useNotificationStore();
@@ -28,6 +28,8 @@ export const NotificationContainer = () => {
             type={notification.type}
             message={notification.message}
             details={notification.details}
+            txHash={notification.txHash}
+            txExplorerUrl={notification.txExplorerUrl}
             isVisible={true}
             onClose={() => removeNotification(notification.id)}
           />

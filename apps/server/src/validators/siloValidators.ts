@@ -29,6 +29,18 @@ export const validateGetSiloMarketForUser = validateRequest({
   }),
 });
 
+// Schema for Silo deposit transaction
+export const validateSiloDepositExecution = validateRequest({
+  body: z.object({
+    siloAddress: z.string(),
+    tokenAddress: z.string(),
+    amount: z.string(), // String representation of BigNumber
+    assetType: z.number().default(1), // 1 = Collateral by default
+    isNative: z.boolean().default(false),
+    userAddress: z.string(),
+  }),
+});
+
 // Schema for Silo stats (no parameters required)
 export const validateGetSiloStats = validateRequest({
   query: z.object({}),

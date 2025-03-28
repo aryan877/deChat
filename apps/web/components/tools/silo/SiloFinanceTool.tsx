@@ -42,7 +42,7 @@ export function SiloFinanceTool({
 
   // Format TVL with the formatter utility
   const totalTvl = data?.stats?.tvlUsd
-    ? formatUSD(parseFloat(data.stats.tvlUsd))
+    ? formatUSD(parseFloat(data.stats.tvlUsd) / 1e6)
     : "$0";
 
   // Sort markets based on selected option
