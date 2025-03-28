@@ -16,6 +16,7 @@ import {
 import { formatPercent, formatUSD } from "../utils/formatters";
 import { APRDisplay } from "./APRDisplay";
 import { NetworkIndicator } from "./NetworkIndicator";
+import { PointsDisplay } from "./PointsDisplay";
 
 // Helper function to get token icon from multiple sources
 const getTokenIcon = (logos?: SiloToken["logos"]) => {
@@ -33,6 +34,9 @@ interface SiloRowProps {
   silo?: SiloToken;
   showId?: boolean;
   isFirstInMarket: boolean;
+  isMarketHovered?: boolean;
+  onMarketHover?: (isHovered: boolean) => void;
+  onMarketClick?: () => void;
 }
 
 export const SiloRow = ({
@@ -40,6 +44,9 @@ export const SiloRow = ({
   silo,
   showId = true,
   isFirstInMarket = true,
+  isMarketHovered = false,
+  onMarketHover,
+  onMarketClick,
 }: SiloRowProps) => {
   if (!silo) return null;
 
@@ -56,13 +63,29 @@ export const SiloRow = ({
     (hasCollateralPrograms && silo.collateralPrograms[0]?.rewardTokenSymbol) ||
     undefined;
 
+  const hasCollateralPoints = silo.collateralPoints !== undefined;
+  const hasDebtPoints = silo.debtPoints !== undefined;
+
+  const handleMouseEnter = () => {
+    onMarketHover && onMarketHover(true);
+  };
+
+  const handleMouseLeave = () => {
+    onMarketHover && onMarketHover(false);
+  };
+
   return (
     <TableRow
       className={cn(
-        "hover:bg-muted/50 h-14",
+        "h-14",
         "border-0",
-        isFirstInMarket && "border-t border-border/50"
+        isFirstInMarket && "border-t border-border/50",
+        isMarketHovered && "bg-muted/50",
+        onMarketClick && "cursor-pointer"
       )}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={onMarketClick}
     >
       {showId && (
         <TableCell className="font-medium">
@@ -97,21 +120,38 @@ export const SiloRow = ({
       </TableCell>
 
       <TableCell className="px-2 sm:px-4">
-        <APRDisplay
-          apr={depositApr}
-          baseApr={baseDepositApr}
-          rewardsApr={rewardsApr}
-          rewardTokenSymbol={rewardTokenSymbol}
-          points={silo.collateralPoints}
-          hasPrograms={hasCollateralPrograms}
-        />
+        <div className="flex items-center gap-2">
+          <APRDisplay
+            apr={depositApr}
+            baseApr={baseDepositApr}
+            rewardsApr={rewardsApr}
+            rewardTokenSymbol={rewardTokenSymbol}
+            hasPrograms={hasCollateralPrograms}
+          />
+          {hasCollateralPoints && (
+            <PointsDisplay
+              points={silo.collateralPoints}
+              compact
+              title="Deposit Points"
+            />
+          )}
+        </div>
       </TableCell>
 
       <TableCell className="px-2 sm:px-4">
         {silo.isNonBorrowable ? (
           <span className="text-muted-foreground">--</span>
         ) : (
-          <APRDisplay apr={borrowApr} points={silo.debtPoints} />
+          <div className="flex items-center gap-2">
+            <APRDisplay apr={borrowApr} />
+            {hasDebtPoints && (
+              <PointsDisplay
+                points={silo.debtPoints}
+                compact
+                title="Borrow Points"
+              />
+            )}
+          </div>
         )}
       </TableCell>
 

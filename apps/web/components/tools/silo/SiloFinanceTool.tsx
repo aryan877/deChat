@@ -42,7 +42,7 @@ export function SiloFinanceTool({
 
   // Format TVL with the formatter utility
   const totalTvl = data?.stats?.tvlUsd
-    ? formatUSD(parseFloat(data.stats.tvlUsd))
+    ? formatUSD(parseFloat(data.stats.tvlUsd) / 1e6)
     : "$0";
 
   // Sort markets based on selected option
@@ -165,23 +165,35 @@ export function SiloFinanceTool({
         !isExpanded ? "max-h-[80vh]" : "h-full"
       )}
     >
-      <CardHeader className="border-b pb-2 flex-shrink-0 px-3 sm:px-4 py-2.5 sm:py-3">
-        <CardTitle className="text-lg sm:text-xl md:text-2xl">
-          <span className="flex items-center">
-            <div className="w-5 h-5 sm:w-6 sm:h-6 mr-2 rounded-full bg-blue-500 flex items-center justify-center">
-              <span className="text-white text-[10px] sm:text-xs font-bold">
-                S
-              </span>
-            </div>
-            Silo Finance Markets
-          </span>
-        </CardTitle>
-        <div className="text-sm text-muted-foreground mt-1">
-          <StatsHeader totalTvl={totalTvl} />
+      <CardHeader
+        className={cn(
+          "border-b pb-2 flex-shrink-0 px-3 sm:px-4 py-2.5 sm:py-3",
+          !isExpanded && "pr-14 sm:pr-16"
+        )}
+      >
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-lg sm:text-xl md:text-2xl">
+            <span className="flex items-center">
+              <div className="w-5 h-5 sm:w-6 sm:h-6 mr-2 rounded-full bg-blue-500 flex items-center justify-center">
+                <span className="text-white text-[10px] sm:text-xs font-bold">
+                  S
+                </span>
+              </div>
+              Silo Finance Markets
+            </span>
+          </CardTitle>
+          <div className="text-sm text-muted-foreground">
+            <StatsHeader totalTvl={totalTvl} />
+          </div>
         </div>
       </CardHeader>
 
-      <CardContent className="p-2 sm:p-3 md:p-4 flex-1 flex flex-col overflow-hidden">
+      <CardContent
+        className={cn(
+          "p-2 sm:p-3 md:p-4 flex-1 flex flex-col overflow-hidden",
+          !isExpanded && "pr-4 sm:pr-5 md:pr-6"
+        )}
+      >
         <FilterBar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -200,7 +212,7 @@ export function SiloFinanceTool({
         <div
           className={cn(
             "mt-3 flex-1 overflow-auto",
-            !isExpanded && "max-h-[400px]"
+            !isExpanded && "max-h-[calc(80vh-12rem)]"
           )}
         >
           <MarketTable

@@ -318,6 +318,8 @@ export default function Sidebar({
           "hidden md:flex flex-col h-full bg-background border-r border-border flex-shrink-0 transition-all duration-200",
           isCollapsed ? "w-[60px]" : "w-[240px]"
         )}
+        data-state="sidebar"
+        data-collapsed={isCollapsed ? "true" : "false"}
       >
         <SidebarContent />
       </aside>
@@ -338,6 +340,8 @@ export default function Sidebar({
             isMobileOpen ? "translate-x-0" : "-translate-x-full"
           )}
           onClick={(e) => e.stopPropagation()}
+          data-state="sidebar-mobile"
+          data-visible={isMobileOpen ? "true" : "false"}
         >
           <div className="pt-14 flex-1 flex flex-col h-full">
             <SidebarContent />

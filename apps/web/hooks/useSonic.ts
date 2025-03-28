@@ -1,7 +1,6 @@
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { sonicClient } from "@/app/clients/sonic";
 import { TokenBalance, Transaction } from "@/app/types/api/sonic";
-import { useMutation } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 
 /**
  * Query key factory for Sonic-related queries

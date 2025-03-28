@@ -1,5 +1,9 @@
+import {
+  SiloMarket,
+  SiloMarketDetail,
+  SiloStats,
+} from "@/components/tools/silo/types";
 import api from "@/lib/axios";
-import { SiloMarket, SiloStats } from "../../components/tools/silo/types";
 import { SiloFinanceData } from "../types/tools";
 
 export const siloClient = {
@@ -42,5 +46,62 @@ export const siloClient = {
       markets,
       stats,
     };
+  },
+
+  /**
+   * Fetch detailed data for a specific market
+   */
+  getMarketDetail: async (
+    chainKey: string,
+    marketId: string
+  ): Promise<SiloMarketDetail> => {
+    const { data } = await api.get<SiloMarketDetail>(
+      `/api/silo/market/${chainKey}/${marketId}`
+    );
+    return data;
+  },
+
+  /**
+   * Fetch detailed data for a specific market with user information
+   */
+  getMarketDetailForUser: async (
+    chainKey: string,
+    marketId: string,
+    userAddress: string
+  ): Promise<SiloMarketDetail> => {
+    const { data } = await api.get<SiloMarketDetail>(
+      `/api/silo/market/${chainKey}/${marketId}/user`,
+      {
+        params: { userAddress },
+      }
+    );
+    return data;
+  },
+
+  /**
+   * Execute a deposit transaction on Silo Finance protocol
+   */
+  executeDeposit: async (params: {
+    siloAddress: string;
+    tokenAddress: string;
+    amount: string;
+    userAddress: string;
+    assetType?: number;
+    isNative?: boolean;
+  }): Promise<{
+    success: boolean;
+    approvalTxHash: string | null;
+    approvalExplorerUrl: string | null;
+    depositTxHash: string;
+    depositExplorerUrl: string;
+  }> => {
+    const { data } = await api.post<{
+      success: boolean;
+      approvalTxHash: string | null;
+      approvalExplorerUrl: string | null;
+      depositTxHash: string;
+      depositExplorerUrl: string;
+    }>("/api/silo/deposit/execute", params);
+    return data;
   },
 };

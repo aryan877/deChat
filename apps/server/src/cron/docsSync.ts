@@ -120,6 +120,25 @@ async function crawlAndSaveData() {
           `⚠️ Exception during crawl attempt ${retryCount + 1}:`,
           error
         );
+
+        // Check if this is a credit-related error (402) or rate limit error (429)
+        // Don't retry for these specific error types
+        // Check if error is FirecrawlError with statusCode property
+        if (
+          error &&
+          typeof error === "object" &&
+          "statusCode" in error &&
+          (error.statusCode === 402 || error.statusCode === 429)
+        ) {
+          console.log(
+            `❌ Stopping retries due to ${error.statusCode} error: ${
+              "message" in error
+                ? error.message
+                : "Rate limit or insufficient credits"
+            }`
+          );
+          break; // Exit the retry loop
+        }
       }
 
       // Increment retry counter and wait before retrying
