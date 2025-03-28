@@ -88,22 +88,18 @@ const SILO_ROUTER_ABI = [
   { stateMutability: "payable", type: "receive" },
 ];
 
-// Helper function to handle transaction results
+/**
+ * Helper function to handle transaction results
+ * @param txResult The transaction result from agent.sendTransaction
+ * @param txName Name of the transaction type for error messages
+ * @param explorerPrefix Block explorer URL prefix
+ * @returns Object with txHash and explorerUrl
+ */
 async function handleTransactionResult(
   txResult: any,
   txName: string,
   explorerPrefix = "https://sonicscan.org/tx/"
 ) {
-  if (typeof txResult === "string") {
-    // Legacy support for string return type
-    const txHash = txResult;
-    return {
-      txHash,
-      explorerUrl: `${explorerPrefix}${txHash}`,
-    };
-  }
-
-  // Handle TransactionResult object
   if (!txResult.success) {
     const errorCode = txResult.errorCode || ErrorCode.BAD_REQUEST;
     const statusCode = txResult.errorCode?.includes("INSUFFICIENT") ? 400 : 500;
@@ -116,20 +112,11 @@ async function handleTransactionResult(
     );
   }
 
-  // Return success with optional simulation warning
-  const result = {
+  // Return success
+  return {
     txHash: txResult.hash,
     explorerUrl: `${explorerPrefix}${txResult.hash}`,
   };
-
-  // Log a warning if the transaction succeeded despite simulation failure
-  if (txResult.simulationFailed) {
-    console.warn(
-      `${txName} transaction succeeded despite simulation failure: ${txResult.simulationError}`
-    );
-  }
-
-  return result;
 }
 
 // Helper function to check and approve tokens if needed
@@ -175,8 +162,6 @@ async function checkAndApproveToken(
   // Send approval transaction and wait for result
   const approvalResult = await agent.sendTransaction(approvalTx, {
     confirmations: 1,
-    waitForResult: true,
-    forceAttempt: true, // Always attempt even if simulation fails
   });
 
   // Process the approval result
@@ -459,8 +444,6 @@ export const executeSiloDeposit = async (
       // Send deposit transaction and wait for result
       const depositResult = await agent.sendTransaction(depositTx, {
         confirmations: 1,
-        waitForResult: true,
-        forceAttempt: true, // Always attempt even if simulation fails
       });
 
       // Process transaction result
@@ -604,8 +587,6 @@ export const executeSiloWithdraw = async (
       // Send the transaction and wait for confirmation and result
       const withdrawResult = await agent.sendTransaction(withdrawTx, {
         confirmations: 1,
-        waitForResult: true,
-        forceAttempt: true, // Always attempt even if simulation fails
       });
 
       // Process transaction result

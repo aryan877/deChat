@@ -63,15 +63,23 @@ async function checkAndApproveIfNeeded(
     ]);
 
     // Send approval transaction
-    const tx = await agent.sendTransaction(
+    const txResult = await agent.sendTransaction(
       {
         to: tokenAddress,
         data: approveData,
+        gasLimit: ethers.BigNumber.from(100000),
       },
       { confirmations: 1 }
     );
 
-    return tx;
+    // Process transaction result
+    if (!txResult.success) {
+      throw new Error(
+        `Approval transaction failed: ${txResult.error || "Unknown error"}`
+      );
+    }
+
+    return txResult.hash;
   } catch (error) {
     throw new Error(
       `Failed to approve token: ${error instanceof Error ? error.message : "Unknown error"}`
@@ -150,8 +158,18 @@ export async function executeSwap(
     };
 
     // Send the swap transaction
-    const txHash = await agent.sendTransaction(tx, { confirmations: 1 });
+    const txResult = await agent.sendTransaction(tx, {
+      confirmations: 1,
+    });
 
+    // Process transaction result
+    if (!txResult.success) {
+      throw new Error(
+        `Swap transaction failed: ${txResult.error || "Unknown error"}`
+      );
+    }
+
+    const txHash = txResult.hash;
     return {
       txHash,
       explorerUrl: getExplorerUrl(txHash),

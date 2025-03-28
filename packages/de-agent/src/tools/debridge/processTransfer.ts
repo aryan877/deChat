@@ -134,7 +134,6 @@ async function checkAndApproveIfNeeded(
       return null;
     }
 
-    // Use max uint256 value for unlimited approval to prevent future issues
     const MAX_UINT256 = BigInt(
       "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     );
@@ -147,15 +146,25 @@ async function checkAndApproveIfNeeded(
     ]);
 
     // Send approval transaction with higher confirmations to ensure it's processed
-    const tx = await agent.sendTransaction(
+    const txResult = await agent.sendTransaction(
       {
         to: tokenAddress,
         data: approveData,
         // Add a slightly higher gas limit to ensure the transaction goes through
         gasLimit: ethers.BigNumber.from(100000),
       },
-      { confirmations: 2 } // Wait for more confirmations to ensure it's properly mined
+      { confirmations: 2 }
     );
+
+    // Check if transaction was successful
+    if (!txResult.success) {
+      throw new Error(
+        `Approval transaction failed: ${txResult.error || "Unknown error"}`
+      );
+    }
+
+    // Transaction was successful
+    const txHash = txResult.hash;
 
     // Double-check the allowance after approval to make sure it worked
     const newAllowance = await allowanceFunc(
@@ -168,7 +177,7 @@ async function checkAndApproveIfNeeded(
         Current: ${newAllowance.toString()}, Required: ${requiredAmount.toString()}`);
     }
 
-    return tx;
+    return txHash;
   } catch (error) {
     throw new Error(
       `Failed to approve token: ${error instanceof Error ? error.message : "Unknown error"}`
@@ -296,13 +305,19 @@ export async function processTransfer(
       value: data.tx.value,
     };
 
-    // Send transaction using the source chain's RPC URL
-    const txHash = await agent.sendTransaction(transaction, {
-      confirmations: 1,
+    const txResult = await agent.sendTransaction(transaction, {
       customRpcUrl: rpcUrl,
+      confirmations: 1,
     });
 
-    return txHash;
+    // Handle transaction result
+    if (!txResult.success) {
+      throw new Error(
+        `Bridge transaction failed: ${txResult.error || "Unknown error"}`
+      );
+    }
+
+    return txResult.hash;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(

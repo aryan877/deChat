@@ -93,7 +93,19 @@ export async function undelegateFromValidator(
       data: data,
     };
 
-    const txHash = await agent.sendTransaction(tx, { confirmations: 1 });
+    // Send the transaction
+    const txResult = await agent.sendTransaction(tx, {
+      confirmations: 1,
+    });
+
+    // Process transaction result
+    if (!txResult.success) {
+      throw new Error(
+        `Unstaking transaction failed: ${txResult.error || "Unknown error"}`
+      );
+    }
+
+    const txHash = txResult.hash;
     const networkCluster = cluster || agent.cluster || "sonicMainnet";
 
     return {

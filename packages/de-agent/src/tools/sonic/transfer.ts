@@ -52,8 +52,19 @@ export async function transferNative(
   };
 
   try {
-    const txHash = await agent.sendTransaction(tx, { confirmations: 1 });
+    // Send the transaction
+    const txResult = await agent.sendTransaction(tx, {
+      confirmations: 1,
+    });
 
+    // Process transaction result
+    if (!txResult.success) {
+      throw new Error(
+        `Transfer transaction failed: ${txResult.error || "Unknown error"}`
+      );
+    }
+
+    const txHash = txResult.hash;
     const networkCluster = cluster || agent.cluster || "sonicMainnet";
 
     return {
@@ -108,8 +119,19 @@ export async function transferToken(
       ]),
     };
 
-    const txHash = await agent.sendTransaction(tx, { confirmations: 1 });
+    // Send the transaction
+    const txResult = await agent.sendTransaction(tx, {
+      confirmations: 1,
+    });
 
+    // Process transaction result
+    if (!txResult.success) {
+      throw new Error(
+        `Token transfer transaction failed: ${txResult.error || "Unknown error"}`
+      );
+    }
+
+    const txHash = txResult.hash;
     // Use provided cluster, agent's cluster, or default to mainnet
     const networkCluster = cluster || agent.cluster || "sonicMainnet";
 

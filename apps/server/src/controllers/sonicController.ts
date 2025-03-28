@@ -133,7 +133,7 @@ export const transferTokens = async (
       cluster: cluster as Cluster,
     });
 
-    let txHash: string;
+    let txResult;
 
     // If tokenAddress is provided, it's an ERC-20 transfer
     if (tokenAddress) {
@@ -144,8 +144,6 @@ export const transferTokens = async (
       ];
 
       try {
-        // Create contract instance
-
         // Get token decimals (default to 18 if we can't get it)
         let decimals = 18;
         try {
@@ -178,7 +176,13 @@ export const transferTokens = async (
         };
 
         // Send transaction
-        txHash = await agent.sendTransaction(tx, { confirmations: 1 });
+        txResult = await agent.sendTransaction(tx, { confirmations: 1 });
+
+        if (!txResult.success) {
+          throw new Error(
+            `Token transfer failed: ${txResult.error || "Unknown error"}`
+          );
+        }
       } catch (error) {
         throw new Error(
           `Failed to transfer token: ${error instanceof Error ? error.message : "Unknown error"}`
@@ -196,7 +200,13 @@ export const transferTokens = async (
         };
 
         // Send transaction
-        txHash = await agent.sendTransaction(tx, { confirmations: 1 });
+        txResult = await agent.sendTransaction(tx, { confirmations: 1 });
+
+        if (!txResult.success) {
+          throw new Error(
+            `SONIC transfer failed: ${txResult.error || "Unknown error"}`
+          );
+        }
       } catch (error) {
         throw new Error(
           `Failed to transfer SONIC: ${error instanceof Error ? error.message : "Unknown error"}`
@@ -207,8 +217,8 @@ export const transferTokens = async (
     // Return transaction hash and explorer URL
     return res.status(200).json({
       success: true,
-      txHash,
-      explorerUrl: getExplorerUrl(txHash, cluster as Cluster),
+      txHash: txResult.hash,
+      explorerUrl: getExplorerUrl(txResult.hash, cluster as Cluster),
     });
   } catch (error) {
     console.error("Token transfer error:", error);

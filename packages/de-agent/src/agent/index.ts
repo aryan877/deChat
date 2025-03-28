@@ -41,9 +41,6 @@ export interface TransactionResult {
   receipt?: ethers.providers.TransactionReceipt;
   error?: string;
   errorCode?: string;
-  simulationFailed?: boolean;
-  simulationError?: string;
-  warning?: string;
 }
 
 export class DeAgent {
@@ -205,55 +202,10 @@ export class DeAgent {
   }
 
   /**
-   * Check transaction status and return detailed result
-   * @param hash Transaction hash to check
-   * @param waitForConfirmations Number of confirmations to wait for
-   * @returns TransactionResult with detailed status information
-   */
-  async checkTransactionStatus(
-    hash: string,
-    waitForConfirmations: number = 1
-  ): Promise<TransactionResult> {
-    try {
-      // Wait for confirmation
-      const receipt = await this.provider.waitForTransaction(
-        hash,
-        waitForConfirmations
-      );
-
-      // Check if transaction was successful
-      if (receipt.status === 0) {
-        return {
-          success: false,
-          hash,
-          receipt,
-          error: "Transaction reverted on chain",
-          errorCode: "TX_REVERTED",
-        };
-      }
-
-      return {
-        success: true,
-        hash,
-        receipt,
-      };
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      return {
-        success: false,
-        hash,
-        error: `Transaction failed: ${errorMessage}`,
-        errorCode: "TX_FAILED",
-      };
-    }
-  }
-
-  /**
-   * Send a transaction with enhanced error handling and receipt checking
+   * Send a transaction and wait for it to confirm
    * @param tx Transaction to send
-   * @param options Transaction options
-   * @returns Transaction hash if not waiting for result, or TransactionResult if waiting
+   * @param options Optional configuration
+   * @returns Transaction result with confirmation status
    */
   async sendTransaction(
     tx: ethers.providers.TransactionRequest,
@@ -261,100 +213,71 @@ export class DeAgent {
       confirmations?: number;
       customRpcUrl?: string;
       gasMultiplier?: number;
-      waitForResult?: boolean; // New option to wait for result and return status
-      forceAttempt?: boolean; // New option to force attempt even if simulation fails
     } = {}
-  ): Promise<string | TransactionResult> {
+  ): Promise<TransactionResult> {
+    const confirmations = options.confirmations ?? 1;
+    const gasMultiplier = options.gasMultiplier ?? 1.2;
+
     try {
+      // Use custom RPC if provided
       const provider = options.customRpcUrl
         ? new ethers.providers.JsonRpcProvider(options.customRpcUrl)
         : this.provider;
 
+      // Get chain info and set in transaction
       const network = await provider.getNetwork();
-      const chainId = network.chainId;
+      tx.chainId = network.chainId;
 
-      tx.chainId = chainId;
-
+      // Check balance for value transactions
       if (tx.value) {
         const balance = await provider.getBalance(this.wallet_address);
         if (balance.lt(tx.value)) {
-          const errorMessage = `Insufficient balance. You have ${ethers.utils.formatEther(balance)} ETH but need ${ethers.utils.formatEther(tx.value)} ETH`;
-
-          if (options.waitForResult) {
-            return {
-              success: false,
-              hash: "",
-              error: errorMessage,
-              errorCode: "INSUFFICIENT_BALANCE",
-            };
-          }
-          throw new Error(errorMessage);
+          return {
+            success: false,
+            hash: "",
+            error: `Insufficient balance: have ${ethers.utils.formatEther(balance)}, need ${ethers.utils.formatEther(tx.value)}`,
+            errorCode: "INSUFFICIENT_BALANCE",
+          };
         }
       }
 
+      // Prepare transaction with nonce and gas params
       const feeData = await provider.getFeeData();
-
-      const gasMultiplier = options.gasMultiplier || 1.2;
+      const nonce = await provider.getTransactionCount(this.wallet_address);
 
       const preparedTx: ethers.providers.TransactionRequest = {
         ...tx,
-        nonce:
-          tx.nonce || (await provider.getTransactionCount(this.wallet_address)),
+        nonce,
       };
 
-      // Try to estimate gas, but use a safe default if it fails
-      let simulationFailed = false;
-      let simulationError = "";
-
+      // Estimate gas or use safe default
       if (!preparedTx.gasLimit) {
         try {
           const estimatedGas = await provider.estimateGas(preparedTx);
-          // Apply a safety margin to the gas estimate (120% of the estimated value)
           preparedTx.gasLimit = ethers.BigNumber.from(
             Math.floor(estimatedGas.toNumber() * gasMultiplier)
           );
-
-          // Ensure we don't exceed block gas limit
-          const block = await provider.getBlock("latest");
-          if (block && preparedTx.gasLimit.gt(block.gasLimit)) {
-            preparedTx.gasLimit = ethers.BigNumber.from(
-              Math.floor(block.gasLimit.toNumber() * 0.9) // 90% of block gas limit
-            );
-          }
         } catch (error) {
-          // Get specific error message if available
           const errorMessage =
             error instanceof Error ? error.message : "Unknown error";
-          console.warn(`Gas estimation failed: ${errorMessage}`);
 
-          simulationFailed = true;
-          simulationError = errorMessage;
-
-          // Only return error and stop here if not forcing attempt and contains revert
-          if (
-            errorMessage.includes("revert") &&
-            options.waitForResult &&
-            !options.forceAttempt
-          ) {
-            return {
-              success: false,
-              hash: "",
-              error: `Transaction would revert: ${errorMessage}`,
-              errorCode: "TX_REVERT_DETECTED",
-            };
-          }
-
-          // Always use fallback gas limits, especially when forcing
+          // Use safe defaults if estimation fails
           if (preparedTx.data && preparedTx.data !== "0x") {
-            // Contract interaction - higher gas limit
             preparedTx.gasLimit = ethers.BigNumber.from(500000);
           } else {
-            // Simple transfer - lower gas limit
             preparedTx.gasLimit = ethers.BigNumber.from(21000);
+          }
+
+          // If transaction would revert, report it but continue
+          if (errorMessage.includes("revert")) {
+            console.warn(
+              `Gas estimation indicates transaction might revert: ${errorMessage}`
+            );
           }
         }
       }
 
+      // Set gas price parameters
       if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
         preparedTx.maxFeePerGas =
           preparedTx.maxFeePerGas ||
@@ -374,76 +297,56 @@ export class DeAgent {
           );
       }
 
+      // Sign and send transaction
       const signedTx = await this.signTransaction(preparedTx);
-
-      let txResponse;
-      try {
-        txResponse = await provider.sendTransaction(signedTx);
-      } catch (sendError) {
-        const sendErrorMsg =
-          sendError instanceof Error ? sendError.message : "Unknown error";
-
-        if (options.waitForResult) {
-          return {
-            success: false,
-            hash: "",
-            error: `Transaction submission failed: ${sendErrorMsg}${
-              simulationFailed
-                ? ` (Simulation had failed: ${simulationError})`
-                : ""
-            }`,
-            errorCode: "TX_SEND_FAILED",
-            simulationFailed,
-            simulationError: simulationFailed ? simulationError : undefined,
-          };
-        }
-        throw sendError;
-      }
-
+      const txResponse = await provider.sendTransaction(signedTx);
       const txHash = txResponse.hash;
 
-      // If waiting for result, check transaction status
-      if (options.waitForResult) {
-        const txResult = await this.checkTransactionStatus(
-          txHash,
-          options.confirmations || 1
-        );
+      // Wait for confirmation
+      const receipt = await provider.waitForTransaction(txHash, confirmations);
 
-        // Add simulation warning if applicable
-        if (simulationFailed && txResult.success) {
-          return {
-            ...txResult,
-            simulationFailed: true,
-            simulationError,
-            warning: `Transaction succeeded despite simulation failure: ${simulationError}`,
-          };
-        }
-
-        return txResult;
-      }
-
-      // Otherwise, just wait for confirmations if requested
-      if (options.confirmations && options.confirmations > 0) {
-        await provider.waitForTransaction(txHash, options.confirmations);
-      }
-
-      return txHash;
-    } catch (error) {
-      console.error("Error sending transaction", {
-        error: error instanceof Error ? error.message : error,
-        stack: error instanceof Error ? error.stack : undefined,
-      });
-
-      if (options.waitForResult) {
+      // Check transaction success
+      if (receipt.status === 0) {
         return {
           success: false,
-          hash: "",
-          error: error instanceof Error ? error.message : "Unknown error",
-          errorCode: "TX_SEND_FAILED",
+          hash: txHash,
+          receipt,
+          error: "Transaction reverted on chain",
+          errorCode: "TX_REVERTED",
         };
       }
 
-      throw error;
+      // Return successful result
+      return {
+        success: true,
+        hash: txHash,
+        receipt,
+      };
+    } catch (error) {
+      // Handle and categorize errors
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      let errorCode = "TX_FAILED";
+
+      if (errorMessage.includes("insufficient funds")) {
+        errorCode = "INSUFFICIENT_FUNDS";
+      } else if (errorMessage.includes("nonce")) {
+        errorCode = "NONCE_ERROR";
+      } else if (errorMessage.includes("gas")) {
+        errorCode = "GAS_ERROR";
+      } else if (
+        errorMessage.includes("timeout") ||
+        errorMessage.includes("timed out")
+      ) {
+        errorCode = "TIMEOUT";
+      }
+
+      return {
+        success: false,
+        hash: "",
+        error: errorMessage,
+        errorCode,
+      };
     }
   }
 }
