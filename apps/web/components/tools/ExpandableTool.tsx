@@ -75,14 +75,13 @@ export const ExpandableTool = ({
         {childrenWithProps}
         <div className="absolute top-3 right-3 z-10">
           <Button
-            variant="secondary"
-            size="sm"
-            className="h-8 px-3 shadow-sm opacity-100 transition-colors bg-primary/10 hover:bg-primary/20 border border-primary/20"
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full hover:bg-primary/10 transition-colors"
             onClick={() => setIsExpanded(true)}
             title="Expand tool"
           >
-            <Expand className="h-4 w-4 mr-1.5" />
-            <span className="text-xs font-medium">Expand</span>
+            <Expand className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -107,14 +106,13 @@ export const ExpandableTool = ({
       <div className="flex justify-between items-center p-2 border-b">
         <span className="text-sm font-medium">Expanded Tool</span>
         <Button
-          variant="secondary"
-          size="sm"
-          className="h-8 px-3 shadow-sm opacity-100 transition-colors bg-primary/10 hover:bg-primary/20 border border-primary/20"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-full hover:bg-primary/10 transition-colors"
           onClick={() => setIsExpanded(false)}
           title="Close expanded view"
         >
-          <X className="h-4 w-4 mr-1.5" />
-          <span className="text-xs font-medium">Close</span>
+          <X className="h-4 w-4" />
         </Button>
       </div>
       <div className="flex-1 overflow-auto p-3 pb-20">{childrenWithProps}</div>
