@@ -1,7 +1,9 @@
 import {
+  SiloDepositTransactionData,
   SiloMarket,
   SiloMarketDetail,
   SiloStats,
+  SiloWithdrawTransactionData,
 } from "@/components/tools/silo/types";
 import api from "@/lib/axios";
 import { SiloFinanceData } from "../types/tools";
@@ -88,20 +90,28 @@ export const siloClient = {
     userAddress: string;
     assetType?: number;
     isNative?: boolean;
-  }): Promise<{
-    success: boolean;
-    approvalTxHash: string | null;
-    approvalExplorerUrl: string | null;
-    depositTxHash: string;
-    depositExplorerUrl: string;
-  }> => {
-    const { data } = await api.post<{
-      success: boolean;
-      approvalTxHash: string | null;
-      approvalExplorerUrl: string | null;
-      depositTxHash: string;
-      depositExplorerUrl: string;
-    }>("/api/silo/deposit/execute", params);
+  }): Promise<SiloDepositTransactionData> => {
+    const { data } = await api.post<SiloDepositTransactionData>(
+      "/api/silo/deposit/execute",
+      params
+    );
+    return data;
+  },
+
+  /**
+   * Execute a withdraw transaction on Silo Finance protocol
+   */
+  executeWithdraw: async (params: {
+    siloAddress: string;
+    tokenAddress: string;
+    shares: string;
+    userAddress: string;
+    collateralType?: number;
+  }): Promise<SiloWithdrawTransactionData> => {
+    const { data } = await api.post<SiloWithdrawTransactionData>(
+      "/api/silo/withdraw/execute",
+      params
+    );
     return data;
   },
 };

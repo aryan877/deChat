@@ -1,5 +1,10 @@
 "use client";
 
+import { useNotificationStore } from "@/app/store/notificationStore";
+import { WalletInfo } from "@/components/chat/WalletInfo";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,17 +12,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useSonicBalances, useSonicTransactions } from "@/hooks/useSonic";
 import {
-  Loader2,
-  RefreshCw,
-  ArrowDown,
-  ArrowUp,
-  ExternalLink,
-  Send,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -27,23 +31,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { usePrivy } from "@privy-io/react-auth";
-import { WalletInfo } from "@/components/chat/WalletInfo";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+  useSonicBalances,
+  useSonicTransactions,
+  useSonicTransfer,
+} from "@/hooks/useSonic";
+import { usePrivy } from "@privy-io/react-auth";
+import {
+  ArrowDown,
+  ArrowUp,
+  ExternalLink,
+  Loader2,
+  RefreshCw,
+  Search,
+  Send,
+  X,
+} from "lucide-react";
 import { useState } from "react";
-import { useNotificationStore } from "@/app/store/notificationStore";
-import { useSonicTransfer } from "@/hooks/useSonic";
 
 interface Token {
   address?: string;
@@ -58,6 +63,9 @@ interface Token {
 export default function WalletPage() {
   const { user } = usePrivy();
   const walletAddress = user?.wallet?.address;
+
+  // Add search state
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Balances data
   const {
@@ -246,6 +254,17 @@ export default function WalletPage() {
       setAmount(halfAmount);
     }
   };
+
+  // Filter tokens based on search query
+  const filteredBalances = balances?.filter((token) => {
+    if (!searchQuery.trim()) return true;
+
+    const query = searchQuery.toLowerCase().trim();
+    const symbolMatch = token.symbol?.toLowerCase().includes(query);
+    const nameMatch = token.name?.toLowerCase().includes(query);
+
+    return symbolMatch || nameMatch;
+  });
 
   if (!walletAddress) {
     return (
@@ -468,6 +487,27 @@ export default function WalletPage() {
                     </span>
                   </div>
 
+                  {/* Add search input */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search tokens..."
+                      className="pl-9 h-10"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    {searchQuery && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+                        onClick={() => setSearchQuery("")}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -480,61 +520,75 @@ export default function WalletPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {balances?.map((token, index) => (
-                        <TableRow key={index} className="h-16">
-                          <TableCell className="font-medium align-middle">
-                            <div className="flex flex-col">
-                              <div className="flex items-center gap-2">
-                                <span className="inline-block">
-                                  {token?.symbol || "Unknown"}
-                                </span>
-                                {token?.low_liquidity && (
-                                  <Badge variant="outline" className="text-xs">
-                                    Low Liquidity
-                                  </Badge>
+                      {filteredBalances.length > 0 ? (
+                        filteredBalances?.map((token, index) => (
+                          <TableRow key={index} className="h-16">
+                            <TableCell className="font-medium align-middle">
+                              <div className="flex flex-col">
+                                <div className="flex items-center gap-2">
+                                  <span className="inline-block">
+                                    {token?.symbol || "Unknown"}
+                                  </span>
+                                  {token?.low_liquidity && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      Low Liquidity
+                                    </Badge>
+                                  )}
+                                </div>
+                                {token?.symbol === "S" ? (
+                                  <span className="text-xs text-muted-foreground mt-0.5">
+                                    Native
+                                  </span>
+                                ) : token?.name ? (
+                                  <span className="text-xs text-muted-foreground mt-0.5">
+                                    {token.name}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-transparent mt-0.5">
+                                    placeholder
+                                  </span>
                                 )}
                               </div>
-                              {token?.symbol === "S" ? (
-                                <span className="text-xs text-muted-foreground mt-0.5">
-                                  Native
-                                </span>
-                              ) : token?.name ? (
-                                <span className="text-xs text-muted-foreground mt-0.5">
-                                  {token.name}
-                                </span>
-                              ) : (
-                                <span className="text-xs text-transparent mt-0.5">
-                                  placeholder
-                                </span>
+                            </TableCell>
+                            <TableCell className="align-middle">
+                              {formatTokenAmount(
+                                token?.amount,
+                                token?.decimals || 18
                               )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="align-middle">
-                            {formatTokenAmount(
-                              token?.amount,
-                              token?.decimals || 18
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right align-middle">
-                            {token?.value_usd > 1e12
-                              ? "Value too large"
-                              : formatCurrency(token?.value_usd)}
-                          </TableCell>
-                          <TableCell className="text-right p-0 pr-4 align-middle">
-                            <div className="flex justify-end">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleTokenTransfer(token)}
-                                className="h-9"
-                              >
-                                <Send className="h-4 w-4 mr-1.5" />
-                                Transfer
-                              </Button>
-                            </div>
+                            </TableCell>
+                            <TableCell className="text-right align-middle">
+                              {token?.value_usd > 1e12
+                                ? "Value too large"
+                                : formatCurrency(token?.value_usd)}
+                            </TableCell>
+                            <TableCell className="text-right p-0 pr-4 align-middle">
+                              <div className="flex justify-end">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleTokenTransfer(token)}
+                                  className="h-9"
+                                >
+                                  <Send className="h-4 w-4 mr-1.5" />
+                                  Transfer
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell
+                            colSpan={4}
+                            className="h-16 text-center text-muted-foreground"
+                          >
+                            No tokens found matching "{searchQuery}"
                           </TableCell>
                         </TableRow>
-                      ))}
+                      )}
                     </TableBody>
                   </Table>
                 </div>

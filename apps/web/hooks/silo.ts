@@ -1,6 +1,9 @@
 import { siloClient } from "@/app/clients/silo";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { SiloDepositTransactionData } from "../components/tools/silo/types";
+import {
+  SiloDepositTransactionData,
+  SiloWithdrawTransactionData,
+} from "../components/tools/silo/types";
 
 export const siloKeys = {
   all: ["silo"] as const,
@@ -109,6 +112,31 @@ export function useExecuteDeposit() {
     }
   >({
     mutationFn: (params) => siloClient.executeDeposit(params),
+    onSuccess: () => {
+      // Invalidate all user-related market queries to force a refresh
+      queryClient.invalidateQueries({ queryKey: siloKeys.all });
+    },
+  });
+}
+
+/**
+ * Hook to execute Silo withdraw transaction
+ */
+export function useExecuteWithdraw() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    SiloWithdrawTransactionData,
+    Error,
+    {
+      siloAddress: string;
+      tokenAddress: string;
+      shares: string;
+      userAddress: string;
+      collateralType?: number;
+    }
+  >({
+    mutationFn: (params) => siloClient.executeWithdraw(params),
     onSuccess: () => {
       // Invalidate all user-related market queries to force a refresh
       queryClient.invalidateQueries({ queryKey: siloKeys.all });

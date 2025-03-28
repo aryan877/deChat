@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { Action } from "../../types/action.js";
 import { fetchTokenData } from "../../tools/debridge/fetchTokenData.js";
+import type { Action } from "../../types/action.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
 const fetchTokenDataSchema = z.object({
@@ -34,18 +34,19 @@ export const fetchTokenDataAction: Action = {
       {
         input: {
           chainId: "1",
-          search: "USDC",
+          search: "TOKEN",
         },
         output: {
           tokens: {
-            "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48": {
-              name: "USD Coin",
-              symbol: "USDC",
-              decimals: 6,
+            "0xTokenAddressExample123456789abcdef": {
+              name: "Example Token",
+              symbol: "TOKEN",
+              decimals: 18,
             },
           },
         },
-        explanation: "Gets information about USDC token on Ethereum",
+        explanation:
+          "Gets information about a token on Ethereum by search term",
       },
     ],
   ],

@@ -24,39 +24,6 @@ async function getTokenInfo(
   agent: DeAgent,
   tokenInput: string
 ): Promise<{ address: string; decimals: number; symbol: string }> {
-  // Handle common token symbols directly to avoid unnecessary API calls
-  // This is a fallback in case the search doesn't work
-  const knownTokens: Record<
-    string,
-    { address: string; decimals: number; symbol: string }
-  > = {
-    sonic: {
-      address: "0x0000000000000000000000000000000000000000",
-      decimals: 18,
-      symbol: "SONIC",
-    },
-    usdt: {
-      address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-      decimals: 6,
-      symbol: "USDT",
-    },
-    usdc: {
-      address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-      decimals: 6,
-      symbol: "USDC",
-    },
-    weth: {
-      address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-      decimals: 18,
-      symbol: "WETH",
-    },
-    wbtc: {
-      address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
-      decimals: 8,
-      symbol: "WBTC",
-    },
-  };
-
   // If input is already an address (starts with 0x), use it directly
   if (tokenInput.startsWith("0x")) {
     // Native SONIC token has 18 decimals
@@ -107,20 +74,15 @@ async function getTokenInfo(
     }
   }
 
-  // If input is a symbol (not an address), try to find the address
+  // If input is a symbol (not an address), try to search for it
   else {
-    // First check if it's a known token
-    const lowerInput = tokenInput.toLowerCase();
-    if (knownTokens[lowerInput]) {
-      return knownTokens[lowerInput];
-    }
-
-    // If not a known token, try to search for it
+    // Try to search for the token
     try {
       const searchResponse = await searchSonic(agent, tokenInput);
 
       if (searchResponse.data && searchResponse.data.length > 0) {
         // Find the most relevant result
+        const lowerInput = tokenInput.toLowerCase();
         const token = searchResponse.data.find(
           (result) =>
             result.title.toLowerCase() === lowerInput ||
@@ -136,23 +98,14 @@ async function getTokenInfo(
         }
       }
 
-      // If search didn't find anything, use the default for the symbol if known
-      if (knownTokens[lowerInput]) {
-        return knownTokens[lowerInput];
-      }
-
       // Last resort: return a placeholder
       return {
         address: "0x0000000000000000000000000000000000000000", // Default to SONIC
         decimals: 18,
         symbol: tokenInput.toUpperCase(),
       };
-    } catch {
-      // If search failed but we know the token, use the known info
-      if (knownTokens[lowerInput]) {
-        return knownTokens[lowerInput];
-      }
-
+    } catch (error) {
+      console.error(`Error searching for token ${tokenInput}:`, error);
       // Last resort: return a placeholder
       return {
         address: "0x0000000000000000000000000000000000000000", // Default to SONIC

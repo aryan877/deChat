@@ -88,6 +88,126 @@ const SILO_ROUTER_ABI = [
   { stateMutability: "payable", type: "receive" },
 ];
 
+// Helper function to handle transaction results
+async function handleTransactionResult(
+  txResult: any,
+  txName: string,
+  explorerPrefix = "https://sonicscan.org/tx/"
+) {
+  if (typeof txResult === "string") {
+    // Legacy support for string return type
+    const txHash = txResult;
+    return {
+      txHash,
+      explorerUrl: `${explorerPrefix}${txHash}`,
+    };
+  }
+
+  // Handle TransactionResult object
+  if (!txResult.success) {
+    const errorCode = txResult.errorCode || ErrorCode.BAD_REQUEST;
+    const statusCode = txResult.errorCode?.includes("INSUFFICIENT") ? 400 : 500;
+
+    throw new APIError(
+      statusCode,
+      errorCode as ErrorCode,
+      `${txName} transaction failed: ${txResult.error}`,
+      txResult.errorCode
+    );
+  }
+
+  // Return success with optional simulation warning
+  const result = {
+    txHash: txResult.hash,
+    explorerUrl: `${explorerPrefix}${txResult.hash}`,
+  };
+
+  // Log a warning if the transaction succeeded despite simulation failure
+  if (txResult.simulationFailed) {
+    console.warn(
+      `${txName} transaction succeeded despite simulation failure: ${txResult.simulationError}`
+    );
+  }
+
+  return result;
+}
+
+// Helper function to check and approve tokens if needed
+async function checkAndApproveToken(
+  agent: any,
+  tokenAddress: string,
+  spender: string,
+  amount: string,
+  userAddress: string
+) {
+  // Create ERC20 interface for contract calls
+  const erc20Interface = new ethers.Interface(ERC20_ABI);
+
+  // Check current allowance
+  const allowanceData = erc20Interface.encodeFunctionData("allowance", [
+    userAddress,
+    spender,
+  ]);
+
+  const allowanceResult = await agent.provider.call({
+    to: tokenAddress,
+    data: allowanceData,
+  });
+
+  const currentAllowance = ethers.AbiCoder.defaultAbiCoder().decode(
+    ["uint256"],
+    allowanceResult
+  )[0];
+
+  const amountBigInt = BigInt(amount);
+
+  // If allowance is sufficient, no need to approve
+  if (currentAllowance >= amountBigInt) {
+    return null;
+  }
+
+  // Use exact amount for approval
+  const approvalTx = {
+    to: tokenAddress,
+    data: erc20Interface.encodeFunctionData("approve", [spender, amount]),
+  };
+
+  // Send approval transaction and wait for result
+  const approvalResult = await agent.sendTransaction(approvalTx, {
+    confirmations: 1,
+    waitForResult: true,
+    forceAttempt: true, // Always attempt even if simulation fails
+  });
+
+  // Process the approval result
+  const approvalData = await handleTransactionResult(
+    approvalResult,
+    "Token approval"
+  );
+
+  // Verify allowance after approval
+  const verifyAllowanceResult = await agent.provider.call({
+    to: tokenAddress,
+    data: allowanceData,
+  });
+
+  const newAllowance = ethers.AbiCoder.defaultAbiCoder().decode(
+    ["uint256"],
+    verifyAllowanceResult
+  )[0];
+
+  if (newAllowance < amountBigInt) {
+    throw new APIError(
+      400,
+      ErrorCode.BAD_REQUEST,
+      `Approval verified but allowance (${newAllowance}) is still less than required amount (${amountBigInt})`,
+      "INSUFFICIENT_ALLOWANCE_AFTER_APPROVAL"
+    );
+  }
+
+  return approvalData;
+}
+
 /**
  * Fetches market data from Silo Finance API
  */
@@ -294,66 +414,27 @@ export const executeSiloDeposit = async (
     };
 
     // For non-native tokens, check and execute approval if needed
-    let approvalTxHash = null;
+    let approvalData = null;
 
     if (!isNative) {
-      // Create ERC20 interface for contract calls
-      const erc20Interface = new ethers.Interface(ERC20_ABI);
-
       try {
-        // Check current allowance
-        const allowanceData = erc20Interface.encodeFunctionData("allowance", [
-          userAddress,
+        approvalData = await checkAndApproveToken(
+          agent,
+          tokenAddress,
           SILO_ROUTER_ADDRESS,
-        ]);
+          amount,
+          userAddress
+        );
 
-        const allowanceResult = await agent.provider.call({
-          to: tokenAddress,
-          data: allowanceData,
-        });
-
-        const currentAllowance = ethers.AbiCoder.defaultAbiCoder().decode(
-          ["uint256"],
-          allowanceResult
-        )[0];
-
-        const amountBigInt = BigInt(amount);
-
-        // If allowance is insufficient, approve tokens first and wait for confirmation
-        if (currentAllowance < amountBigInt) {
-          // Use exact amount instead of MaxUint256 to avoid potential issues
-          const approvalTx = {
-            to: tokenAddress,
-            data: erc20Interface.encodeFunctionData("approve", [
-              SILO_ROUTER_ADDRESS,
-              amount,
-            ]),
-          };
-
-          // Send approval transaction and wait for confirmations
-          approvalTxHash = await agent.sendTransaction(approvalTx, {
-            confirmations: 1,
-          });
-
-          // Verify allowance after approval
-          const verifyAllowanceResult = await agent.provider.call({
-            to: tokenAddress,
-            data: allowanceData,
-          });
-
-          const newAllowance = ethers.AbiCoder.defaultAbiCoder().decode(
-            ["uint256"],
-            verifyAllowanceResult
-          )[0];
-
-          if (newAllowance < amountBigInt) {
-            throw new Error(
-              `Approval failed: allowance (${newAllowance}) is still less than required amount (${amountBigInt})`
-            );
-          }
+        // Small delay if approval was processed
+        if (approvalData) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
         }
       } catch (error) {
         console.error("Error during token approval:", error);
+        if (error instanceof APIError) {
+          throw error;
+        }
         throw new APIError(
           500,
           ErrorCode.INTERNAL_SERVER_ERROR,
@@ -374,18 +455,34 @@ export const executeSiloDeposit = async (
       value: value,
     };
 
-    let depositTxHash;
     try {
-      // Add a small delay after approval to ensure the transaction is confirmed
-      if (approvalTxHash) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      }
-
-      depositTxHash = await agent.sendTransaction(depositTx, {
+      // Send deposit transaction and wait for result
+      const depositResult = await agent.sendTransaction(depositTx, {
         confirmations: 1,
+        waitForResult: true,
+        forceAttempt: true, // Always attempt even if simulation fails
       });
+
+      // Process transaction result
+      const depositData = await handleTransactionResult(
+        depositResult,
+        "Deposit"
+      );
+
+      // Return transaction data and results with improved descriptive links
+      return {
+        success: true,
+        approvalTxHash: approvalData?.txHash || null,
+        approvalExplorerUrl: approvalData?.explorerUrl || null,
+        depositTxHash: depositData.txHash,
+        depositExplorerUrl: depositData.explorerUrl,
+      };
     } catch (error) {
       console.error("Error during deposit transaction:", error);
+
+      if (error instanceof APIError) {
+        throw error;
+      }
 
       if (error instanceof Error && error.message) {
         if (error.message.includes("insufficient funds")) {
@@ -414,25 +511,149 @@ export const executeSiloDeposit = async (
         error instanceof Error ? error.message : undefined
       );
     }
-
-    // Return transaction data and results with improved descriptive links
-    const explorerBaseUrl = "https://sonicscan.org/tx/";
-
-    return {
-      success: true,
-      approvalTxHash,
-      approvalExplorerUrl: approvalTxHash
-        ? `${explorerBaseUrl}${approvalTxHash}`
-        : null,
-      depositTxHash,
-      depositExplorerUrl: `${explorerBaseUrl}${depositTxHash}`,
-    };
   } catch (error) {
     console.error("Silo deposit execution failed:", error);
+    if (error instanceof APIError) {
+      throw error;
+    }
     throw new APIError(
       500,
       ErrorCode.INTERNAL_SERVER_ERROR,
       "Failed to execute deposit transaction",
+      error instanceof Error ? error.message : undefined
+    );
+  }
+};
+
+/**
+ * Executes a withdraw transaction for Silo Finance
+ */
+export const executeSiloWithdraw = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const {
+      siloAddress,
+      tokenAddress,
+      shares, // Amount in shares (important - withdrawal is done by shares)
+      collateralType = 1, // Default to collateral (1 = Collateral, 0 = Protected)
+      userAddress,
+    } = req.body;
+
+    // Validate required fields
+    if (!siloAddress || !tokenAddress || !shares || !userAddress) {
+      throw new APIError(
+        400,
+        ErrorCode.BAD_REQUEST,
+        "Missing required parameters"
+      );
+    }
+
+    console.log("Received withdrawal request with shares:", shares);
+
+    // Ensure shares is a valid integer string format
+    let validatedShares: string;
+    try {
+      // Handle scientific notation or any non-integer format
+      if (shares.includes("e") || shares.includes(".")) {
+        // Parse the number and convert it to a BigInt-compatible string
+        const num = Number(shares);
+        validatedShares = BigInt(Math.floor(num)).toString();
+      } else {
+        // Already a valid integer string, just make sure BigInt can parse it
+        validatedShares = BigInt(shares).toString();
+      }
+      console.log("Validated shares value:", validatedShares);
+    } catch (error) {
+      console.error("Error validating shares value:", error);
+      throw new APIError(
+        400,
+        ErrorCode.BAD_REQUEST,
+        "Invalid shares value. Must be a valid integer.",
+        error instanceof Error ? error.message : undefined
+      );
+    }
+
+    // Generate DeAgent for the user
+    const agent = generateDeChatAgent({
+      address: userAddress,
+      cluster: "sonicMainnet" as Cluster,
+    });
+
+    try {
+      // Create a contract interface for the Silo contract
+      const siloAbi = [
+        "function redeem(uint256 _shares, address _receiver, address _owner, uint8 _collateralType) returns (uint256)",
+      ];
+      const siloInterface = new ethers.Interface(siloAbi);
+
+      // Prepare the withdraw transaction
+      const withdrawTx = {
+        to: siloAddress,
+        data: siloInterface.encodeFunctionData("redeem", [
+          validatedShares,
+          userAddress, // receiver
+          userAddress, // owner
+          collateralType, // collateral type (1 = Collateral, 0 = Protected)
+        ]),
+      };
+
+      console.log("Executing withdraw transaction with data:", withdrawTx.data);
+
+      // Send the transaction and wait for confirmation and result
+      const withdrawResult = await agent.sendTransaction(withdrawTx, {
+        confirmations: 1,
+        waitForResult: true,
+        forceAttempt: true, // Always attempt even if simulation fails
+      });
+
+      // Process transaction result
+      const withdrawData = await handleTransactionResult(
+        withdrawResult,
+        "Withdraw"
+      );
+
+      // Return transaction data
+      return {
+        success: true,
+        withdrawTxHash: withdrawData.txHash,
+        withdrawExplorerUrl: withdrawData.explorerUrl,
+      };
+    } catch (error) {
+      console.error("Error during withdraw transaction:", error);
+
+      if (error instanceof APIError) {
+        throw error;
+      }
+
+      if (error instanceof Error && error.message) {
+        if (error.message.includes("insufficient funds")) {
+          throw new APIError(
+            400,
+            ErrorCode.BAD_REQUEST,
+            "Insufficient funds to complete transaction",
+            error.message
+          );
+        }
+      }
+
+      throw new APIError(
+        500,
+        ErrorCode.INTERNAL_SERVER_ERROR,
+        "Failed to execute withdraw transaction",
+        error instanceof Error ? error.message : undefined
+      );
+    }
+  } catch (error) {
+    console.error("Silo withdraw execution failed:", error);
+    if (error instanceof APIError) {
+      throw error;
+    }
+    throw new APIError(
+      500,
+      ErrorCode.INTERNAL_SERVER_ERROR,
+      "Failed to execute withdraw transaction",
       error instanceof Error ? error.message : undefined
     );
   }

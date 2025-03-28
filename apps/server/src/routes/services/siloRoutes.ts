@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   executeSiloDeposit,
+  executeSiloWithdraw,
   getSiloMarket,
   getSiloMarketForUser,
   getSiloMarkets,
@@ -14,6 +15,7 @@ import {
   validateGetSiloMarketForUser,
   validateGetSiloMarkets,
   validateSiloDepositExecution,
+  validateSiloWithdrawExecution,
 } from "../../validators/siloValidators.js";
 
 export function setupSiloRoutes(router: Router): Router {
@@ -42,6 +44,13 @@ export function setupSiloRoutes(router: Router): Router {
     "/deposit/execute",
     validateSiloDepositExecution,
     asyncHandler(executeSiloDeposit)
+  );
+
+  // Execute withdraw transaction
+  router.post(
+    "/withdraw/execute",
+    validateSiloWithdrawExecution,
+    asyncHandler(executeSiloWithdraw)
   );
 
   // Get stats from Silo Finance

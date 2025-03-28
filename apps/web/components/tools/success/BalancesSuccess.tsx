@@ -1,6 +1,4 @@
-import React from "react";
-import { Coins } from "lucide-react";
-import { ethers } from "ethers";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -8,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { DuneBalancesResponse, DuneTokenBalance } from "@repo/de-agent";
 import {
   Table,
   TableBody,
@@ -17,7 +14,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { DuneBalancesResponse, DuneTokenBalance } from "@repo/de-agent";
+import { ethers } from "ethers";
+import { Coins } from "lucide-react";
 
 interface BalancesSuccessProps {
   data: DuneBalancesResponse;
@@ -110,6 +109,12 @@ function TokenRow({ token }: TokenRowProps) {
     maximumFractionDigits: 6,
   });
 
+  // Handle potentially undefined price_usd
+  const formattedPrice =
+    price_usd !== undefined ? `$${price_usd.toFixed(4)}` : "$0.0000";
+  const formattedValue =
+    value_usd !== undefined ? `$${value_usd.toFixed(2)}` : "$0.00";
+
   return (
     <TableRow>
       <TableCell>
@@ -131,13 +136,11 @@ function TokenRow({ token }: TokenRowProps) {
         <div className="flex flex-col">
           <span>{displayBalance}</span>
           <span className="text-xs text-muted-foreground">
-            ${price_usd.toFixed(4)} per token
+            {formattedPrice} per token
           </span>
         </div>
       </TableCell>
-      <TableCell className="text-right font-medium">
-        ${value_usd.toFixed(2)}
-      </TableCell>
+      <TableCell className="text-right font-medium">{formattedValue}</TableCell>
     </TableRow>
   );
 }

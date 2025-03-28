@@ -34,6 +34,18 @@ type PrivyTransactionRequest = {
   transaction: PrivyTransaction;
 };
 
+// New transaction status response interface
+export interface TransactionResult {
+  success: boolean;
+  hash: string;
+  receipt?: ethers.providers.TransactionReceipt;
+  error?: string;
+  errorCode?: string;
+  simulationFailed?: boolean;
+  simulationError?: string;
+  warning?: string;
+}
+
 export class DeAgent {
   public provider: ethers.providers.JsonRpcProvider;
   public wallet_address: string;
@@ -192,14 +204,67 @@ export class DeAgent {
     }
   }
 
+  /**
+   * Check transaction status and return detailed result
+   * @param hash Transaction hash to check
+   * @param waitForConfirmations Number of confirmations to wait for
+   * @returns TransactionResult with detailed status information
+   */
+  async checkTransactionStatus(
+    hash: string,
+    waitForConfirmations: number = 1
+  ): Promise<TransactionResult> {
+    try {
+      // Wait for confirmation
+      const receipt = await this.provider.waitForTransaction(
+        hash,
+        waitForConfirmations
+      );
+
+      // Check if transaction was successful
+      if (receipt.status === 0) {
+        return {
+          success: false,
+          hash,
+          receipt,
+          error: "Transaction reverted on chain",
+          errorCode: "TX_REVERTED",
+        };
+      }
+
+      return {
+        success: true,
+        hash,
+        receipt,
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      return {
+        success: false,
+        hash,
+        error: `Transaction failed: ${errorMessage}`,
+        errorCode: "TX_FAILED",
+      };
+    }
+  }
+
+  /**
+   * Send a transaction with enhanced error handling and receipt checking
+   * @param tx Transaction to send
+   * @param options Transaction options
+   * @returns Transaction hash if not waiting for result, or TransactionResult if waiting
+   */
   async sendTransaction(
     tx: ethers.providers.TransactionRequest,
     options: {
       confirmations?: number;
       customRpcUrl?: string;
       gasMultiplier?: number;
+      waitForResult?: boolean; // New option to wait for result and return status
+      forceAttempt?: boolean; // New option to force attempt even if simulation fails
     } = {}
-  ): Promise<string> {
+  ): Promise<string | TransactionResult> {
     try {
       const provider = options.customRpcUrl
         ? new ethers.providers.JsonRpcProvider(options.customRpcUrl)
@@ -213,9 +278,17 @@ export class DeAgent {
       if (tx.value) {
         const balance = await provider.getBalance(this.wallet_address);
         if (balance.lt(tx.value)) {
-          throw new Error(
-            `Insufficient balance. You have ${ethers.utils.formatEther(balance)} ETH but need ${ethers.utils.formatEther(tx.value)} ETH`
-          );
+          const errorMessage = `Insufficient balance. You have ${ethers.utils.formatEther(balance)} ETH but need ${ethers.utils.formatEther(tx.value)} ETH`;
+
+          if (options.waitForResult) {
+            return {
+              success: false,
+              hash: "",
+              error: errorMessage,
+              errorCode: "INSUFFICIENT_BALANCE",
+            };
+          }
+          throw new Error(errorMessage);
         }
       }
 
@@ -230,6 +303,9 @@ export class DeAgent {
       };
 
       // Try to estimate gas, but use a safe default if it fails
+      let simulationFailed = false;
+      let simulationError = "";
+
       if (!preparedTx.gasLimit) {
         try {
           const estimatedGas = await provider.estimateGas(preparedTx);
@@ -251,7 +327,24 @@ export class DeAgent {
             error instanceof Error ? error.message : "Unknown error";
           console.warn(`Gas estimation failed: ${errorMessage}`);
 
-          // Use appropriate fallback gas limits based on transaction type
+          simulationFailed = true;
+          simulationError = errorMessage;
+
+          // Only return error and stop here if not forcing attempt and contains revert
+          if (
+            errorMessage.includes("revert") &&
+            options.waitForResult &&
+            !options.forceAttempt
+          ) {
+            return {
+              success: false,
+              hash: "",
+              error: `Transaction would revert: ${errorMessage}`,
+              errorCode: "TX_REVERT_DETECTED",
+            };
+          }
+
+          // Always use fallback gas limits, especially when forcing
           if (preparedTx.data && preparedTx.data !== "0x") {
             // Contract interaction - higher gas limit
             preparedTx.gasLimit = ethers.BigNumber.from(500000);
@@ -283,9 +376,53 @@ export class DeAgent {
 
       const signedTx = await this.signTransaction(preparedTx);
 
-      const txResponse = await provider.sendTransaction(signedTx);
+      let txResponse;
+      try {
+        txResponse = await provider.sendTransaction(signedTx);
+      } catch (sendError) {
+        const sendErrorMsg =
+          sendError instanceof Error ? sendError.message : "Unknown error";
+
+        if (options.waitForResult) {
+          return {
+            success: false,
+            hash: "",
+            error: `Transaction submission failed: ${sendErrorMsg}${
+              simulationFailed
+                ? ` (Simulation had failed: ${simulationError})`
+                : ""
+            }`,
+            errorCode: "TX_SEND_FAILED",
+            simulationFailed,
+            simulationError: simulationFailed ? simulationError : undefined,
+          };
+        }
+        throw sendError;
+      }
+
       const txHash = txResponse.hash;
 
+      // If waiting for result, check transaction status
+      if (options.waitForResult) {
+        const txResult = await this.checkTransactionStatus(
+          txHash,
+          options.confirmations || 1
+        );
+
+        // Add simulation warning if applicable
+        if (simulationFailed && txResult.success) {
+          return {
+            ...txResult,
+            simulationFailed: true,
+            simulationError,
+            warning: `Transaction succeeded despite simulation failure: ${simulationError}`,
+          };
+        }
+
+        return txResult;
+      }
+
+      // Otherwise, just wait for confirmations if requested
       if (options.confirmations && options.confirmations > 0) {
         await provider.waitForTransaction(txHash, options.confirmations);
       }
@@ -296,6 +433,16 @@ export class DeAgent {
         error: error instanceof Error ? error.message : error,
         stack: error instanceof Error ? error.stack : undefined,
       });
+
+      if (options.waitForResult) {
+        return {
+          success: false,
+          hash: "",
+          error: error instanceof Error ? error.message : "Unknown error",
+          errorCode: "TX_SEND_FAILED",
+        };
+      }
+
       throw error;
     }
   }

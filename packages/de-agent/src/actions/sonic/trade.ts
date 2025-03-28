@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { Action } from "../../types/action.js";
 import { getTradeQuote } from "../../tools/sonic/trade.js";
+import type { Action } from "../../types/action.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
 const SONIC_NATIVE_TOKEN = "0x0000000000000000000000000000000000000000";

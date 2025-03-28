@@ -191,3 +191,10 @@ export interface SiloDepositTransactionData {
   assetType?: string;
   message?: string;
 }
+
+// Silo withdraw transaction data interface
+export interface SiloWithdrawTransactionData {
+  success: boolean;
+  withdrawTxHash: string;
+  withdrawExplorerUrl: string;
+}

@@ -41,6 +41,17 @@ export const validateSiloDepositExecution = validateRequest({
   }),
 });
 
+// Schema for Silo withdraw transaction
+export const validateSiloWithdrawExecution = validateRequest({
+  body: z.object({
+    siloAddress: z.string(),
+    tokenAddress: z.string(),
+    shares: z.string(), // String representation of BigNumber for shares
+    collateralType: z.number().default(1), // 1 = Collateral by default
+    userAddress: z.string(),
+  }),
+});
+
 // Schema for Silo stats (no parameters required)
 export const validateGetSiloStats = validateRequest({
   query: z.object({}),
