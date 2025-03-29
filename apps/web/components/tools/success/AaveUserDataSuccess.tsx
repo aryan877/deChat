@@ -249,7 +249,12 @@ export function AaveUserDataSuccess({ data }: AaveUserDataSuccessProps) {
         <Button
           variant="outline"
           className="w-full"
-          onClick={() => window.open("https://app.aave.com", "_blank")}
+          onClick={() =>
+            window.open(
+              "https://app.aave.com/?marketName=proto_sonic_v3",
+              "_blank"
+            )
+          }
         >
           <ExternalLink className="mr-2 h-4 w-4" />
           Manage on Aave App
