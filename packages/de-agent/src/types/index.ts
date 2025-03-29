@@ -20,4 +20,5 @@ export interface Config {
 export interface TransferResult {
   txHash: string;
   explorerUrl: string;
+  provider?: "odos" | "magpie";
 }

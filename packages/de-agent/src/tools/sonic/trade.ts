@@ -8,6 +8,7 @@ import {
 import { searchSonic } from "./search.js";
 
 const ODOS_API_URL = "https://api.odos.xyz/sor/quote/v2";
+const MAGPIE_QUOTE_API_URL = "https://api.magpiefi.xyz/aggregator/quote";
 
 const ERC20_ABI = [
   "function decimals() view returns (uint8)",
@@ -129,42 +130,31 @@ function formatAmount(amount: string, decimals: number): string {
 }
 
 /**
- * Get a trade quote for swapping tokens
+ * Get a trade quote from ODOS
  * @param agent DeAgent instance
- * @param params Trade parameters
- * @param cluster Network cluster
- * @returns Trade quote result
+ * @param inputTokenInfo Input token info
+ * @param outputTokenInfo Output token info
+ * @param formattedAmount Formatted input amount
+ * @param slippageLimitPercent Slippage limit as percentage
+ * @returns ODOS quote result
  */
-export async function getTradeQuote(
+async function getOdosQuote(
   agent: DeAgent,
-  params: {
-    inputToken: string;
-    inputAmount: string;
-    outputToken: string;
-    slippageLimitPercent?: number;
-  },
-  _?: Cluster
-): Promise<SonicTradeQuoteResult> {
+  inputTokenInfo: { address: string; decimals: number; symbol: string },
+  outputTokenInfo: { address: string; decimals: number; symbol: string },
+  formattedAmount: string,
+  slippageLimitPercent: number = 0.5
+): Promise<{
+  success: boolean;
+  data?: any;
+  error?: string;
+  provider: "odos";
+  outputAmount?: string;
+}> {
   try {
-    if (!params.inputToken || !params.outputToken || !params.inputAmount) {
-      throw new Error(
-        "Missing required parameters: inputToken, outputToken, or inputAmount"
-      );
-    }
-
     if (!agent.wallet_address) {
       throw new Error("Agent wallet address not available");
     }
-
-    // Get token info for input and output tokens
-    const inputTokenInfo = await getTokenInfo(agent, params.inputToken);
-    const outputTokenInfo = await getTokenInfo(agent, params.outputToken);
-
-    // Format input amount with proper decimals
-    const formattedAmount = formatAmount(
-      params.inputAmount,
-      inputTokenInfo.decimals
-    );
 
     // Get the chain ID from the provider
     const network = await agent.provider.getNetwork();
@@ -190,7 +180,7 @@ export async function getTradeQuote(
         },
       ],
       userAddr: agent.wallet_address,
-      slippageLimitPercent: params.slippageLimitPercent || 10, // Default to 10% slippage
+      slippageLimitPercent,
       sourceBlacklist: [],
       simulate: true,
       pathId: true,
@@ -209,7 +199,7 @@ export async function getTradeQuote(
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`API request failed: ${errorText}`);
+      throw new Error(`ODOS API request failed: ${errorText}`);
     }
 
     const data = await response.json();
@@ -217,11 +207,256 @@ export async function getTradeQuote(
     // Add token info to the response
     data.inputToken = inputTokenInfo;
     data.outputToken = outputTokenInfo;
+    data.provider = "odos";
+
+    return {
+      success: true,
+      data,
+      provider: "odos",
+      outputAmount: data.outAmounts?.[0] || "0",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown ODOS error",
+      provider: "odos",
+    };
+  }
+}
+
+/**
+ * Get a trade quote from Magpie
+ * @param agent DeAgent instance
+ * @param inputTokenInfo Input token info
+ * @param outputTokenInfo Output token info
+ * @param formattedAmount Formatted input amount
+ * @param slippageLimitPercent Slippage limit as percentage
+ * @returns Magpie quote result
+ */
+async function getMagpieQuote(
+  agent: DeAgent,
+  inputTokenInfo: { address: string; decimals: number; symbol: string },
+  outputTokenInfo: { address: string; decimals: number; symbol: string },
+  formattedAmount: string,
+  slippageLimitPercent: number = 0.5
+): Promise<{
+  success: boolean;
+  data?: any;
+  error?: string;
+  provider: "magpie";
+  outputAmount?: string;
+}> {
+  try {
+    if (!agent.wallet_address) {
+      throw new Error("Agent wallet address not available");
+    }
+
+    // Format slippage from percentage to decimal (0.5% -> 0.005)
+    const slippageDecimal = slippageLimitPercent / 100;
+
+    // Construct Magpie quote URL with params
+    const url = new URL(MAGPIE_QUOTE_API_URL);
+    url.searchParams.append("network", "sonic");
+    url.searchParams.append("fromTokenAddress", inputTokenInfo.address);
+    url.searchParams.append("toTokenAddress", outputTokenInfo.address);
+    url.searchParams.append("fromAddress", agent.wallet_address);
+    url.searchParams.append("toAddress", agent.wallet_address);
+    url.searchParams.append("sellAmount", formattedAmount);
+    url.searchParams.append("slippage", slippageDecimal.toString());
+    url.searchParams.append("gasless", "false");
+
+    // Make the API request
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Magpie API request failed: ${errorText}`);
+    }
+
+    const magpieData = await response.json();
+
+    // Format Magpie data to match our expected format
+    const formattedData = {
+      traceId: magpieData.id,
+      inTokens: [inputTokenInfo.address],
+      outTokens: [outputTokenInfo.address],
+      inAmounts: [formattedAmount],
+      outAmounts: [magpieData.amountOut],
+      gasEstimate: Number(magpieData.resourceEstimate?.gasLimit || 0),
+      priceImpact: 0, // Magpie doesn't provide price impact
+      pathId: magpieData.id,
+      inputToken: inputTokenInfo,
+      outputToken: outputTokenInfo,
+      provider: "magpie",
+      targetAddress: magpieData.targetAddress,
+      typedData: magpieData.typedData,
+      // Add original Magpie response for reference
+      _magpieOriginalResponse: magpieData,
+    };
+
+    return {
+      success: true,
+      data: formattedData,
+      provider: "magpie",
+      outputAmount: magpieData.amountOut || "0",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown Magpie error",
+      provider: "magpie",
+    };
+  }
+}
+
+/**
+ * Get a trade quote from the best available provider
+ * @param agent DeAgent instance
+ * @param params Trade parameters
+ * @param cluster Network cluster
+ * @returns Trade quote result with the best rate
+ */
+export async function getTradeQuote(
+  agent: DeAgent,
+  params: {
+    inputToken: string;
+    inputAmount: string;
+    outputToken: string;
+    slippageLimitPercent?: number;
+    preferredProvider?: "odos" | "magpie" | "best";
+  },
+  _?: Cluster
+): Promise<SonicTradeQuoteResult> {
+  try {
+    if (!params.inputToken || !params.outputToken || !params.inputAmount) {
+      throw new Error(
+        "Missing required parameters: inputToken, outputToken, or inputAmount"
+      );
+    }
+
+    if (!agent.wallet_address) {
+      throw new Error("Agent wallet address not available");
+    }
+
+    // Get token info for input and output tokens
+    const inputTokenInfo = await getTokenInfo(agent, params.inputToken);
+    const outputTokenInfo = await getTokenInfo(agent, params.outputToken);
+
+    // Format input amount with proper decimals
+    const formattedAmount = formatAmount(
+      params.inputAmount,
+      inputTokenInfo.decimals
+    );
+
+    // Set preferred provider or default to "best"
+    const preferredProvider = params.preferredProvider || "best";
+
+    // Get quotes from both providers
+    let odosQuote;
+    let magpieQuote;
+
+    // If preferred provider is specified and not "best", only get quote from that provider
+    if (preferredProvider === "odos") {
+      odosQuote = await getOdosQuote(
+        agent,
+        inputTokenInfo,
+        outputTokenInfo,
+        formattedAmount,
+        params.slippageLimitPercent
+      );
+    } else if (preferredProvider === "magpie") {
+      magpieQuote = await getMagpieQuote(
+        agent,
+        inputTokenInfo,
+        outputTokenInfo,
+        formattedAmount,
+        params.slippageLimitPercent
+      );
+    } else {
+      // Get quotes from both providers in parallel
+      [odosQuote, magpieQuote] = await Promise.all([
+        getOdosQuote(
+          agent,
+          inputTokenInfo,
+          outputTokenInfo,
+          formattedAmount,
+          params.slippageLimitPercent
+        ),
+        getMagpieQuote(
+          agent,
+          inputTokenInfo,
+          outputTokenInfo,
+          formattedAmount,
+          params.slippageLimitPercent
+        ),
+      ]);
+    }
+
+    // Determine which provider gives the better rate
+    let bestQuote;
+    let secondaryQuote;
+
+    if (preferredProvider === "odos") {
+      bestQuote = odosQuote;
+    } else if (preferredProvider === "magpie") {
+      bestQuote = magpieQuote;
+    } else {
+      // Compare output amounts if both quotes are successful
+      if (odosQuote?.success && magpieQuote?.success) {
+        const odosAmount = BigInt(odosQuote.outputAmount || "0");
+        const magpieAmount = BigInt(magpieQuote.outputAmount || "0");
+
+        if (odosAmount > magpieAmount) {
+          bestQuote = odosQuote;
+          secondaryQuote = magpieQuote;
+        } else {
+          bestQuote = magpieQuote;
+          secondaryQuote = odosQuote;
+        }
+      } else if (odosQuote?.success) {
+        bestQuote = odosQuote;
+      } else if (magpieQuote?.success) {
+        bestQuote = magpieQuote;
+      } else {
+        // Both failed
+        throw new Error(
+          `Failed to get quotes from both providers. ODOS error: ${odosQuote?.error}. Magpie error: ${magpieQuote?.error}`
+        );
+      }
+    }
+
+    if (!bestQuote?.success) {
+      throw new Error(
+        `Failed to get quote from ${bestQuote?.provider}: ${bestQuote?.error}`
+      );
+    }
+
+    // If we have quotes from both providers, add rate comparison
+    if (secondaryQuote?.success) {
+      const bestAmount = BigInt(bestQuote.outputAmount || "0");
+      const secondaryAmount = BigInt(secondaryQuote.outputAmount || "0");
+
+      // Calculate percentage difference
+      if (secondaryAmount > 0) {
+        const difference =
+          ((bestAmount - secondaryAmount) * 10000n) / secondaryAmount;
+        bestQuote.data.rateComparison = {
+          bestProvider: bestQuote.provider,
+          percentageDifference: Number(difference) / 100, // Convert basis points to percentage
+          secondaryProvider: secondaryQuote.provider,
+        };
+      }
+    }
 
     return {
       status: "success",
-      message: `Successfully got quote for swapping ${params.inputAmount} ${inputTokenInfo.symbol} to ${outputTokenInfo.symbol}`,
-      data,
+      message: `Successfully got quote from ${bestQuote.provider} for swapping ${params.inputAmount} ${inputTokenInfo.symbol} to ${outputTokenInfo.symbol}`,
+      data: bestQuote.data,
     };
   } catch (error) {
     return {

@@ -1,21 +1,5 @@
-import React, { useState } from "react";
-import { ethers } from "ethers";
 import { Badge } from "@/components/ui/badge";
-import {
-  ArrowRight,
-  Copy,
-  TrendingDown,
-  TrendingUp,
-  Check,
-} from "lucide-react";
-import type { SonicTradeQuoteResponse } from "@repo/de-agent";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   Card,
   CardContent,
@@ -23,6 +7,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type { SonicTradeQuoteResponse } from "@repo/de-agent";
+import { ethers } from "ethers";
+import {
+  AlertCircle,
+  ArrowDownUp,
+  ArrowRight,
+  Award,
+  Check,
+  Copy,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
+import { useState } from "react";
 
 interface TradeSuccessProps {
   data: SonicTradeQuoteResponse;
@@ -58,11 +61,32 @@ function getTokenInfo(data: SonicTradeQuoteResponse, isInput: boolean) {
   };
 }
 
+function getProviderName(data: SonicTradeQuoteResponse): string {
+  // Check for provider in the new format
+  if (data?.provider) {
+    return data.provider === "odos" ? "ODOS" : "Magpie";
+  }
+
+  // Check for Magpie-specific fields
+  if (data?.targetAddress || data?.typedData) {
+    return "Magpie";
+  }
+
+  // Default to ODOS for backwards compatibility
+  return "ODOS";
+}
+
+function getBadgeColor(provider: string): string {
+  return provider === "ODOS" ? "bg-purple-600" : "bg-blue-600";
+}
+
 export function TradeSuccess({ data }: TradeSuccessProps) {
   const inputTokenInfo = getTokenInfo(data, true);
   const outputTokenInfo = getTokenInfo(data, false);
   const [copiedInput, setCopiedInput] = useState(false);
   const [copiedOutput, setCopiedOutput] = useState(false);
+  const providerName = getProviderName(data);
+  const providerBadgeColor = getBadgeColor(providerName);
 
   // Format amounts to human readable with proper decimals from token info
   const inputAmount = ethers.formatUnits(
@@ -82,6 +106,12 @@ export function TradeSuccess({ data }: TradeSuccessProps) {
   const priceImpactPercent = (data?.priceImpact || 0).toFixed(2);
   const isPriceImpactNegative = (data?.priceImpact || 0) < 0;
 
+  // Check if we have rate comparison data
+  const hasRateComparison =
+    data?.rateComparison &&
+    data.rateComparison.bestProvider &&
+    data.rateComparison.secondaryProvider;
+
   const copyToClipboard = (text: string | undefined, isInput: boolean) => {
     if (text) {
       navigator.clipboard.writeText(text);
@@ -98,8 +128,16 @@ export function TradeSuccess({ data }: TradeSuccessProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Trade Quote</CardTitle>
-        <CardDescription>Swap tokens on Sonic</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Trade Quote</CardTitle>
+            <CardDescription>Swap tokens on Sonic</CardDescription>
+          </div>
+          <Badge className={providerBadgeColor}>
+            <ArrowDownUp className="h-3 w-3 mr-1" />
+            {providerName}
+          </Badge>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Trade amounts */}
@@ -169,6 +207,30 @@ export function TradeSuccess({ data }: TradeSuccessProps) {
           </div>
         </div>
 
+        {/* Rate comparison info if available */}
+        {hasRateComparison && data.rateComparison && (
+          <div className="p-3 bg-green-500/10 text-green-600 dark:text-green-400 rounded-lg text-sm flex items-start gap-2">
+            <Award className="h-5 w-5 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium">Best Rate Found</p>
+              <p>
+                {providerName} offers{" "}
+                {Math.abs(
+                  data.rateComparison.percentageDifference || 0
+                ).toFixed(2)}
+                %{" "}
+                {(data.rateComparison.percentageDifference || 0) >= 0
+                  ? "better"
+                  : "worse"}{" "}
+                rate than{" "}
+                {data.rateComparison.secondaryProvider === "odos"
+                  ? "ODOS"
+                  : "Magpie"}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Trade details */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -211,9 +273,12 @@ export function TradeSuccess({ data }: TradeSuccessProps) {
 
         {/* Warning for high price impact */}
         {(data?.priceImpact || 0) < -5 && (
-          <div className="p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
-            Warning: High price impact! This trade will move the market price by
-            more than 5%.
+          <div className="p-3 bg-destructive/10 text-destructive rounded-lg text-sm flex items-start gap-2">
+            <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium">High Price Impact Warning</p>
+              <p>This trade will move the market price by more than 5%.</p>
+            </div>
           </div>
         )}
 

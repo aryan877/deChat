@@ -256,6 +256,18 @@ export interface SonicTradeQuoteResponse {
   blockNumber: number;
   inputToken: TokenInfo;
   outputToken: TokenInfo;
+  // Provider identification
+  provider?: "odos" | "magpie";
+  // Rate comparison between providers
+  rateComparison?: {
+    bestProvider: "odos" | "magpie";
+    secondaryProvider: "odos" | "magpie";
+    percentageDifference: number;
+  };
+  // Magpie-specific fields
+  targetAddress?: string;
+  typedData?: any;
+  _magpieOriginalResponse?: any;
 }
 
 export interface SonicTradeQuoteResult {

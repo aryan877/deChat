@@ -134,9 +134,7 @@ async function checkAndApproveIfNeeded(
       return null;
     }
 
-    const MAX_UINT256 = BigInt(
-      "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-    );
+    const MAX_UINT256 = ethers.constants.MaxUint256;
 
     // Encode the approve function call with unlimited amount
     const tokenInterface = new ethers.utils.Interface(ERC20_ABI);

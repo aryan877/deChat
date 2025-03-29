@@ -11,6 +11,7 @@ const tradeQuoteSchema = z.object({
   inputAmount: z.string().min(1),
   outputToken: z.string().min(1),
   slippageLimitPercent: z.number().optional(),
+  preferredProvider: z.enum(["odos", "magpie", "best"]).optional(),
 });
 
 export type TradeQuoteInput = z.infer<typeof tradeQuoteSchema>;
@@ -27,7 +28,7 @@ export const tradeQuoteAction: Action = {
     "exchange SONIC for tokens",
   ],
   description:
-    "Get a quote for trading tokens on Sonic. Use 0x0000000000000000000000000000000000000000 for native SONIC token. Input amount should be in human-readable format (e.g., '1.5' for 1.5 SONIC).",
+    "Get a quote for trading tokens on Sonic. Use 0x0000000000000000000000000000000000000000 for native SONIC token. Input amount should be in human-readable format (e.g., '1.5' for 1.5 SONIC). Can use either ODOS or Magpie as providers, or compare both to find the best rate.",
   examples: [
     [
       {
@@ -43,6 +44,7 @@ export const tradeQuoteAction: Action = {
             outAmounts: ["821190"], // USDC has 6 decimals
             gasEstimate: 248175.0,
             priceImpact: -0.0011783440098132427,
+            provider: "odos",
             inputToken: {
               address: "0x0000000000000000000000000000000000000000",
               symbol: "SONIC",
@@ -56,21 +58,22 @@ export const tradeQuoteAction: Action = {
           },
         },
         explanation:
-          "Gets a quote for swapping 1.5 native SONIC tokens for USDC, handling decimals automatically",
+          "Gets a quote for swapping 1.5 native SONIC tokens for USDC, handling decimals automatically and using the provider with the best rate",
       },
       {
         input: {
           inputToken: USDC_TOKEN,
           inputAmount: "100", // Will be converted to 100000000 (6 decimals)
           outputToken: SONIC_NATIVE_TOKEN,
+          preferredProvider: "magpie",
         },
         output: {
           status: "success",
           data: {
             inAmounts: ["100000000"],
             outAmounts: ["182500000000000000000"],
-            gasEstimate: 248175.0,
-            priceImpact: -0.001,
+            gasEstimate: 155381,
+            provider: "magpie",
             inputToken: {
               address: "0x29219dd400f2Bf60E5a23d13Be72B486D4038894",
               symbol: "USDC",
@@ -84,7 +87,7 @@ export const tradeQuoteAction: Action = {
           },
         },
         explanation:
-          "Gets a quote for swapping 100 USDC to native SONIC tokens, handling decimals automatically",
+          "Gets a quote for swapping 100 USDC to native SONIC tokens using Magpie as the preferred provider",
       },
     ],
   ],
