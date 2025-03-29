@@ -85,17 +85,36 @@ const ActionGuide = () => {
           </h2>
           <ul className="space-y-2">
             <li>
-              <p className="text-sm font-medium">Get Trade Quote</p>
+              <p className="text-sm font-medium">Get Best Trade Quote</p>
               <p className="text-xs text-muted-foreground">
                 <span className="italic">
                   &quot;Get a quote to swap 1.5 SONIC for USDC&quot;
                 </span>
               </p>
+              <div className="mt-1 text-xs bg-primary/10 text-primary p-1.5 rounded">
+                <span className="font-semibold">New!</span> Powered by ODOS and
+                Magpie aggregators for the best rates
+              </div>
             </li>
             <li>
               <p className="text-sm font-medium">Execute Swap</p>
               <p className="text-xs text-muted-foreground">
                 <span className="italic">&quot;Execute the swap&quot;</span>
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Automatically routes through the best liquidity provider
+              </p>
+            </li>
+            <li>
+              <p className="text-sm font-medium">Specify Aggregator</p>
+              <p className="text-xs text-muted-foreground">
+                <span className="italic">
+                  &quot;Use Magpie to swap 1 SONIC to USDC&quot;
+                </span>
+                {" or "}
+                <span className="italic">
+                  &quot;Get ODOS quote for 10 USDC to SONIC&quot;
+                </span>
               </p>
             </li>
           </ul>
