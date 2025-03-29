@@ -220,7 +220,7 @@ const ActionGuide = () => {
                   &quot;Find SONIC markets in Silo Finance&quot;
                 </span>
                 <span className="ml-1.5 text-rose-600/80 text-[10px]">
-                  Coming soon: deposit, borrow, repay
+                  Deposit & Withdraw Available Now! Borrow & Repay Coming Soon
                 </span>
               </p>
             </li>
