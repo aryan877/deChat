@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useExecuteDeposit } from "@/hooks/silo";
 import { ethers } from "ethers";
+import Image from "next/image";
 import { useState } from "react";
 import {
   SiloMarket,
@@ -281,8 +282,35 @@ export const Deposit = ({
           )}
 
           <div className="space-y-2">
-            <h3 className="text-lg font-medium">
-              Deposit {token?.symbol || ""}
+            <h3 className="text-lg font-medium flex items-center">
+              {token?.symbol ? (
+                <>
+                  <div className="w-6 h-6 mr-2 rounded-full bg-blue-500/90 flex items-center justify-center text-white font-semibold text-xs overflow-hidden">
+                    {token.logos &&
+                    (token.logos.coinGecko?.small ||
+                      token.logos.coinMarketCap?.small ||
+                      token.logos.trustWallet?.small) ? (
+                      <Image
+                        src={
+                          token.logos.coinGecko?.small ||
+                          token.logos.coinMarketCap?.small ||
+                          token.logos.trustWallet?.small ||
+                          ""
+                        }
+                        alt={`${token.symbol} icon`}
+                        width={24}
+                        height={24}
+                        className="object-cover"
+                      />
+                    ) : (
+                      <span>{token.symbol.charAt(0)}</span>
+                    )}
+                  </div>
+                  Deposit {token.symbol}
+                </>
+              ) : (
+                "Deposit"
+              )}
             </h3>
             <p className="text-sm text-muted-foreground">
               Supply assets to the protocol and earn interest.

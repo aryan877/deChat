@@ -98,7 +98,7 @@ export const ExpandableTool = ({
           ? "inset-0 fade-in-0 zoom-in-95"
           : // Desktop: position beside sidebar
             cn(
-              "top-0 bottom-0 right-0 slide-in-from-right-10",
+              "top-0 bottom-0 right-0 slide-in-from-right-10 h-[100dvh]",
               isSidebarCollapsed ? "left-[60px]" : "left-[240px]"
             )
       )}
@@ -115,7 +115,7 @@ export const ExpandableTool = ({
           <X className="h-4 w-4" />
         </Button>
       </div>
-      <div className="flex-1 overflow-auto p-3 pb-20">{childrenWithProps}</div>
+      <div className="flex-1 overflow-auto p-3">{childrenWithProps}</div>
     </div>
   );
 };

@@ -162,7 +162,7 @@ export function SiloFinanceTool({
     <Card
       className={cn(
         "w-full shadow-md flex flex-col",
-        !isExpanded ? "max-h-[80vh]" : "h-full"
+        isExpanded ? "h-full" : "max-h-[80vh]"
       )}
     >
       <CardHeader
@@ -212,7 +212,7 @@ export function SiloFinanceTool({
         <div
           className={cn(
             "mt-3 flex-1 overflow-auto",
-            !isExpanded && "max-h-[calc(80vh-12rem)]"
+            isExpanded ? "h-full" : "max-h-[calc(80vh-12rem)]"
           )}
         >
           <MarketTable

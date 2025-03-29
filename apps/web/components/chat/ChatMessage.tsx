@@ -182,7 +182,9 @@ export default function ChatMessage({
         // Check if this tool should be expandable
         if (isToolExpandable(toolName)) {
           return (
-            <ExpandableTool key={toolCallId}>{toolContent}</ExpandableTool>
+            <ExpandableTool key={toolCallId} className="h-full">
+              {toolContent}
+            </ExpandableTool>
           );
         }
 
@@ -243,6 +245,7 @@ export default function ChatMessage({
                     <div
                       key={toolInvocation.toolCallId}
                       className={cn(
+                        "w-full",
                         // Only add mb-6 if there's content afterward
                         message.content?.trim() ? "mb-6" : ""
                       )}

@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 import { SiloMarketDetail, SiloTokenDetail } from "../../types";
 import {
   calculateAvailableLiquidity,
@@ -65,11 +66,36 @@ const SiloInformation = ({
 }) => {
   if (!silo) return null;
 
+  // Get token symbol and standard token icons based on symbol
+  const tokenSymbol = silo.symbol || "";
+  // Get token icon from logos if available
+  const tokenLogoUrl = silo.logos
+    ? silo.logos.coinGecko?.small ||
+      silo.logos.coinMarketCap?.small ||
+      silo.logos.trustWallet?.small ||
+      null
+    : null;
+
   return (
     <Card>
       <CardContent className="p-4">
         <div className="flex items-center space-x-2 mb-4">
-          <h3 className="text-lg font-medium">{silo.symbol}</h3>
+          <h3 className="text-lg font-medium flex items-center">
+            <div className="w-6 h-6 mr-2 rounded-full bg-blue-500/90 flex items-center justify-center text-white font-semibold text-xs overflow-hidden">
+              {tokenLogoUrl ? (
+                <Image
+                  src={tokenLogoUrl}
+                  alt={`${tokenSymbol} icon`}
+                  width={24}
+                  height={24}
+                  className="object-cover"
+                />
+              ) : (
+                <span>{tokenSymbol.charAt(0)}</span>
+              )}
+            </div>
+            {tokenSymbol}
+          </h3>
           <Badge variant="outline">{silo.name}</Badge>
         </div>
 

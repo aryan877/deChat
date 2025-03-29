@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useExecuteWithdraw } from "@/hooks/silo";
 import { ethers } from "ethers";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { SiloMarket, SiloMarketDetail, SiloTokenDetail } from "../../types";
 import {
@@ -272,8 +273,35 @@ export const Withdraw = ({
           )}
 
           <div className="space-y-2">
-            <h3 className="text-lg font-medium">
-              Withdraw {token?.symbol || ""}
+            <h3 className="text-lg font-medium flex items-center">
+              {token?.symbol ? (
+                <>
+                  <div className="w-6 h-6 mr-2 rounded-full bg-blue-500/90 flex items-center justify-center text-white font-semibold text-xs overflow-hidden">
+                    {token.logos &&
+                    (token.logos.coinGecko?.small ||
+                      token.logos.coinMarketCap?.small ||
+                      token.logos.trustWallet?.small) ? (
+                      <Image
+                        src={
+                          token.logos.coinGecko?.small ||
+                          token.logos.coinMarketCap?.small ||
+                          token.logos.trustWallet?.small ||
+                          ""
+                        }
+                        alt={`${token.symbol} icon`}
+                        width={24}
+                        height={24}
+                        className="object-cover"
+                      />
+                    ) : (
+                      <span>{token.symbol.charAt(0)}</span>
+                    )}
+                  </div>
+                  Withdraw {token.symbol}
+                </>
+              ) : (
+                "Withdraw"
+              )}
             </h3>
             <p className="text-sm text-muted-foreground">
               Withdraw your supplied assets from the protocol.
