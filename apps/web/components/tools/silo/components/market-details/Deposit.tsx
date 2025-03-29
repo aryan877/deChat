@@ -99,57 +99,69 @@ export const Deposit = ({
       ? nativeBalance
       : tokenBalance;
 
-  // Calculate token value in USD for a single unit
-  const tokenUnitValue = token?.priceUsd ? parseInt(token.priceUsd) / 1e6 : 0;
+  // Format balance with full precision using ethers.js
+  const formattedBalance = ethers.formatUnits(displayBalance || "0", decimals);
 
-  // Dynamically determine appropriate decimal precision based on token value
-  const getAppropriateDecimals = (unitValueUsd: number) => {
-    // Higher value tokens (like BTC) should have more decimal places
-    if (unitValueUsd >= 10000) return 8;
-    if (unitValueUsd >= 1000) return 6;
-    if (unitValueUsd >= 100) return 4;
-    if (unitValueUsd >= 1) return 3;
-    // For very low-value tokens, show fewer decimals
-    return 2;
-  };
-
-  // Get precision based on token value, but never show less than 2 decimals
-  const displayDecimals = Math.max(
-    getAppropriateDecimals(tokenUnitValue),
-    Math.min(2, decimals)
-  );
-
-  const formattedBalance = displayBalance
-    ? (parseFloat(displayBalance) / 10 ** decimals).toFixed(displayDecimals)
-    : "0.00";
-
+  // Calculate balance in USD for display
   const balanceUsd = displayBalance
     ? (parseFloat(displayBalance) / 10 ** decimals) *
       (parseInt(token?.priceUsd || "0") / 1e6)
     : 0;
 
-  const isAmountTooLarge = amount
-    ? parseFloat(amount) > parseFloat(formattedBalance)
-    : false;
+  // Check if amount exceeds balance with proper precision comparison
+  const isAmountTooLarge = (() => {
+    if (!amount || !displayBalance) return false;
+    try {
+      const amountBigInt = ethers.parseUnits(amount, decimals);
+      const balanceBigInt = BigInt(displayBalance);
+      return amountBigInt > balanceBigInt;
+    } catch (e) {
+      console.error("Error checking amount:", e);
+      // Fallback to less precise comparison if ethers fails
+      return parseFloat(amount) > parseFloat(displayBalance) / 10 ** decimals;
+    }
+  })();
 
+  // Set maximum balance with proper precision handling
   const handleSetMaxBalance = () => {
-    if (parseFloat(displayBalance) > 0) {
-      // If it's a native token, leave some balance for gas fees
+    if (!displayBalance || displayBalance === "0") return;
+
+    try {
+      let maxBalanceBigInt = BigInt(displayBalance);
+
+      // If it's a native token, leave some for gas
       if (isWrappedSonic) {
-        // Convert to number for calculation
-        const balanceNum = parseFloat(displayBalance) / 10 ** decimals;
-        // Leave approximately 0.01 S or 1% of balance (whichever is higher) for gas fees
+        // Reserve approximately 1% or 0.01 tokens (whichever is higher) for gas
+        const onePercent = (maxBalanceBigInt * BigInt(1)) / BigInt(100);
+        const minReserve = ethers.parseUnits("0.01", decimals);
+        const gasReserve = onePercent > minReserve ? onePercent : minReserve;
+
+        // Never go below zero
+        maxBalanceBigInt =
+          maxBalanceBigInt > gasReserve
+            ? maxBalanceBigInt - gasReserve
+            : BigInt(0);
+      }
+
+      // Format with full precision
+      setAmount(ethers.formatUnits(maxBalanceBigInt, decimals));
+    } catch (e) {
+      console.error("Error setting max balance:", e);
+      // Fallback to less precise calculation
+      const balanceNum = parseFloat(displayBalance) / 10 ** decimals;
+      if (isWrappedSonic) {
         const gasBuffer = Math.max(0.01, balanceNum * 0.01);
-        const maxAmount = Math.max(0, balanceNum - gasBuffer).toFixed(
-          displayDecimals
-        );
-        setAmount(maxAmount);
+        setAmount(Math.max(0, balanceNum - gasBuffer).toString());
       } else {
-        // For non-native tokens, use full balance with appropriate precision
-        setAmount(formattedBalance);
+        setAmount(balanceNum.toString());
       }
     }
   };
+
+  // Calculate amount USD value for display
+  const amountUsd = amount
+    ? parseFloat(amount) * (parseInt(token?.priceUsd || "0") / 1e6)
+    : 0;
 
   const initiateDeposit = () => {
     if (
@@ -189,7 +201,7 @@ export const Deposit = ({
         return;
       }
 
-      // Parse the amount to TokenUnits based on token decimals
+      // Parse the amount to TokenUnits based on token decimals with maximum precision
       const amountInTokenUnits = ethers
         .parseUnits(amount, token.decimals)
         .toString();
@@ -248,10 +260,6 @@ export const Deposit = ({
     }
   };
 
-  const amountUsd = amount
-    ? parseFloat(amount) * (parseInt(token?.priceUsd || "0") / 1e6)
-    : 0;
-
   // Check if token can be borrowed
   const isBorrowable = !token?.isNonBorrowable;
 
@@ -300,12 +308,17 @@ export const Deposit = ({
             </div>
             <div className="relative">
               <Input
-                type="number"
+                type="text"
                 placeholder="0.00"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => {
+                  // Only accept valid decimal input
+                  if (/^(\d*\.?\d*)$/.test(e.target.value)) {
+                    setAmount(e.target.value);
+                  }
+                }}
                 className="pr-16"
-                step={`0.${"0".repeat(displayDecimals - 1)}1`}
+                step="any"
               />
               <Button
                 variant="ghost"

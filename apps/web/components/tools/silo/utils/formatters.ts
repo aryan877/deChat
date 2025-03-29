@@ -1,3 +1,7 @@
+/**
+ * Format a number as USD for display purposes only.
+ * This DOES NOT affect transaction values sent to backend.
+ */
 export const formatUSD = (value: number | string, decimals = 2) => {
   if (!value || isNaN(Number(value))) return "$0";
 
@@ -20,11 +24,15 @@ export const formatUSD = (value: number | string, decimals = 2) => {
     // For very small values between $0.0001 and $0.01
     return `$${num.toFixed(6)}`;
   } else {
-    // For extremely small values
-    return `$${num.toExponential(4)}`;
+    // For extremely small values, show more precision
+    return `$${num.toFixed(12)}`;
   }
 };
 
+/**
+ * Format a number as a percentage for display purposes only.
+ * This DOES NOT affect transaction values sent to backend.
+ */
 export const formatPercent = (value: number | string) => {
   if (value === undefined || value === null || isNaN(Number(value)))
     return "--";
@@ -37,19 +45,22 @@ export const formatPercent = (value: number | string) => {
     const percent = (percentValue / 1e18) * 100;
     // Higher precision for small percentages
     if (percent < 0.1) {
-      return `${percent.toFixed(3)}%`;
+      return `${percent.toFixed(4)}%`;
     }
     return `${percent.toFixed(2)}%`;
   }
 
   // Higher precision for small percentages
   if (percentValue * 100 < 0.1) {
-    return `${(percentValue * 100).toFixed(3)}%`;
+    return `${(percentValue * 100).toFixed(4)}%`;
   }
   return `${(percentValue * 100).toFixed(2)}%`;
 };
 
-// Helper to format large numbers with commas
+/**
+ * Helper to format large numbers with commas for display purposes only.
+ * This DOES NOT affect transaction values sent to backend.
+ */
 export const formatNumberWithCommas = (value: number | string) => {
   if (!value) return "0";
 
@@ -74,7 +85,8 @@ export interface PointsBreakdownData {
 }
 
 /**
- * Formats points data for display
+ * Formats points data for display purposes only.
+ * This DOES NOT affect transaction values sent to backend.
  * @param points The collateral or debt points from a SiloToken
  * @returns Structured data for rendering points information
  */

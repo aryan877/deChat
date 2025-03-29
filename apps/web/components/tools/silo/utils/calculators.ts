@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import { SiloMarket, SiloToken, SiloTokenDetail } from "../types";
 
 /**
@@ -137,38 +138,41 @@ export const hasPremiumSiloPoints = (silo?: SiloToken): boolean => {
 };
 
 /**
- * Calculate the appropriate decimal precision based on token value
- * @param tokenValue The USD value of one token unit
+ * Always return full token decimals precision
+ * @param tokenValue The USD value of one token unit (unused, kept for API consistency)
  * @param tokenDecimals The token's decimals
- * @returns The appropriate number of decimal places to display
+ * @returns Full token decimals
  */
 export const calculateTokenPrecision = (
   tokenValue: number,
   tokenDecimals: number = 18
 ): number => {
-  // Higher value tokens need more precision
-  if (tokenValue >= 10000) return 8;
-  if (tokenValue >= 1000) return 6;
-  if (tokenValue >= 100) return 4;
-  if (tokenValue >= 10) return 3;
-  // For lower value tokens, use at least 2 decimals but no more than the token's native precision
-  return Math.max(2, Math.min(tokenDecimals, 6));
+  return tokenDecimals;
 };
 
 /**
- * Format token balance to appropriate precision
+ * Format token balance with full precision using BigInt operations
  * @param balance Raw token balance (in smallest units)
  * @param decimals Token decimals
- * @param precision Display precision
- * @returns Formatted balance string
+ * @returns Exact token balance string with full precision
  */
 export const formatTokenBalance = (
   balance: string,
-  decimals: number = 18,
-  precision: number = 6
+  decimals: number = 18
 ): string => {
-  if (!balance) return `0.${"0".repeat(precision)}`;
-  return (parseFloat(balance) / 10 ** decimals).toFixed(precision);
+  if (!balance || balance === "0") return "0";
+
+  try {
+    // Using ethers to properly parse the token amount with full precision
+    return ethers.formatUnits(balance, decimals);
+  } catch (e) {
+    console.error("Error formatting token balance:", e);
+    // Fallback to direct division if ethers fails
+    return (
+      (BigInt(balance) * BigInt(1e6)) / BigInt(10 ** decimals) / BigInt(1e6) +
+      ""
+    );
+  }
 };
 
 /**
@@ -203,58 +207,37 @@ export const calculateWithdrawShares = (
   const suppliedAssets = tokenDetail.collateralBalance || "0";
   const shareBalance = tokenDetail.collateralShares || "0";
 
-  // Get formatted balance for comparison
-  const formattedBalance = formatTokenBalance(suppliedAssets, decimals);
-
-  if (parseFloat(amount) > parseFloat(formattedBalance)) return "0";
-
   try {
-    // Convert string values to numbers for calculation
-    const tokenAmountToWithdraw = parseFloat(amount);
-    const totalTokens = parseFloat(suppliedAssets) / 10 ** decimals;
+    // Parse token amount using ethers for maximum precision
+    const tokenAmountBigInt = BigInt(
+      ethers.parseUnits(amount, decimals).toString()
+    );
+    const totalTokensBigInt = BigInt(suppliedAssets);
 
-    if (totalTokens <= 0) return "0";
+    if (totalTokensBigInt <= 0n) return "0";
 
-    // Calculate the proportion of tokens to withdraw (tokenAmount / totalTokens)
-    const proportion = tokenAmountToWithdraw / totalTokens;
-
-    // If we're withdrawing everything (or very close to it), return all shares to avoid dust
-    if (proportion > 0.999) {
+    // If withdrawing everything (or very close to it), return all shares
+    // Add a small buffer for potential floating point issues (99.99% of balance)
+    const nearFullWithdrawal =
+      tokenAmountBigInt * 10000n >= totalTokensBigInt * 9999n;
+    if (tokenAmountBigInt >= totalTokensBigInt || nearFullWithdrawal) {
       return shareBalance;
     }
 
-    // For precise calculation, use BigInt to avoid floating point issues
-    try {
-      // Convert to BigInt for maximum precision
-      const shareBalanceBigInt = BigInt(shareBalance);
+    // Calculate shares with maximum precision using BigInt
+    const shareBalanceBigInt = BigInt(shareBalance);
 
-      // Use a high precision factor (10^18) to avoid floating point issues
-      const PRECISION = 10n ** 18n;
+    // Use a high precision factor (10^36) to avoid precision loss in division
+    const PRECISION = 10n ** 36n;
 
-      // Calculate proportion with high precision
-      // First convert proportion to a scaled integer
-      const proportionScaled = BigInt(
-        Math.floor(proportion * Number(PRECISION))
-      );
+    // Calculate with maximum precision: shares = (tokenAmount / totalTokens) * totalShares
+    const scaledTokenAmount = tokenAmountBigInt * PRECISION;
+    const sharesToWithdraw =
+      (scaledTokenAmount * shareBalanceBigInt) / totalTokensBigInt;
 
-      // Calculate shares = shareBalance * proportion
-      const calculatedSharesBigInt =
-        (shareBalanceBigInt * proportionScaled) / PRECISION;
-
-      // Round down to ensure we don't exceed available shares
-      return calculatedSharesBigInt.toString();
-    } catch (e) {
-      console.error("BigInt calculation failed:", e);
-
-      // Fallback calculation if BigInt fails
-      // Calculate using standard math but ensure we round down
-      const sharesToWithdraw = Math.floor(
-        parseFloat(shareBalance) * proportion
-      );
-      return sharesToWithdraw.toString();
-    }
+    return (sharesToWithdraw / PRECISION).toString();
   } catch (e) {
-    console.error("Error calculating shares:", e);
+    console.error("Error calculating withdraw shares:", e);
     return "0";
   }
 };

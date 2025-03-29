@@ -12,14 +12,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useExecuteWithdraw } from "@/hooks/silo";
+import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import { SiloMarket, SiloMarketDetail, SiloTokenDetail } from "../../types";
 import {
   calculateBaseDepositAPR,
-  calculateTokenPrecision,
   calculateTokenValueUSD,
   calculateWithdrawShares,
-  formatTokenBalance,
 } from "../../utils/calculators";
 import { formatPercent, formatUSD } from "../../utils/formatters";
 
@@ -54,7 +53,6 @@ export const Withdraw = ({
   const [isWithdrawing, setIsWithdrawing] = useState<boolean>(false);
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [calculatedShares, setCalculatedShares] = useState<string>("0");
-  const [precision, setPrecision] = useState<number>(6);
 
   // Access notification store
   const { addNotification } = useNotificationStore();
@@ -69,41 +67,65 @@ export const Withdraw = ({
   const tokenDetail = isSiloTokenDetail(token) ? token : null;
   const decimals = token?.decimals || 18;
 
-  // Calculate token precision based on value
-  useEffect(() => {
-    if (token?.priceUsd) {
-      const tokenValue = parseInt(token.priceUsd) / 1e6;
-      setPrecision(calculateTokenPrecision(tokenValue, decimals));
-    }
-  }, [token, decimals]);
-
-  // Extract balances and calculate values
+  // Extract balances
   const shareBalance = tokenDetail?.collateralShares || "0";
   const suppliedAssets = tokenDetail?.collateralBalance || "0";
-  const formattedSuppliedAssets = formatTokenBalance(
-    suppliedAssets,
-    decimals,
-    precision
-  );
 
-  // Calculate USD values
+  // Format supplied assets with full precision using ethers.js
+  const formattedSuppliedAssets = suppliedAssets
+    ? ethers.formatUnits(suppliedAssets, decimals)
+    : "0";
+
+  // Calculate USD values for display
   const suppliedValueUsd = calculateTokenValueUSD(
-    parseFloat(suppliedAssets) / 10 ** decimals,
+    formattedSuppliedAssets,
     token?.priceUsd
   );
 
   const withdrawalUsd = calculateTokenValueUSD(tokenAmount, token?.priceUsd);
 
   // Calculate remaining assets after withdrawal
-  const remainingAssets = Math.max(
-    0,
-    parseFloat(formattedSuppliedAssets) - parseFloat(tokenAmount || "0")
-  );
+  const getRemainingAssets = (): string => {
+    if (!tokenAmount || !suppliedAssets) return formattedSuppliedAssets;
 
-  // Validate if amount exceeds balance
-  const isAmountTooLarge = Boolean(
-    tokenAmount && parseFloat(tokenAmount) > parseFloat(formattedSuppliedAssets)
-  );
+    try {
+      // Use BigInt for maximum precision
+      const suppliedBigInt = BigInt(suppliedAssets);
+      const withdrawalBigInt = BigInt(
+        ethers.parseUnits(tokenAmount, decimals).toString()
+      );
+
+      // If withdrawal amount is greater than supplied, return 0
+      if (withdrawalBigInt >= suppliedBigInt) return "0";
+
+      // Calculate remaining with full precision
+      const remainingBigInt = suppliedBigInt - withdrawalBigInt;
+      return ethers.formatUnits(remainingBigInt.toString(), decimals);
+    } catch (e) {
+      console.error("Error calculating remaining assets:", e);
+      // Fallback to less precise calculation
+      const supplied = parseFloat(formattedSuppliedAssets);
+      const withdrawal = parseFloat(tokenAmount);
+      return Math.max(0, supplied - withdrawal).toString();
+    }
+  };
+
+  // Get the remaining assets string with full precision
+  const remainingAssets = getRemainingAssets();
+
+  // Check if amount exceeds balance with proper precision comparison
+  const isAmountTooLarge = (() => {
+    if (!tokenAmount || !suppliedAssets) return false;
+    try {
+      const amountBigInt = ethers.parseUnits(tokenAmount, decimals);
+      const totalBigInt = BigInt(suppliedAssets);
+      return amountBigInt > totalBigInt;
+    } catch (e) {
+      console.error("Error checking withdrawal amount:", e);
+      // Fallback to less precise comparison
+      return parseFloat(tokenAmount) > parseFloat(formattedSuppliedAssets);
+    }
+  })();
 
   // Update calculated shares when token amount changes
   useEffect(() => {
@@ -122,10 +144,17 @@ export const Withdraw = ({
   };
 
   /**
-   * Set maximum withdrawable amount
+   * Set maximum withdrawable amount with full precision
    */
   const handleSetMaxAmount = (): void => {
-    setTokenAmount(formattedSuppliedAssets);
+    if (!suppliedAssets || suppliedAssets === "0") return;
+
+    try {
+      // Use ethers to get exact precision
+      setTokenAmount(formattedSuppliedAssets);
+    } catch (e) {
+      console.error("Error setting max withdrawal amount:", e);
+    }
   };
 
   /**
@@ -272,7 +301,7 @@ export const Withdraw = ({
                 value={tokenAmount}
                 onChange={(e) => handleTokenAmountChange(e.target.value)}
                 className="pr-16"
-                step={`0.${"0".repeat(precision - 1)}1`}
+                step="any"
               />
               <Button
                 variant="ghost"
@@ -301,7 +330,7 @@ export const Withdraw = ({
 
               <div className="text-muted-foreground">Remaining Supply</div>
               <div className="text-right font-medium">
-                {remainingAssets.toFixed(precision)} {token.symbol} (
+                {remainingAssets} {token.symbol} (
                 {formatUSD(
                   calculateTokenValueUSD(remainingAssets, token.priceUsd)
                 )}
@@ -369,7 +398,7 @@ export const Withdraw = ({
 
               <div className="text-muted-foreground">Remaining Balance</div>
               <div className="text-right font-medium">
-                {remainingAssets.toFixed(precision)} {token?.symbol} (
+                {remainingAssets} {token?.symbol} (
                 {formatUSD(
                   calculateTokenValueUSD(remainingAssets, token?.priceUsd)
                 )}
