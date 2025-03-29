@@ -351,7 +351,7 @@ export const Deposit = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="absolute right-1 top-1 h-8"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8"
                 onClick={handleSetMaxBalance}
                 disabled={parseFloat(displayBalance) <= 0}
               >
