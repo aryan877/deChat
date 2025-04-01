@@ -33,6 +33,7 @@ export function AaveUserDataSuccess({ data }: AaveUserDataSuccessProps) {
 
   // Function to determine health factor status color
   const getHealthFactorColor = (healthFactor: string) => {
+    if (healthFactor === "∞") return "text-green-500";
     const value = parseFloat(healthFactor);
     if (value > 2) return "text-green-500";
     if (value > 1.1) return "text-amber-500";
@@ -110,6 +111,7 @@ export function AaveUserDataSuccess({ data }: AaveUserDataSuccessProps) {
             <h3 className="text-sm font-medium">Health Factor</h3>
             <Badge
               variant={
+                userSummary.healthFactor === "∞" ||
                 parseFloat(userSummary.healthFactor) > 2
                   ? "default"
                   : parseFloat(userSummary.healthFactor) > 1.1
@@ -118,7 +120,8 @@ export function AaveUserDataSuccess({ data }: AaveUserDataSuccessProps) {
               }
               className={`px-2 py-0.5 ${parseFloat(userSummary.healthFactor) > 1.1 && parseFloat(userSummary.healthFactor) <= 2 ? "bg-amber-500" : ""}`}
             >
-              {parseFloat(userSummary.healthFactor) > 2
+              {userSummary.healthFactor === "∞" ||
+              parseFloat(userSummary.healthFactor) > 2
                 ? "Safe"
                 : parseFloat(userSummary.healthFactor) > 1.1
                   ? "Caution"

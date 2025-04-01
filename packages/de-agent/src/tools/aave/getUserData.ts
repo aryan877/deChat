@@ -157,6 +157,8 @@ export async function getUserData(
       reserveIncentives,
     });
 
+    console.log(formattedPoolReserves);
+
     const rawUserSummary = formatUserSummaryAndIncentives({
       currentTimestamp,
       marketReferencePriceInUsd:
@@ -205,7 +207,10 @@ export async function getUserData(
         rawUserSummary.currentLiquidationThreshold,
         4
       ),
-      healthFactor: formatNumber(rawUserSummary.healthFactor, 4),
+      healthFactor:
+        parseFloat(rawUserSummary.totalBorrowsUSD) === 0
+          ? "∞" // When no borrows, health factor is infinite
+          : formatNumber(rawUserSummary.healthFactor, 4),
       netAPY: formatNumber(netAPY * 100, 4) + "%",
       borrowPowerUsed: formatNumber(borrowPowerUsed, 2) + "%",
       userReserves: activeReserves,
