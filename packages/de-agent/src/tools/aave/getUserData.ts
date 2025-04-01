@@ -157,8 +157,6 @@ export async function getUserData(
       reserveIncentives,
     });
 
-    console.log(formattedPoolReserves);
-
     const rawUserSummary = formatUserSummaryAndIncentives({
       currentTimestamp,
       marketReferencePriceInUsd:
